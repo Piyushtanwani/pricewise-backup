@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String      @id @default(uuid())
+  email     String      @unique
+  password  String
+  name      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  watchlist Watchlist[]
+  alerts    Alert[]
+}
+
+model Product {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  category    String
+  brand       String
+  imageUrl    String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  stores      ProductStore[]
+  watchers    Watchlist[]
+  alerts      Alert[]
+}
+
+model Store {
+  id           String         @id @default(uuid())
+  name         String         @unique
+  url          String?
+  logoUrl      String?
+  createdAt    DateTime       @default(now())
+  products     ProductStore[]
+}
+
+model ProductStore {
+  id            String         @id @default(uuid())
+  productId     String
+  storeId       String
+  productUrl    String
+  currentPrice  Float
+  currency      String         @default("INR")
+  isAvailable   Boolean        @default(true)
+  lastCheckedAt DateTime       @default(now())
+  product       Product        @relation(fields: [productId], references: [id])
+  store         Store          @relation(fields: [storeId], references: [id])
+  priceHistory  PriceHistory[]
+
+  @@unique([productId, storeId])
+}
+
+model PriceHistory {
+  id             String       @id @default(uuid())
+  productStoreId String
+  price          Float
+  currency       String       @default("INR")
+  timestamp      DateTime     @default(now())
+  productStore   ProductStore @relation(fields: [productStoreId], references: [id])
+}
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model Alert {
+  id          String   @id @default(uuid())
+  userId      String
+  productId   String
+  targetPrice Float
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+}
