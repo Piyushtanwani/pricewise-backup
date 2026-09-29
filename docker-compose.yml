@@ -9,9 +9,15 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: pricewise
     ports:
-      - "5432:5432"
+      # Host port 5433 avoids clashing with a locally installed PostgreSQL on 5432.
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pricewise"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7-alpine

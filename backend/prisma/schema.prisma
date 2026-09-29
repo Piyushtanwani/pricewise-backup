@@ -7,58 +7,102 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StockStatus {
+  IN_STOCK
+  LIMITED
+  OUT_OF_STOCK
+}
+
+enum NotificationType {
+  PRICE_DROP
+  TARGET_REACHED
+  RECOMMENDATION
+  DIGEST
 }
 
 model User {
-  id        String      @id @default(uuid())
-  email     String      @unique
-  password  String
-  name      String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  watchlist Watchlist[]
-  alerts    Alert[]
+  id                String         @id @default(uuid())
+  email             String         @unique
+  password          String
+  name              String
+  phone             String?
+  // Shape mirrors the Settings page toggles, e.g. { priceDropEmail: true, targetInApp: true }
+  notificationPrefs Json?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  wishlist          Wishlist[]
+  watchlist         Watchlist[]
+  alerts            Alert[]
+  notifications     Notification[]
 }
 
 model Product {
-  id          String         @id @default(uuid())
-  name        String
-  description String?
-  category    String
-  brand       String
-  imageUrl    String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  stores      ProductStore[]
-  watchers    Watchlist[]
-  alerts      Alert[]
+  id              String         @id @default(uuid())
+  name            String
+  description     String?
+  category        String
+  brand           String
+  imageUrl        String?
+  gtin            String?
+  mrp             Float?
+  rating          Float          @default(0)
+  reviewCount     Int            @default(0)
+  // Short highlight chips shown on product cards
+  specs           String[]       @default([])
+  // Label -> value map used by the Compare page, e.g. { "RAM": "8 GB" }
+  techSpecs       Json?
+  // Denormalised from ProductStore rows by refreshProductAggregates()
+  bestPrice       Float?
+  bestStoreId     String?
+  discountPercent Float?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  bestStore       Store?         @relation("BestStore", fields: [bestStoreId], references: [id], onDelete: SetNull)
+  stores          ProductStore[]
+  watchers        Watchlist[]
+  wishlistedBy    Wishlist[]
+  alerts          Alert[]
+  notifications   Notification[]
+
+  @@index([category])
+  @@index([brand])
+  @@index([gtin])
 }
 
 model Store {
   id           String         @id @default(uuid())
   name         String         @unique
+  slug         String         @unique
   url          String?
   logoUrl      String?
   createdAt    DateTime       @default(now())
   products     ProductStore[]
+  bestProducts Product[]      @relation("BestStore")
 }
 
 model ProductStore {
   id            String         @id @default(uuid())
   productId     String
   storeId       String
+  // Store-side identifier: ASIN for Amazon, FSN for Flipkart
+  externalId    String?
   productUrl    String
   currentPrice  Float
+  mrp           Float?
   currency      String         @default("INR")
-  isAvailable   Boolean        @default(true)
+  stockStatus   StockStatus    @default(IN_STOCK)
+  shippingCost  Float          @default(0)
   lastCheckedAt DateTime       @default(now())
-  product       Product        @relation(fields: [productId], references: [id])
-  store         Store          @relation(fields: [storeId], references: [id])
+  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store         Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
   priceHistory  PriceHistory[]
 
   @@unique([productId, storeId])
+  @@unique([storeId, externalId])
 }
 
 model PriceHistory {
@@ -67,7 +111,22 @@ model PriceHistory {
   price          Float
   currency       String       @default("INR")
   timestamp      DateTime     @default(now())
-  productStore   ProductStore @relation(fields: [productStoreId], references: [id])
+  productStore   ProductStore @relation(fields: [productStoreId], references: [id], onDelete: Cascade)
+
+  @@index([productStoreId, timestamp])
+}
+
+model Wishlist {
+  id         String   @id @default(uuid())
+  userId     String
+  productId  String
+  // Best price at the moment the product was saved, used for "price changed since added"
+  addedPrice Float
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
 }
 
 model Watchlist {
@@ -75,19 +134,45 @@ model Watchlist {
   userId    String
   productId String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
 }
 
 model Alert {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
   productId   String
   targetPrice Float
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
-  product     Product  @relation(fields: [productId], references: [id])
+  notifyEmail Boolean   @default(true)
+  notifyInApp Boolean   @default(true)
+  notifyPush  Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  // Set when the best price reaches the target; cleared when the price rises above it again
+  triggeredAt DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, isActive])
+  @@index([userId])
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  productId   String?
+  type        NotificationType
+  title       String
+  body        String
+  prevPrice   Float?
+  newPrice    Float?
+  targetPrice Float?
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
 }

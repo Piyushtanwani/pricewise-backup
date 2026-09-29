@@ -2,11 +2,19 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "build": "tsc -p . && node -e \"require('fs').cpSync('src/generated','dist/src/generated',{recursive:true})\"",
+    "start": "node dist/src/server.js",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "node --import tsx --test tests/priceAnalytics.test.ts tests/stores.test.ts tests/assistant.test.ts tests/matching.test.ts",
     "seed": "tsx prisma/seed.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "sync": "tsx scripts/sync.ts",
+    "db:up": "docker compose -f ../docker-compose.yml up -d postgres",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",

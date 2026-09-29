@@ -1,19 +1,60 @@
 import { Router } from 'express';
-import { getWatchlist, addToWatchlist, removeFromWatchlist, getAlerts, addAlert, removeAlert } from '../controllers/userController';
+import {
+  getProfile,
+  updateProfile,
+  changePassword,
+  getNotificationSettings,
+  updateNotificationSettings,
+  getWishlist,
+  addToWishlist,
+  removeFromWishlist,
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+  getAlerts,
+  addAlert,
+  updateAlert,
+  removeAlert,
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  getRecommendations,
+} from '../controllers/userController';
 import { authenticateToken } from '../middlewares/auth';
 
 const router = Router();
 
-router.use(authenticateToken as any); // Protect all user routes
+router.use(authenticateToken); // Protect all user routes
 
-// Watchlist
-router.get('/watchlist', getWatchlist as any);
-router.post('/watchlist', addToWatchlist as any);
-router.delete('/watchlist/:productId', removeFromWatchlist as any);
+// Profile & settings
+router.get('/profile', getProfile);
+router.patch('/profile', updateProfile);
+router.put('/password', changePassword);
+router.get('/settings/notifications', getNotificationSettings);
+router.put('/settings/notifications', updateNotificationSettings);
+
+// Wishlist
+router.get('/wishlist', getWishlist);
+router.post('/wishlist', addToWishlist);
+router.delete('/wishlist/:productId', removeFromWishlist);
+
+// Watchlist (tracked products)
+router.get('/watchlist', getWatchlist);
+router.post('/watchlist', addToWatchlist);
+router.delete('/watchlist/:productId', removeFromWatchlist);
 
 // Alerts
-router.get('/alerts', getAlerts as any);
-router.post('/alerts', addAlert as any);
-router.delete('/alerts/:alertId', removeAlert as any);
+router.get('/alerts', getAlerts);
+router.post('/alerts', addAlert);
+router.patch('/alerts/:alertId', updateAlert);
+router.delete('/alerts/:alertId', removeAlert);
+
+// Notifications
+router.get('/notifications', getNotifications);
+router.post('/notifications/read-all', markAllNotificationsRead);
+router.patch('/notifications/:notificationId/read', markNotificationRead);
+
+// Recommendations
+router.get('/recommendations', getRecommendations);
 
 export default router;
