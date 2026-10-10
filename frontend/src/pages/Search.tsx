@@ -1,32 +1,43 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSearchParams, useNavigate } from "react-router"
 import { SlidersHorizontal, Star, TrendingDown, X, GitCompare } from "lucide-react"
 import ProductCard from "../components/ui/ProductCard"
-import { products } from "../data/mockData"
+import { products as initialProducts } from "../data/mockData"
+import { getProducts, type Product } from "../services/api"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
 
 const sortOptions = ["Relevance", "Price: Low to High", "Price: High to Low", "Rating", "Best Deal"]
 const storeFilters = ["Amazon", "Flipkart", "Croma", "Vijay Sales"]
-const brandFilters = ["Apple", "Sony", "Samsung", "LG", "Google"]
+const brandFilters = ["Apple", "Sony", "Samsung", "LG", "Google", "Vivo"]
 
 export default function Search() {
   const [params] = useSearchParams()
   const query = params.get("q") || "wireless headphones"
   const navigate = useNavigate()
 
+  const [products, setProducts] = useState<Product[]>(initialProducts)
   const [sort, setSort] = useState("Relevance")
   const [selectedStores, setSelectedStores] = useState<string[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState([0, 150000])
-  const [compareList, setCompareList] = useState<typeof products>([])
+  const [compareList, setCompareList] = useState<Product[]>([])
   const [filterOpen, setFilterOpen] = useState(false)
+
+  useEffect(() => {
+    const qParam = query === "trending" || query === "deals" ? "" : query
+    getProducts({ q: qParam }).then(({ items }) => {
+      if (items && items.length > 0) {
+        setProducts(items)
+      }
+    })
+  }, [query])
 
   const toggleStore = (s: string) =>
     setSelectedStores((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])
   const toggleBrand = (b: string) =>
     setSelectedBrands((prev) => prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b])
-  const toggleCompare = (p: typeof products[0]) =>
+  const toggleCompare = (p: Product) =>
     setCompareList((prev) => prev.find((x) => x.id === p.id) ? prev.filter((x) => x.id !== p.id) : prev.length < 3 ? [...prev, p] : prev)
 
   const filtered = products.filter((p) => {

@@ -1,10 +1,11 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import { Search, TrendingDown, TrendingUp, Zap, BarChart2, Bell, Sparkles, ChevronRight, ArrowRight } from "lucide-react"
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts"
-import { products, priceHistoryData, categories } from "../data/mockData"
+import { products as initialProducts, priceHistoryData, categories } from "../data/mockData"
+import { getProducts, type Product } from "../services/api"
 import ProductCard from "../components/ui/ProductCard"
 import Footer from "../components/layout/Footer"
 
@@ -49,7 +50,16 @@ const popular = ["iPhone 16", "MacBook Air", "Sony Headphones", "Gaming Laptops"
 
 export default function Home() {
   const [query, setQuery] = useState("")
+  const [products, setProducts] = useState<Product[]>(initialProducts)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    getProducts({ limit: 12 }).then(({ items }) => {
+      if (items && items.length > 0) {
+        setProducts(items)
+      }
+    })
+  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

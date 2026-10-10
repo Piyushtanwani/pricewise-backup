@@ -83,3 +83,19 @@ export const listListings = async (req: Request, res: Response): Promise<void> =
     })),
   });
 };
+
+/** Scrapes real smartphones and historical prices, storing them in PostgreSQL. */
+export const scrapeAndStore = async (req: Request, res: Response): Promise<void> => {
+  const limit = queryInt(req.body?.limit === undefined ? undefined : String(req.body.limit), 5, { min: 1, max: 20 });
+  const { runPythonScraper, ingestScrapedProducts } = await import('../services/scraperService');
+  
+  const scraped = await runPythonScraper(limit);
+  const ingested = await ingestScrapedProducts(scraped);
+
+  res.json({
+    status: 'success',
+    scrapedCount: scraped.length,
+    ingestedCount: ingested.length,
+    products: ingested,
+  });
+};

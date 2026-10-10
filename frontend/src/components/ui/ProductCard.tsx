@@ -80,8 +80,10 @@ export default function ProductCard({ product, onCompare, selected }: {
         </div>
 
         <div className="flex flex-wrap gap-1 mb-3">
-          {product.specs.slice(0, 3).map(s => (
-            <span key={s} className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md">{s}</span>
+          {product.specs.slice(0, 3).map((s, idx) => (
+            <span key={idx} className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md">
+              {typeof s === "string" ? s : typeof s === "object" ? JSON.stringify(s) : String(s)}
+            </span>
           ))}
         </div>
 

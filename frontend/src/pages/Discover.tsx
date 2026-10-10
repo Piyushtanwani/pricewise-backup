@@ -1,10 +1,21 @@
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { categories, products } from "../data/mockData"
+import { categories, products as initialProducts } from "../data/mockData"
+import { getProducts, type Product } from "../services/api"
 import ProductCard from "../components/ui/ProductCard"
 import Footer from "../components/layout/Footer"
 
 export default function Discover() {
   const navigate = useNavigate()
+  const [products, setProducts] = useState<Product[]>(initialProducts)
+
+  useEffect(() => {
+    getProducts({ limit: 20 }).then(({ items }) => {
+      if (items && items.length > 0) {
+        setProducts(items)
+      }
+    })
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#f4f6fb] pt-14">
