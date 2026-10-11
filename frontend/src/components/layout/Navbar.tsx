@@ -95,7 +95,9 @@ export default function Navbar() {
             onSubmit={handleSearch}
             className="flex-1 max-w-xl hidden md:flex items-center gap-2 bg-slate-100 rounded-xl px-3 py-1.5 border border-transparent focus-within:border-indigo-300 focus-within:bg-white transition-all"
           >
-            <Search size={15} className="text-slate-400 shrink-0" />
+            <button type="submit" className="text-slate-400 hover:text-indigo-600 shrink-0 cursor-pointer">
+              <Search size={15} />
+            </button>
             <input
               ref={searchRef}
               value={query}

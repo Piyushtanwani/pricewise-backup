@@ -50,4 +50,17 @@ export const env = {
     affiliateToken: str('FLIPKART_AFFILIATE_TOKEN'),
     baseUrl: str('FLIPKART_API_BASE_URL', 'https://affiliate-api.flipkart.net/affiliate/1.0').replace(/\/+$/, ''),
   },
+
+  parseBot: {
+    apiKey: str('PARSE_API_KEY'),
+    baseUrl: str('PARSE_BASE_URL', 'https://api.parse.bot').replace(/\/+$/, ''),
+    scraperId: str('PARSE_SMARTPRIX_SCRAPER_ID', '37d36dc7-0edf-44d4-8099-976c2da8a33e'),
+    snapshotVersion: str('PARSE_SNAPSHOT_VERSION', '8'),
+  },
+
+  groq: {
+    apiKey: str('GROQ_API_KEY'),
+    model: str('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+  },
 };
+

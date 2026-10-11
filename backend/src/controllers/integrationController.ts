@@ -5,19 +5,35 @@ import { optionalString, queryInt, queryList, queryString, requireString } from 
 import { providerStatus } from '../services/stores';
 import { importFromStores, lastSyncSummary, searchStores, syncPrices } from '../services/priceSync';
 import { refreshProductAggregates } from '../services/productService';
+import { smartprixClient, groqNormalizer } from '../services/smartprix';
 
 /** Public: which stores have live data. Never exposes credential values. */
 export const getPublicStatus = (_req: Request, res: Response): void => {
   const last = lastSyncSummary();
   res.json({
-    providers: providerStatus().map(({ id, store, configured }) => ({ id, store, configured })),
+    providers: [
+      ...providerStatus().map(({ id, store, configured }) => ({ id, store, configured })),
+      { id: 'smartprix', store: 'Smartprix (Parse.bot)', configured: smartprixClient.isConfigured() },
+    ],
     lastSync: last ? { finishedAt: last.finishedAt, productsUpdated: last.productsUpdated } : null,
   });
 };
 
 export const getAdminStatus = (_req: Request, res: Response): void => {
-  res.json({ providers: providerStatus(), lastSync: lastSyncSummary() });
+  res.json({
+    providers: [
+      ...providerStatus(),
+      {
+        id: 'smartprix',
+        store: 'Smartprix (Parse.bot)',
+        configured: smartprixClient.isConfigured(),
+        missing: smartprixClient.missingConfig(),
+      },
+    ],
+    lastSync: lastSyncSummary(),
+  });
 };
+
 
 export const runSync = async (req: Request, res: Response): Promise<void> => {
   const productId = optionalString(req.body, 'productId');
@@ -83,3 +99,96 @@ export const listListings = async (req: Request, res: Response): Promise<void> =
     })),
   });
 };
+
+/** Smartprix / Parse.bot endpoints */
+
+export const getSmartprixStatus = (_req: Request, res: Response): void => {
+  res.json({
+    provider: 'smartprix',
+    configured: smartprixClient.isConfigured(),
+    missingConfig: smartprixClient.missingConfig(),
+    groqConfigured: groqNormalizer.isConfigured(),
+  });
+};
+
+export const smartprixSearch = async (req: Request, res: Response): Promise<void> => {
+  const query = queryString(req.query.query || req.query.q);
+  const brand = queryString(req.query.brand);
+  const sort = queryString(req.query.sort);
+  const page = req.query.page !== undefined ? queryInt(req.query.page, 1, { min: 1, max: 100 }) : undefined;
+  const min_price = req.query.min_price !== undefined ? queryInt(req.query.min_price, 0, { min: 0, max: 1_000_000 }) : undefined;
+  const max_price = req.query.max_price !== undefined ? queryInt(req.query.max_price, 1_000_000, { min: 0, max: 1_000_000 }) : undefined;
+
+  const data = await smartprixClient.searchSmartphones({
+    query,
+    brand,
+    sort,
+    page,
+    min_price,
+    max_price,
+  });
+
+  res.json({
+    status: 'success',
+    endpoint: 'search_smartphones',
+    params: { query, brand, sort: query ? undefined : sort, page, min_price, max_price },
+    data,
+  });
+};
+
+export const smartprixDetails = async (req: Request, res: Response): Promise<void> => {
+  const slug = queryString(req.query.slug);
+  if (!slug) throw badRequest('slug query parameter is required (e.g. /mobiles/samsung-galaxy-s25-ultra-ppd1p8z4fzt4)');
+
+  const data = await smartprixClient.getSmartphoneDetails({ slug });
+  res.json({
+    status: 'success',
+    endpoint: 'get_smartphone_details',
+    slug,
+    data,
+  });
+};
+
+export const smartprixPriceHistory = async (req: Request, res: Response): Promise<void> => {
+  const pid = queryString(req.query.pid);
+  if (!pid) throw badRequest('pid query parameter is required (e.g. pd1p8z4fzt4)');
+  const range = queryString(req.query.range);
+
+  const data = await smartprixClient.getSmartphonePriceHistory({ pid, range });
+  res.json({
+    status: 'success',
+    endpoint: 'get_smartphone_price_history',
+    pid,
+    range,
+    data,
+  });
+};
+
+export const smartprixBrands = async (_req: Request, res: Response): Promise<void> => {
+  const data = await smartprixClient.listBrands();
+  res.json({
+    status: 'success',
+    endpoint: 'list_brands',
+    data,
+  });
+};
+
+export const smartprixNormalize = async (req: Request, res: Response): Promise<void> => {
+  let rawData = req.body?.rawData;
+  const query = optionalString(req.body, 'query', { max: 120 });
+
+  if (!rawData && query) {
+    rawData = await smartprixClient.searchSmartphones({ query });
+  }
+
+  if (!rawData) {
+    throw badRequest('Either rawData or query must be provided in request body');
+  }
+
+  const result = await groqNormalizer.normalizeWithGroq(rawData);
+  res.json({
+    status: 'success',
+    ...result,
+  });
+};
+

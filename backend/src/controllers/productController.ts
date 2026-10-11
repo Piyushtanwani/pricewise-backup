@@ -4,7 +4,7 @@ import prisma from '../utils/prisma';
 import { badRequest } from '../utils/http';
 import { queryInt, queryList, queryNumber, queryString } from '../utils/validate';
 import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } from '../services/priceAnalytics';
-import { presentCards, productInclude, storePriceRows, toProductCard } from '../services/productService';
+import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
@@ -31,9 +31,9 @@ const anyEqualsInsensitive = (field: 'category' | 'brand', values: string[]): Pr
 
 export const listProducts = async (req: Request, res: Response): Promise<void> => {
   const q = queryString(req.query.q ?? req.query.search);
-  const categories = queryList(req.query.category);
-  const brands = queryList(req.query.brand);
-  const stores = queryList(req.query.store);
+  const categories = queryList([req.query.category, req.query['category[]']].filter(Boolean).flat());
+  const brands = queryList([req.query.brand, req.query['brand[]']].filter(Boolean).flat());
+  const stores = queryList([req.query.store, req.query['store[]']].filter(Boolean).flat());
   const minPrice = queryNumber(req.query.minPrice);
   const maxPrice = queryNumber(req.query.maxPrice);
   const minRating = queryNumber(req.query.minRating);
@@ -41,7 +41,7 @@ export const listProducts = async (req: Request, res: Response): Promise<void> =
   const sort = SORT_LABELS[sortParam] ?? sortParam;
   if (!SORTS[sort]) throw badRequest(`sort must be one of: ${Object.keys(SORTS).join(', ')}`);
   const page = queryInt(req.query.page, 1, { min: 1, max: 10_000 });
-  const limit = queryInt(req.query.limit, 20, { min: 1, max: 100 });
+  const limit = queryInt(req.query.limit, 20, { min: 1, max: 500 });
 
   const terms = q ? q.split(/\s+/).filter(Boolean).slice(0, 8) : [];
   const filters: Prisma.ProductWhereInput[] = terms.map((term) => ({
@@ -132,7 +132,7 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
     description: product.description,
     techSpecs: product.techSpecs ?? {},
     gtin: product.gtin,
-    images: product.imageUrl ? [product.imageUrl] : [],
+    images: [resolveProductImageUrl(product.imageUrl, product.brand, 'detail')],
     savings: Math.max(0, card.mrp - card.bestPrice),
     storePrices: storePriceRows(product),
     stats: {
