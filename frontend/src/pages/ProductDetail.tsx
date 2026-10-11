@@ -136,6 +136,14 @@ export default function ProductDetail() {
         { date: "30 Days", price: null, predicted: Math.round(product.bestPrice * 0.96), upper: Math.round(product.bestPrice * 1.03), lower: Math.round(product.bestPrice * 0.92) },
       ]
 
+  const getDirectBuyUrl = (storeRow?: StorePriceRow) => {
+    if (storeRow?.url && (storeRow.url.includes("amazon.in") || storeRow.url.includes("flipkart.com"))) {
+      return storeRow.url
+    }
+    const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
+    return `http://localhost:5000/api/products/${product.id}/buy${storeParam}`
+  }
+
   const handleDiscountSelect = (pct: number) => {
     setSelectedDiscount(pct)
     const base = product.bestPrice || 0
@@ -307,16 +315,14 @@ export default function ProductDetail() {
                 </div>
               </div>
 
-              {stores[0]?.url && (
-                <a
-                  href={stores[0].url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2 shadow-md shadow-indigo-600/20"
-                >
-                  View Best Deal at {stores[0].store} <ExternalLink size={15} />
-                </a>
-              )}
+              <a
+                href={getDirectBuyUrl(stores[0])}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2 shadow-md shadow-indigo-600/20"
+              >
+                View Best Deal at {stores[0]?.store || product.bestStore || "Amazon"} <ExternalLink size={15} />
+              </a>
 
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -435,16 +441,14 @@ export default function ProductDetail() {
                         )}
                       </td>
                       <td className="py-3 text-right">
-                        {store.url && (
-                          <a
-                            href={store.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-indigo-600 text-white text-xs font-medium px-3.5 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center gap-1 shadow-sm"
-                          >
-                            Buy <ExternalLink size={12} />
-                          </a>
-                        )}
+                        <a
+                          href={getDirectBuyUrl(store)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-indigo-600 text-white text-xs font-medium px-3.5 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center gap-1 shadow-sm"
+                        >
+                          Buy <ExternalLink size={12} />
+                        </a>
                       </td>
                     </tr>
                   ))
@@ -456,7 +460,14 @@ export default function ProductDetail() {
                     <td className="py-3 pr-4"><Badge variant="success">In Stock</Badge></td>
                     <td className="py-3 pr-4 font-bold text-emerald-600">Best</td>
                     <td className="py-3 text-right">
-                      <button className="bg-indigo-600 text-white text-xs font-medium px-3.5 py-1.5 rounded-lg">Buy</button>
+                      <a
+                        href={getDirectBuyUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-indigo-600 text-white text-xs font-medium px-3.5 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center gap-1"
+                      >
+                        Buy <ExternalLink size={12} />
+                      </a>
                     </td>
                   </tr>
                 )}
@@ -467,7 +478,7 @@ export default function ProductDetail() {
 
         {/* Charts */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div className="flex gap-2">
               <button
                 onClick={() => setTab("history")}
@@ -486,6 +497,32 @@ export default function ProductDetail() {
                 Price Prediction
               </button>
             </div>
+
+            {tab === "history" && (
+              <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg">
+                {["1M", "3M", "6M", "1Y"].map((r) => (
+                  <button
+                    key={r}
+                    onClick={async () => {
+                      setTimeRange(r)
+                      if (id) {
+                        try {
+                          const pts = await api.getProductHistory(id, r)
+                          setHistory(pts)
+                        } catch (e) {
+                          console.error(e)
+                        }
+                      }
+                    }}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                      timeRange === r ? "bg-white text-indigo-600 shadow-2xs font-bold" : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {tab === "history" ? (

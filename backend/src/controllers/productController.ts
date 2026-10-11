@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { Prisma } from '../generated/prisma';
 import prisma from '../utils/prisma';
-import { badRequest } from '../utils/http';
+import { badRequest, notFound } from '../utils/http';
 import { queryInt, queryList, queryNumber, queryString } from '../utils/validate';
 import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } from '../services/priceAnalytics';
 import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
+import { resolveDirectStoreUrl } from '../services/storeRedirectService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -242,3 +243,38 @@ export const compareProducts = async (req: Request, res: Response): Promise<void
     techSpecLabels,
   });
 };
+
+export const redirectToStore = async (req: Request, res: Response): Promise<void> => {
+  const productId = String(req.params.id);
+  const requestedStore = (req.query.store as string) || '';
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: productInclude,
+  });
+
+  if (!product) {
+    throw notFound('Product not found');
+  }
+
+  // Find the matching store listing or first store
+  const listing = product.stores.find(
+    (s) =>
+      !requestedStore ||
+      s.store.name.toLowerCase().includes(requestedStore.toLowerCase()) ||
+      s.store.slug.toLowerCase().includes(requestedStore.toLowerCase()),
+  ) || product.stores[0];
+
+  const storeName = listing?.store?.name || product.bestStore?.name || requestedStore || 'Amazon';
+  const rawUrl = listing?.productUrl || '';
+
+  const directUrl = await resolveDirectStoreUrl(rawUrl, storeName, product.name);
+
+  // If client wants JSON info instead of direct 302 redirect
+  if (req.query.format === 'json') {
+    res.json({ directUrl, storeName, productName: product.name });
+    return;
+  }
+
+  res.redirect(directUrl);
+};
+
