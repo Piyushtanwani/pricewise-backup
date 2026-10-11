@@ -225,7 +225,7 @@ export const compareProducts = async (req: Request, res: Response): Promise<void
     throw badRequest('No matching products found for comparison');
   }
   const ordered = ids.map((id) => found.find((p) => p.id === id)).filter((p): p is typeof found[0] => Boolean(p));
-  const cards = await presentCards(ordered);
+  const cards = ordered.map((p) => toProductCard(p));
 
   const techSpecLabels: string[] = [];
   for (const p of ordered) {

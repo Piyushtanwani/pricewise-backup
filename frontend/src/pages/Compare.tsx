@@ -38,8 +38,9 @@ export default function Compare() {
   }, [])
 
   useEffect(() => {
-    // If the URL param matches what we already have or just modified, don't re-trigger
-    if (lastLoadedIdsRef.current === idsParam) {
+    // If the URL param matches what we already have in state, don't re-trigger
+    if (lastLoadedIdsRef.current === idsParam && compareProducts.length > 0) {
+      setLoading(false)
       return
     }
     lastLoadedIdsRef.current = idsParam
@@ -55,43 +56,19 @@ export default function Compare() {
               const res = await api.compareProducts(ids)
               if (isMounted && res.products && res.products.length > 0) {
                 setCompareProducts(res.products as Product[])
+                setLoading(false)
                 return
               }
             } catch (err) {
               console.warn("api.compareProducts failed, falling back to direct load:", err)
-              // Fallback: load specific products directly
-              const loaded: Product[] = []
-              for (const id of ids.slice(0, 3)) {
-                try {
-                  const pRes = await api.getProduct(id)
-                  if (pRes) {
-                    loaded.push({
-                      id: pRes.id,
-                      name: pRes.name,
-                      brand: pRes.brand,
-                      image: pRes.image,
-                      rating: pRes.rating,
-                      reviews: pRes.reviews,
-                      specs: pRes.specs,
-                      bestPrice: pRes.bestPrice,
-                      mrp: pRes.mrp,
-                      discount: pRes.discount,
-                      bestStore: pRes.bestStore,
-                      stores: pRes.stores,
-                      trend: pRes.trend,
-                      category: pRes.category,
-                      aiVerdict: pRes.aiVerdict,
-                      verdictColor: pRes.verdictColor,
-                      priceHistory: pRes.priceHistory,
-                    })
-                  }
-                } catch (e) {
-                  console.error(e)
+              // If compareProducts failed, try loading from preloaded catalog
+              if (catalog.length > 0) {
+                const matched = catalog.filter((p) => ids.includes(p.id))
+                if (matched.length > 0) {
+                  setCompareProducts(matched)
+                  setLoading(false)
+                  return
                 }
-              }
-              if (isMounted && loaded.length > 0) {
-                setCompareProducts(loaded)
-                return
               }
             }
           }
@@ -104,6 +81,9 @@ export default function Compare() {
         }
       } catch (err) {
         console.error("Failed to load products for comparison:", err)
+        if (isMounted && catalog.length > 0) {
+          setCompareProducts(catalog.slice(0, 3))
+        }
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -111,7 +91,7 @@ export default function Compare() {
 
     loadCompare()
     return () => { isMounted = false }
-  }, [idsParam])
+  }, [idsParam, catalog])
 
   const getBest = (key: string, mode: string) => {
     if (mode === "none" || compareProducts.length === 0) return -1
