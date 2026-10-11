@@ -7,7 +7,7 @@ import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } 
 import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
 import { resolveDirectStoreUrl } from '../services/storeRedirectService';
-import { getLiveSerpStorePrices } from '../services/serpShoppingService';
+import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -174,8 +174,38 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
 export const getProductLiveStores = async (req: Request, res: Response): Promise<void> => {
   const productId = String(req.params.id);
   const product = await findProductOr404(productId);
-  const livePrices = await getLiveSerpStorePrices(product.name, product.bestPrice);
-  const stores = livePrices.length > 0 ? livePrices : storePriceRows(product);
+  const livePrices = await getLiveSerpStorePrices(product.name, product.brand, product.bestPrice);
+
+  let stores = livePrices;
+
+  // If SerpApi did not return allowed stores, only show allowed stores from DB listings
+  if (stores.length === 0) {
+    stores = storePriceRows(product).filter((s) => {
+      const match = matchAllowedStore(s.store, product.brand, product.name);
+      return match !== null;
+    });
+  }
+
+  // If DB listing already has a direct retailer URL for Amazon or Flipkart, use that exact link
+  stores = stores.map((s) => {
+    const dbListing = product.stores.find(
+      (dbS) =>
+        dbS.store.name.toLowerCase().includes(s.store.toLowerCase()) ||
+        s.store.toLowerCase().includes(dbS.store.name.toLowerCase()),
+    );
+    if (
+      dbListing &&
+      dbListing.productUrl &&
+      (dbListing.productUrl.includes('amazon.in') || dbListing.productUrl.includes('flipkart.com'))
+    ) {
+      return {
+        ...s,
+        url: dbListing.productUrl,
+      };
+    }
+    return s;
+  });
+
   res.json({
     stores,
     bestDealUrl: stores[0]?.url || null,
