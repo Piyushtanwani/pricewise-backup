@@ -98,23 +98,64 @@ export const getCatalogMeta = async (_req: Request, res: Response): Promise<void
   });
 };
 
+// Lightweight TTL cache for product details (120s TTL)
+const productDetailCache = new Map<string, { data: any; expiry: number }>();
+
 export const getProduct = async (req: Request, res: Response): Promise<void> => {
-  const product = await findProductOr404(String(req.params.id));
-  const series = await seriesFor(product.id, 400, undefined, product.bestPrice);
-  const card = toProductCard(product, series);
-  const window90 = sliceByDays(series, 90);
-  const stats90 = computeStats(window90);
-  const lowestEver = await prisma.priceHistory.aggregate({
-    _min: { price: true },
-    where: { productStore: { productId: product.id } },
-  });
+  const productId = String(req.params.id);
+  const now = Date.now();
+
+  const cached = productDetailCache.get(productId);
+  let baseData = cached && cached.expiry > now ? cached.data : null;
+
+  if (!baseData) {
+    const product = await findProductOr404(productId);
+    const [series, lowestEver] = await Promise.all([
+      seriesFor(product.id, 90, undefined, product.bestPrice),
+      prisma.priceHistory.aggregate({
+        _min: { price: true },
+        where: { productStore: { productId: product.id } },
+      }),
+    ]);
+
+    const card = toProductCard(product, series);
+    const window90 = sliceByDays(series, 90);
+    const stats90 = computeStats(window90);
+
+    const lastChecked = product.stores.reduce<Date | null>(
+      (latest, s) => (!latest || s.lastCheckedAt > latest ? s.lastCheckedAt : latest),
+      null,
+    );
+
+    baseData = {
+      ...card,
+      description: product.description,
+      techSpecs: product.techSpecs ?? {},
+      gtin: product.gtin,
+      images: [resolveProductImageUrl(product.imageUrl, product.brand, 'detail')],
+      savings: Math.max(0, card.mrp - card.bestPrice),
+      storePrices: storePriceRows(product),
+      stats: {
+        current: card.bestPrice,
+        lowest90: stats90?.lowest ?? card.bestPrice,
+        highest90: stats90?.highest ?? card.bestPrice,
+        average90: stats90?.average ?? card.bestPrice,
+        lowestEver: Math.round(Math.min(lowestEver._min.price ?? card.bestPrice, card.bestPrice)),
+      },
+      verdict: computeVerdict(series),
+      insights: buildInsights(series),
+      pricesUpdatedAt: lastChecked?.toISOString() ?? null,
+    };
+
+    productDetailCache.set(productId, { data: baseData, expiry: now + 120_000 });
+  }
 
   let userState = null;
   if (req.user) {
     const [wish, watch, alert] = await Promise.all([
-      prisma.wishlist.findUnique({ where: { userId_productId: { userId: req.user.id, productId: product.id } } }),
-      prisma.watchlist.findUnique({ where: { userId_productId: { userId: req.user.id, productId: product.id } } }),
-      prisma.alert.findFirst({ where: { userId: req.user.id, productId: product.id, isActive: true } }),
+      prisma.wishlist.findUnique({ where: { userId_productId: { userId: req.user.id, productId } } }),
+      prisma.watchlist.findUnique({ where: { userId_productId: { userId: req.user.id, productId } } }),
+      prisma.alert.findFirst({ where: { userId: req.user.id, productId, isActive: true } }),
     ]);
     userState = {
       wishlisted: Boolean(wish),
@@ -123,29 +164,8 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
     };
   }
 
-  const lastChecked = product.stores.reduce<Date | null>(
-    (latest, s) => (!latest || s.lastCheckedAt > latest ? s.lastCheckedAt : latest),
-    null,
-  );
-
   res.json({
-    ...card,
-    description: product.description,
-    techSpecs: product.techSpecs ?? {},
-    gtin: product.gtin,
-    images: [resolveProductImageUrl(product.imageUrl, product.brand, 'detail')],
-    savings: Math.max(0, card.mrp - card.bestPrice),
-    storePrices: storePriceRows(product),
-    stats: {
-      current: card.bestPrice,
-      lowest90: stats90?.lowest ?? card.bestPrice,
-      highest90: stats90?.highest ?? card.bestPrice,
-      average90: stats90?.average ?? card.bestPrice,
-      lowestEver: Math.round(Math.min(lowestEver._min.price ?? card.bestPrice, card.bestPrice)),
-    },
-    verdict: computeVerdict(series),
-    insights: buildInsights(series),
-    pricesUpdatedAt: lastChecked?.toISOString() ?? null,
+    ...baseData,
     userState,
   });
 };

@@ -31,7 +31,7 @@ export default function Search() {
   const [compareList, setCompareList] = useState<Product[]>([])
   const [filterOpen, setFilterOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const pageSize = 12
+  const pageSize = 20
 
   // Keep search input in sync with query parameter
   useEffect(() => {

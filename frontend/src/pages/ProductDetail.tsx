@@ -51,24 +51,31 @@ export default function ProductDetail() {
       try {
         setLoading(true)
         setError(null)
-        const [prodDetail, historyPoints, predPoints, alts] = await Promise.all([
-          api.getProduct(id!),
+
+        // 1. Load core product details first for instant UI render
+        const prodDetail = await api.getProduct(id!)
+        if (!isMounted) return
+
+        setDetail(prodDetail)
+        setLoading(false)
+
+        // 2. Load history, predictions, and alternatives in background (non-blocking)
+        Promise.all([
           api.getProductHistory(id!).catch(() => []),
           api.getProductPrediction(id!).catch(() => []),
           api.getProductAlternatives(id!).catch(() => []),
-        ])
-
-        if (isMounted) {
-          setDetail(prodDetail)
-          setHistory(historyPoints)
-          setPrediction(predPoints)
-          setAlternatives(alts)
-        }
+        ]).then(([historyPoints, predPoints, alts]) => {
+          if (!isMounted) return
+          if (historyPoints && historyPoints.length > 0) setHistory(historyPoints)
+          if (predPoints && predPoints.length > 0) setPrediction(predPoints)
+          if (alts && alts.length > 0) setAlternatives(alts)
+        })
       } catch (err: any) {
         console.error("Failed to load product details:", err)
-        if (isMounted) setError("Product could not be loaded or was not found.")
-      } finally {
-        if (isMounted) setLoading(false)
+        if (isMounted) {
+          setError("Product could not be loaded or was not found.")
+          setLoading(false)
+        }
       }
     }
 
