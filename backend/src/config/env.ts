@@ -62,5 +62,10 @@ export const env = {
     apiKey: str('GROQ_API_KEY'),
     model: str('GROQ_MODEL', 'llama-3.3-70b-versatile'),
   },
+
+  email: {
+    user: str('GMAIL_USER', 'pricewise.noreply@gmail.com'),
+    pass: str('GMAIL_APP_PASS', 'cgio qgff ifod pzke'),
+  },
 };
 
