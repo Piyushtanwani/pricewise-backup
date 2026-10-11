@@ -19,12 +19,18 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
   getRecommendations,
+  setPriceNotification,
+  testPriceAlertEmail,
 } from '../controllers/userController';
-import { authenticateToken } from '../middlewares/auth';
+import { authenticateToken, optionalAuth } from '../middlewares/auth';
 
 const router = Router();
 
-router.use(authenticateToken); // Protect all user routes
+// Public / Guest & Authenticated Price Alerts via Nodemailer Email
+router.post('/alerts/notify', optionalAuth, setPriceNotification);
+router.post('/alerts/test-email', optionalAuth, testPriceAlertEmail);
+
+router.use(authenticateToken); // Protect rest of user routes
 
 // Profile & settings
 router.get('/profile', getProfile);

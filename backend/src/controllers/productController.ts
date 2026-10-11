@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { Prisma } from '../generated/prisma';
 import prisma from '../utils/prisma';
-import { badRequest } from '../utils/http';
+import { badRequest, notFound } from '../utils/http';
 import { queryInt, queryList, queryNumber, queryString } from '../utils/validate';
 import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } from '../services/priceAnalytics';
 import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
+import { resolveDirectStoreUrl } from '../services/storeRedirectService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -198,16 +199,34 @@ export const getAlternatives = async (req: Request, res: Response): Promise<void
 };
 
 export const compareProducts = async (req: Request, res: Response): Promise<void> => {
-  const ids = [...new Set(queryList(req.query.ids))];
-  if (ids.length < 2 || ids.length > 4) throw badRequest('Provide between 2 and 4 product ids, e.g. ?ids=a,b,c');
+  let ids = [...new Set(queryList(req.query.ids))];
+  if (ids.length === 0) throw badRequest('Provide at least 1 product id, e.g. ?ids=a,b');
+
+  // If only 1 product ID is provided, automatically fetch 1 or 2 similar competitor phones in a similar price range
+  if (ids.length === 1) {
+    const mainProduct = await prisma.product.findUnique({ where: { id: ids[0] } });
+    if (mainProduct) {
+      const minP = Math.round((mainProduct.bestPrice || 25000) * 0.7);
+      const maxP = Math.round((mainProduct.bestPrice || 25000) * 1.35);
+      const competitors = await prisma.product.findMany({
+        where: {
+          id: { not: mainProduct.id },
+          brand: { not: mainProduct.brand },
+          bestPrice: { gte: minP, lte: maxP },
+        },
+        take: 2,
+        orderBy: { reviewCount: 'desc' },
+      });
+      ids = [mainProduct.id, ...competitors.map((c) => c.id)];
+    }
+  }
 
   const found = await prisma.product.findMany({ where: { id: { in: ids } }, include: productInclude });
-  if (found.length !== ids.length) {
-    const missing = ids.filter((id) => !found.some((p) => p.id === id));
-    throw badRequest('Some products were not found', { missing });
+  if (found.length === 0) {
+    throw badRequest('No matching products found for comparison');
   }
-  const ordered = ids.map((id) => found.find((p) => p.id === id)!);
-  const cards = await presentCards(ordered);
+  const ordered = ids.map((id) => found.find((p) => p.id === id)).filter((p): p is typeof found[0] => Boolean(p));
+  const cards = ordered.map((p) => toProductCard(p));
 
   const techSpecLabels: string[] = [];
   for (const p of ordered) {
@@ -224,3 +243,38 @@ export const compareProducts = async (req: Request, res: Response): Promise<void
     techSpecLabels,
   });
 };
+
+export const redirectToStore = async (req: Request, res: Response): Promise<void> => {
+  const productId = String(req.params.id);
+  const requestedStore = (req.query.store as string) || '';
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: productInclude,
+  });
+
+  if (!product) {
+    throw notFound('Product not found');
+  }
+
+  // Find the matching store listing or first store
+  const listing = product.stores.find(
+    (s) =>
+      !requestedStore ||
+      s.store.name.toLowerCase().includes(requestedStore.toLowerCase()) ||
+      s.store.slug.toLowerCase().includes(requestedStore.toLowerCase()),
+  ) || product.stores[0];
+
+  const storeName = listing?.store?.name || product.bestStore?.name || requestedStore || 'Amazon';
+  const rawUrl = listing?.productUrl || '';
+
+  const directUrl = await resolveDirectStoreUrl(rawUrl, storeName, product.name);
+
+  // If client wants JSON info instead of direct 302 redirect
+  if (req.query.format === 'json') {
+    res.json({ directUrl, storeName, productName: product.name });
+    return;
+  }
+
+  res.redirect(directUrl);
+};
+

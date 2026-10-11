@@ -9,6 +9,7 @@ import {
   optionalString,
   queryInt,
   queryString,
+  requireEmail,
   requirePositiveNumber,
   requireString,
 } from '../utils/validate';
@@ -17,6 +18,7 @@ import { publicUser } from './authController';
 import { PREF_KEYS, readPrefs } from '../services/notificationPrefs';
 import { evaluatePriceChange } from '../services/alertEngine';
 import { ProductCard, ProductWithStores, presentCards, productInclude } from '../services/productService';
+import { sendPriceAlertConfirmationEmail, sendPriceDropAlertEmail } from '../services/emailService';
 
 const round = (n: number) => Math.round(n);
 
@@ -471,3 +473,96 @@ export const getRecommendations = async (req: Request, res: Response): Promise<v
     items: ranked.map(({ p, card }) => ({ ...card, reason: reasonFor(p, card) })),
   });
 };
+
+// ---------------------------------------------------------------- Email Notifications (Nodemailer)
+
+export const setPriceNotification = async (req: Request, res: Response): Promise<void> => {
+  const email = requireEmail(req.body, 'email');
+  const targetPrice = requirePositiveNumber(req.body, 'targetPrice');
+  const product = await requireProduct(req.body?.productId);
+  let userName = optionalString(req.body, 'userName');
+
+  let userId = req.user?.id;
+  if (!userId) {
+    // If guest user, find or create user for this email
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: userName || 'Shopper',
+          password: 'GUEST_NO_PASSWORD',
+        },
+      });
+    }
+    userId = user.id;
+    if (!userName && user.name) {
+      userName = user.name;
+    }
+  } else if (!userName) {
+    const existing = await prisma.user.findUnique({ where: { id: userId } });
+    if (existing?.name) userName = existing.name;
+  }
+
+  userName = userName || 'Shopper';
+
+  // Create or update alert in database
+  const { alert } = await upsertAlert(userId, product.id, targetPrice, {
+    notifyEmail: true,
+    notifyInApp: true,
+    notifyPush: false,
+  });
+
+  // Track product
+  await prisma.watchlist.upsert({
+    where: { userId_productId: { userId, productId: product.id } },
+    update: {},
+    create: { userId, productId: product.id },
+  });
+
+  // Send confirmation email via Nodemailer
+  const bestStoreName = product.bestStore?.name || product.stores?.[0]?.store?.name || 'Amazon';
+  const emailResult = await sendPriceAlertConfirmationEmail({
+    email,
+    userName,
+    productName: product.name,
+    brand: product.brand,
+    currentPrice: product.bestPrice || targetPrice,
+    targetPrice,
+    bestStore: bestStoreName,
+    productUrl: `http://localhost:5173/product/${product.id}`,
+    imageUrl: product.imageUrl || undefined,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: `Price alert activated! Confirmation email sent to ${email}.`,
+    alertId: alert.id,
+    emailResult,
+  });
+};
+
+export const testPriceAlertEmail = async (req: Request, res: Response): Promise<void> => {
+  const email = requireEmail(req.body, 'email');
+  const product = await requireProduct(req.body?.productId);
+  const currentPrice = product.bestPrice || 25000;
+  const previousPrice = Math.round(currentPrice * 1.15);
+  const bestStoreName = product.bestStore?.name || product.stores?.[0]?.store?.name || 'Amazon';
+
+  const result = await sendPriceDropAlertEmail({
+    email,
+    userName: optionalString(req.body, 'userName') || 'Shopper',
+    productName: product.name,
+    brand: product.brand,
+    previousPrice,
+    currentPrice,
+    targetPrice: currentPrice,
+    dropAmount: previousPrice - currentPrice,
+    bestStore: bestStoreName,
+    productUrl: `http://localhost:5173/product/${product.id}`,
+    imageUrl: product.imageUrl || undefined,
+  });
+
+  res.json({ success: true, message: `Test price drop alert email sent to ${email}`, result });
+};
+

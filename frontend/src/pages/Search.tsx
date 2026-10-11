@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { useSearchParams, useNavigate } from "react-router"
-import { SlidersHorizontal, Star, X, GitCompare, Loader2, Search as SearchIcon, ArrowRight, RotateCcw } from "lucide-react"
+import { SlidersHorizontal, Star, X, GitCompare, Loader2, Search as SearchIcon, ArrowRight, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react"
 import ProductCard from "../components/ui/ProductCard"
 import { api } from "../services/api"
 import type { Product, CatalogMeta } from "../types/product"
@@ -30,6 +30,8 @@ export default function Search() {
   const [minRating, setMinRating] = useState<number | undefined>(undefined)
   const [compareList, setCompareList] = useState<Product[]>([])
   const [filterOpen, setFilterOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 12
 
   // Keep search input in sync with query parameter
   useEffect(() => {
@@ -130,6 +132,22 @@ export default function Search() {
 
     return list
   }, [allProducts, query, selectedBrands, selectedStores, priceAdjusted, priceRange, minRating, sort])
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [query, selectedBrands, selectedStores, priceAdjusted, priceRange, minRating, sort])
+
+  const totalPages = Math.max(1, Math.ceil(displayedProducts.length / pageSize))
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return displayedProducts.slice(start, start + pageSize)
+  }, [displayedProducts, currentPage, pageSize])
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -452,16 +470,76 @@ export default function Search() {
               </div>
             ) : (
               /* Product grid */
-              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                {displayedProducts.map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    onCompare={toggleCompare}
-                    selected={compareList.some((x) => x.id === p.id)}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                  {paginatedProducts.map((p) => (
+                    <ProductCard
+                      key={p.id}
+                      product={p}
+                      onCompare={toggleCompare}
+                      selected={compareList.some((x) => x.id === p.id)}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {!loading && displayedProducts.length > pageSize && (
+                  <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-slate-500 font-medium">
+                      Showing <span className="font-semibold text-slate-800">{(currentPage - 1) * pageSize + 1}</span>–
+                      <span className="font-semibold text-slate-800">{Math.min(currentPage * pageSize, displayedProducts.length)}</span> of{" "}
+                      <span className="font-semibold text-slate-800">{displayedProducts.length}</span> smartphones
+                    </p>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                        aria-label="Previous Page"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                        .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                          if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...")
+                          acc.push(p)
+                          return acc
+                        }, [])
+                        .map((item, idx) =>
+                          typeof item === "string" ? (
+                            <span key={`ellipsis-${idx}`} className="px-2 text-xs text-slate-400">
+                              ...
+                            </span>
+                          ) : (
+                            <button
+                              key={item}
+                              onClick={() => handlePageChange(item)}
+                              className={`w-9 h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                                currentPage === item
+                                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30 font-bold"
+                                  : "border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                              }`}
+                            >
+                              {item}
+                            </button>
+                          )
+                        )}
+
+                      <button
+                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                        aria-label="Next Page"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Empty State */}
