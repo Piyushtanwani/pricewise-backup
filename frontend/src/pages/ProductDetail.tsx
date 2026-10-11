@@ -196,7 +196,11 @@ export default function ProductDetail() {
       ]
 
   const getDirectBuyUrl = (storeRow?: StorePriceRow) => {
-    if (storeRow?.url && (storeRow.url.startsWith("http://") || storeRow.url.startsWith("https://"))) {
+    if (
+      storeRow?.url &&
+      !storeRow.url.includes("google.com/search?ibp=oshop") &&
+      (storeRow.url.startsWith("http://") || storeRow.url.startsWith("https://"))
+    ) {
       return storeRow.url
     }
     const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""

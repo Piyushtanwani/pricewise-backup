@@ -65,6 +65,56 @@ const ACCESSORY_KEYWORDS = [
   'guard',
 ];
 
+export const buildDirectRetailerUrl = (
+  storeName: string,
+  productName: string,
+  googleShoppingUrl?: string,
+): string => {
+  const query = encodeURIComponent(productName.trim());
+  const s = (storeName || '').toLowerCase();
+
+  if (s.includes('amazon')) {
+    return `https://www.amazon.in/s?k=${query}`;
+  }
+  if (s.includes('flipkart')) {
+    return `https://www.flipkart.com/search?q=${query}`;
+  }
+  if (s.includes('croma')) {
+    return `https://www.croma.com/searchB?q=${query}`;
+  }
+  if (s.includes('reliance')) {
+    return `https://www.reliancedigital.in/search?q=${query}`;
+  }
+  if (s.includes('cashify')) {
+    return `https://www.cashify.in/search?q=${query}`;
+  }
+  if (s.includes('vijay')) {
+    return `https://www.vijaysales.com/search/${query}`;
+  }
+  if (s.includes('zepto')) {
+    return `https://www.zeptonow.com/search?q=${query}`;
+  }
+  if (s.includes('motorola')) {
+    return `https://www.motorola.in/search?q=${query}`;
+  }
+  if (s.includes('apple')) {
+    return `https://www.apple.com/in/shop/buy-iphone`;
+  }
+  if (s.includes('samsung')) {
+    return `https://www.samsung.com/in/search/?searchvalue=${query}`;
+  }
+  if (s.includes('tatacliq') || s.includes('tata cliq')) {
+    return `https://www.tatacliq.com/search/?searchCategory=all&text=${query}`;
+  }
+  if (s.includes('poorvika')) {
+    return `https://www.poorvika.com/search?q=${query}`;
+  }
+
+  // If store name has a domain like budli.in, jcdonline.in, ovantica.com, etc.
+  const domain = storeName.includes('.') ? storeName.trim().replace(/^www\./i, '') : `${storeName.toLowerCase().replace(/\s+/g, '')}.com`;
+  return `https://www.google.com/search?q=site:${domain}+${query}&btnI=1`;
+};
+
 export const getLiveSerpStorePrices = async (
   productName: string,
   basePrice?: number | null,
@@ -185,7 +235,7 @@ export const getLiveSerpStorePrices = async (
       shipping: offer.shipping,
       availability: 'In Stock',
       diff: Math.round(offer.price - bestPrice),
-      url: offer.url,
+      url: buildDirectRetailerUrl(offer.storeName, productName, offer.url),
       lastCheckedAt: new Date().toISOString(),
     }));
 

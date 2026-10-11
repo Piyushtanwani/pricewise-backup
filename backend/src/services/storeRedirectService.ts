@@ -134,5 +134,32 @@ export const getFallbackStoreSearch = (storeName: string, productName: string): 
   if (s.includes('croma')) {
     return `https://www.croma.com/searchB?q=${query}`;
   }
+  if (s.includes('reliance')) {
+    return `https://www.reliancedigital.in/search?q=${query}`;
+  }
+  if (s.includes('cashify')) {
+    return `https://www.cashify.in/search?q=${query}`;
+  }
+  if (s.includes('vijay')) {
+    return `https://www.vijaysales.com/search/${query}`;
+  }
+  if (s.includes('zepto')) {
+    return `https://www.zeptonow.com/search?q=${query}`;
+  }
+  if (s.includes('motorola')) {
+    return `https://www.motorola.in/search?q=${query}`;
+  }
+  if (s.includes('apple')) {
+    return `https://www.apple.com/in/shop/buy-iphone`;
+  }
+  if (s.includes('samsung')) {
+    return `https://www.samsung.com/in/search/?searchvalue=${query}`;
+  }
+  if (s.includes('tatacliq') || s.includes('tata cliq')) {
+    return `https://www.tatacliq.com/search/?searchCategory=all&text=${query}`;
+  }
+  if (s.includes('poorvika')) {
+    return `https://www.poorvika.com/search?q=${query}`;
+  }
   return `https://www.amazon.in/s?k=${query}`;
 };

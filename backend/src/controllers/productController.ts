@@ -175,7 +175,22 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   const productId = String(req.params.id);
   const product = await findProductOr404(productId);
   const livePrices = await getLiveSerpStorePrices(product.name, product.bestPrice);
-  const stores = livePrices.length > 0 ? livePrices : storePriceRows(product);
+
+  const baseStores = livePrices.length > 0 ? livePrices : storePriceRows(product);
+  const stores = baseStores.map((s) => {
+    const hasDbListing = product.stores.some((dbS) =>
+      dbS.store.name.toLowerCase().includes(s.store.toLowerCase()) ||
+      s.store.toLowerCase().includes(dbS.store.name.toLowerCase()),
+    );
+    if (hasDbListing) {
+      return {
+        ...s,
+        url: `http://localhost:5000/api/products/${product.id}/buy?store=${encodeURIComponent(s.store)}`,
+      };
+    }
+    return s;
+  });
+
   res.json({
     stores,
     bestDealUrl: stores[0]?.url || null,
