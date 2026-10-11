@@ -7,6 +7,7 @@ import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } 
 import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
 import { resolveDirectStoreUrl } from '../services/storeRedirectService';
+import { getLiveSerpStorePrices } from '../services/serpShoppingService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -167,6 +168,17 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
   res.json({
     ...baseData,
     userState,
+  });
+};
+
+export const getProductLiveStores = async (req: Request, res: Response): Promise<void> => {
+  const productId = String(req.params.id);
+  const product = await findProductOr404(productId);
+  const livePrices = await getLiveSerpStorePrices(product.name, product.bestPrice);
+  const stores = livePrices.length > 0 ? livePrices : storePriceRows(product);
+  res.json({
+    stores,
+    bestDealUrl: stores[0]?.url || null,
   });
 };
 

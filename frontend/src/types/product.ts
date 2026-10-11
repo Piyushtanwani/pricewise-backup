@@ -29,17 +29,17 @@ export interface CatalogMeta {
 export interface StorePriceRow {
   storeId: string
   store: string
-  storeSlug: string
-  logoUrl: string | null
+  storeSlug?: string
+  logoUrl?: string | null
   price: number
-  mrp: number | null
-  shipping: string
-  shippingCost: number
-  availability: string
-  stockStatus: string
+  mrp?: number | null
+  shipping?: string
+  shippingCost?: number
+  availability?: string
+  stockStatus?: string
   diff: number
   url: string
-  lastCheckedAt: string
+  lastCheckedAt?: string
 }
 
 export interface PricePoint {

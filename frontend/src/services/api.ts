@@ -70,6 +70,13 @@ export const api = {
     return res.data;
   },
 
+  async getLiveStores(id: string): Promise<{ stores: StorePriceRow[]; bestDealUrl: string | null }> {
+    const res = await apiClient.get<{ stores: StorePriceRow[]; bestDealUrl: string | null }>(
+      `/products/${encodeURIComponent(id)}/live-stores`
+    );
+    return res.data;
+  },
+
   async getProductHistory(id: string, range?: string, store?: string): Promise<PricePoint[]> {
     const res = await apiClient.get<any>(`/products/${encodeURIComponent(id)}/history`, {
       params: { range, store },

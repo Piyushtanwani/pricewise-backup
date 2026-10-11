@@ -3,6 +3,7 @@ import {
   listProducts,
   getCatalogMeta,
   getProduct,
+  getProductLiveStores,
   getProductHistory,
   getProductPrediction,
   getAlternatives,
@@ -17,6 +18,7 @@ router.get('/', listProducts);
 router.get('/meta', getCatalogMeta);
 router.get('/compare', compareProducts);
 router.get('/:id/buy', redirectToStore);
+router.get('/:id/live-stores', getProductLiveStores);
 router.get('/:id', optionalAuth, getProduct);
 router.get('/:id/history', getProductHistory);
 router.get('/:id/prediction', getProductPrediction);
