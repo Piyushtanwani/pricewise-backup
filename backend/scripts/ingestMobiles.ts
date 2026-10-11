@@ -3,6 +3,7 @@ dotenv.config();
 
 import prisma from '../src/utils/prisma';
 import { smartprixClient } from '../src/services/smartprix/smartprixClient';
+import { applyEnrichmentToProduct } from '../src/services/productEnricherService';
 
 interface SmartprixRawProduct {
   id: string;
@@ -179,7 +180,7 @@ async function ingestMobilesForBrand(brandName: string, brandSlug: string, maxRe
           });
         }
 
-        // Record price history entry
+        // Record base price history entry
         await prisma.priceHistory.create({
           data: {
             productStoreId: listingRecord.id,
@@ -188,6 +189,18 @@ async function ingestMobilesForBrand(brandName: string, brandSlug: string, maxRe
             timestamp: new Date(),
           },
         });
+
+        // Enrich with multi-store comparison and decoded 180+ daily price history
+        if (item.url) {
+          try {
+            const enrichRes = await applyEnrichmentToProduct(productRecord.id, item.url);
+            if (enrichRes.storesCount > 0 || enrichRes.historyCount > 0) {
+              console.log(`    ↳ Enriched: ${enrichRes.storesCount} verified stores, ${enrichRes.historyCount} price history points`);
+            }
+          } catch (enrichErr: any) {
+            console.warn(`    ↳ Enrichment warning for ${item.name}:`, enrichErr.message);
+          }
+        }
 
         savedCount++;
         console.log(`  ✓ Saved: ${item.name} — ₹${price.toLocaleString('en-IN')}`);

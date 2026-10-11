@@ -155,4 +155,15 @@ export const api = {
       return [];
     }
   },
+
+  async setPriceAlert(data: { productId: string; targetPrice: number; email: string; userName?: string }): Promise<{ success: boolean; message: string; alertId?: string }> {
+    const res = await apiClient.post('/user/alerts/notify', data);
+    return res.data;
+  },
+
+  async testPriceAlert(data: { productId: string; email: string; userName?: string }): Promise<{ success: boolean; message: string }> {
+    const res = await apiClient.post('/user/alerts/test-email', data);
+    return res.data;
+  },
 };
+

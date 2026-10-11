@@ -1,22 +1,21 @@
 import { env } from '../config/env';
 import prisma from '../utils/prisma';
 import { readPrefs } from './notificationPrefs';
+import { sendPriceDropAlertEmail } from './emailService';
 
 const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
 
 /**
- * Creates in-app notifications after a product's best price changes:
- *  - TARGET_REACHED for active alerts whose target is now met (once, until the price rises again)
+ * Creates in-app notifications and sends Nodemailer Gmail emails after a product's best price changes:
+ *  - TARGET_REACHED for active alerts whose target is now met
  *  - PRICE_DROP for watchers and wishlisters when the drop exceeds PRICE_DROP_THRESHOLD_PERCENT
- * Email and push delivery are not implemented yet; the per-alert channel flags are stored for that.
- * Returns the number of notifications created.
  */
 export const evaluatePriceChange = async (
   productId: string,
   previousBest: number | null,
   newBest: number,
 ): Promise<number> => {
-  const product = await prisma.product.findUnique({ where: { id: productId }, select: { name: true } });
+  const product = await prisma.product.findUnique({ where: { id: productId }, select: { name: true, brand: true, imageUrl: true } });
   if (!product) return 0;
 
   let created = 0;
@@ -24,7 +23,7 @@ export const evaluatePriceChange = async (
 
   const alerts = await prisma.alert.findMany({
     where: { productId, isActive: true },
-    include: { user: { select: { notificationPrefs: true } } },
+    include: { user: { select: { email: true, name: true, notificationPrefs: true } } },
   });
 
   for (const alert of alerts) {
@@ -44,6 +43,18 @@ export const evaluatePriceChange = async (
           },
         });
         created++;
+      }
+      if (alert.notifyEmail && alert.user?.email) {
+        sendPriceDropAlertEmail({
+          email: alert.user.email,
+          userName: alert.user.name || undefined,
+          productName: product.name,
+          brand: product.brand,
+          previousPrice: previousBest,
+          currentPrice: newBest,
+          targetPrice: alert.targetPrice,
+          imageUrl: product.imageUrl || undefined,
+        }).catch((err) => console.error('[AlertEngine Email Error]:', err));
       }
       alreadyNotified.add(alert.userId);
     } else if (newBest > alert.targetPrice && alert.triggeredAt) {

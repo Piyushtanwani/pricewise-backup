@@ -13,6 +13,7 @@
     "sync": "tsx scripts/sync.ts",
     "verify:smartprix": "tsx scripts/verifySmartprix.ts",
     "ingest:mobiles": "tsx scripts/ingestMobiles.ts",
+    "enrich:mobiles": "tsx scripts/enrichExistingMobiles.ts",
     "db:up": "docker compose -f ../docker-compose.yml up -d postgres",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -28,7 +29,8 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^10.1.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -36,6 +38,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.2.0",
+    "@types/nodemailer": "^8.0.2",
     "prisma": "^6.19.3",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.12",
