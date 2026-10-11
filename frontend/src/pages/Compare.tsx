@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSearchParams, useNavigate } from "react-router"
-import { ExternalLink, Loader2, Search, X, Plus, Sparkles, CheckCircle2 } from "lucide-react"
+import { ExternalLink, Loader2, Search, X, Plus, Trash2, ArrowLeft } from "lucide-react"
 import Badge from "../components/ui/Badge"
 import { api } from "../services/api"
 import type { Product } from "../types/product"
@@ -27,7 +27,10 @@ export default function Compare() {
   const [modalOpen, setModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Fetch all products once for the add modal
+  // Keep track of what we loaded to prevent re-fetching when user removes a product
+  const lastLoadedIdsRef = useRef<string | null>(null)
+
+  // Fetch all products once for the search/add modal
   useEffect(() => {
     api.getProducts({ limit: 150 })
       .then((res) => setCatalog(res.items || []))
@@ -35,6 +38,12 @@ export default function Compare() {
   }, [])
 
   useEffect(() => {
+    // If the URL param matches what we already have or just modified, don't re-trigger
+    if (lastLoadedIdsRef.current === idsParam) {
+      return
+    }
+    lastLoadedIdsRef.current = idsParam
+
     let isMounted = true
     async function loadCompare() {
       try {
@@ -110,22 +119,35 @@ export default function Compare() {
     return mode === "low" ? vals.indexOf(Math.min(...vals)) : vals.indexOf(Math.max(...vals))
   }
 
+  // Remove individual smartphone from comparison
   const removeProduct = (id: string) => {
     const next = compareProducts.filter((p) => p.id !== id)
     setCompareProducts(next)
+    const newIds = next.map((p) => p.id).join(",")
+    lastLoadedIdsRef.current = newIds || null
     const newParams = new URLSearchParams()
-    if (next.length > 0) newParams.set("ids", next.map((p) => p.id).join(","))
-    setParams(newParams)
+    if (newIds) newParams.set("ids", newIds)
+    setParams(newParams, { replace: true })
   }
 
+  // Clear all smartphones from comparison
+  const clearAll = () => {
+    lastLoadedIdsRef.current = null
+    setCompareProducts([])
+    setParams(new URLSearchParams(), { replace: true })
+  }
+
+  // Add smartphone to comparison
   const addProductToCompare = (product: Product) => {
     if (compareProducts.some((p) => p.id === product.id)) return
     if (compareProducts.length >= 4) return
     const next = [...compareProducts, product]
     setCompareProducts(next)
+    const newIds = next.map((p) => p.id).join(",")
+    lastLoadedIdsRef.current = newIds
     const newParams = new URLSearchParams()
-    newParams.set("ids", next.map((p) => p.id).join(","))
-    setParams(newParams)
+    newParams.set("ids", newIds)
+    setParams(newParams, { replace: true })
     setModalOpen(false)
     setSearchQuery("")
   }
@@ -161,7 +183,7 @@ export default function Compare() {
       <div className="min-h-screen bg-[#f4f6fb] pt-24 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="animate-spin text-indigo-600 mx-auto mb-3" size={36} />
-          <p className="text-sm text-slate-500">Loading live specs and pricing from Supabase...</p>
+          <p className="text-sm text-slate-500">Loading specs and pricing for comparison...</p>
         </div>
       </div>
     )
@@ -173,21 +195,31 @@ export default function Compare() {
         <div className="bg-white rounded-2xl border border-slate-200 p-12 max-w-lg mx-auto shadow-sm">
           <div className="text-5xl mb-4">⚖️</div>
           <h2 className="text-xl font-bold text-slate-800 mb-2">No Products Selected</h2>
-          <p className="text-slate-500 text-sm mb-6">Choose any smartphones from the catalog to compare prices and specifications.</p>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors cursor-pointer shadow-md shadow-indigo-600/20"
-          >
-            Pick Smartphones to Compare
-          </button>
+          <p className="text-slate-500 text-sm mb-6">Choose any smartphones from the database to compare prices, ratings, and specifications.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="w-full sm:w-auto bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors cursor-pointer shadow-md shadow-indigo-600/20 flex items-center justify-center gap-1.5"
+            >
+              <Plus size={16} /> Add Smartphone to Compare
+            </button>
+            <button
+              onClick={() => navigate("/search")}
+              className="w-full sm:w-auto bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl font-medium hover:bg-slate-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <Search size={16} /> Browse Catalog
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
-  // Grid columns template: 1 label column + N product columns
+  // Column counts: 1 label column + products + (optional add placeholder if < 4)
+  const canAddMore = compareProducts.length < 4
+  const totalCols = compareProducts.length + (canAddMore ? 1 : 0)
   const gridStyle = {
-    gridTemplateColumns: `minmax(140px, 180px) repeat(${compareProducts.length}, minmax(200px, 1fr))`,
+    gridTemplateColumns: `minmax(140px, 180px) repeat(${totalCols}, minmax(210px, 1fr))`,
   }
 
   return (
@@ -197,11 +229,11 @@ export default function Compare() {
           <div>
             <h1 className="text-2xl font-bold text-slate-900 mb-1">Compare Smartphones</h1>
             <p className="text-sm text-slate-500">
-              Side-by-side spec comparison across {compareProducts.length} devices from live Supabase database
+              Comparing {compareProducts.length} devices side-by-side from live database
             </p>
           </div>
-          <div className="flex gap-2">
-            {compareProducts.length < 4 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {canAddMore && (
               <button
                 onClick={() => setModalOpen(true)}
                 className="text-sm bg-indigo-600 text-white hover:bg-indigo-700 font-medium flex items-center gap-1.5 rounded-xl px-4 py-2 cursor-pointer shadow-md shadow-indigo-600/20 transition-all"
@@ -209,6 +241,13 @@ export default function Compare() {
                 <Plus size={15} /> Add Smartphone
               </button>
             )}
+            <button
+              onClick={clearAll}
+              className="text-sm text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 font-medium flex items-center gap-1.5 rounded-xl px-3.5 py-2 cursor-pointer transition-all"
+              title="Clear all phones from comparison"
+            >
+              <Trash2 size={14} /> Clear All
+            </button>
             <button
               onClick={() => navigate("/search")}
               className="text-sm text-slate-700 hover:text-slate-900 font-medium flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-4 py-2 cursor-pointer shadow-2xs"
@@ -220,7 +259,7 @@ export default function Compare() {
 
         {/* Scrollable table container */}
         <div className="overflow-x-auto pb-4">
-          <div className="min-w-[700px]">
+          <div className="min-w-[720px]">
             {/* Product Header Row */}
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-4 shadow-sm">
               <div className="grid divide-x divide-slate-100" style={gridStyle}>
@@ -228,15 +267,19 @@ export default function Compare() {
                   <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Device</p>
                 </div>
                 {compareProducts.map((p, i) => (
-                  <div key={p.id} className="p-4 relative text-center group">
-                    {/* Remove button */}
-                    <button
-                      onClick={() => removeProduct(p.id)}
-                      title="Remove from comparison"
-                      className="absolute top-2 right-2 p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
-                    >
-                      <X size={15} />
-                    </button>
+                  <div key={p.id} className="p-4 text-center group bg-white">
+                    {/* Top action row: Device tag + Delete button */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Device {i + 1}</span>
+                      <button
+                        onClick={() => removeProduct(p.id)}
+                        title={`Delete ${p.name} from comparison`}
+                        className="text-xs text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-0.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer font-medium shadow-2xs"
+                      >
+                        <Trash2 size={12} />
+                        Delete
+                      </button>
+                    </div>
 
                     <div className="w-24 h-24 mx-auto mb-2 bg-slate-50 rounded-xl p-2 flex items-center justify-center">
                       <img
@@ -263,6 +306,20 @@ export default function Compare() {
                     </button>
                   </div>
                 ))}
+
+                {/* Add device slot if less than 4 */}
+                {canAddMore && (
+                  <div
+                    onClick={() => setModalOpen(true)}
+                    className="p-6 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 rounded-xl m-2 transition-all cursor-pointer group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-indigo-50 group-hover:bg-indigo-100 flex items-center justify-center text-indigo-600 mb-2 transition-colors">
+                      <Plus size={20} />
+                    </div>
+                    <p className="text-xs font-semibold text-slate-700 group-hover:text-indigo-600">Add Another Phone</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Click to choose from catalog</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -290,6 +347,7 @@ export default function Compare() {
                         </div>
                       )
                     })}
+                    {canAddMore && <div className="p-3 bg-slate-50/20" />}
                   </div>
                 )
               })}
@@ -321,6 +379,7 @@ export default function Compare() {
                         </p>
                       </div>
                     ))}
+                    {canAddMore && <div className="p-3 bg-slate-50/20" />}
                   </div>
                 )
               })}
