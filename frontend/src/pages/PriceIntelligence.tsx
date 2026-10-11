@@ -51,8 +51,11 @@ export default function PriceIntelligence() {
 
   const selectedProduct = data?.product || productList.find((p) => p.id === selectedId) || productList[0]
 
+  const currentStoreRow = storeFilter === "All Stores" ? null : selectedProduct?.storePrices?.find((s) => s.store.toLowerCase() === storeFilter.toLowerCase())
+  const activeCurrentPrice = currentStoreRow ? currentStoreRow.price : (selectedProduct ? selectedProduct.bestPrice : 0)
+
   const stats = [
-    { label: "Current Price", value: selectedProduct ? fmt(selectedProduct.bestPrice) : "—", color: "text-indigo-700" },
+    { label: storeFilter !== "All Stores" ? `${storeFilter} Current` : "Current Best", value: activeCurrentPrice ? fmt(activeCurrentPrice) : "—", color: "text-indigo-700" },
     { label: "Lowest Ever", value: data?.stats?.lowestEver ? fmt(data.stats.lowestEver) : selectedProduct ? fmt(selectedProduct.bestPrice) : "—", color: "text-emerald-700" },
     { label: "Average (90d)", value: data?.stats?.average90 ? fmt(data.stats.average90) : selectedProduct ? fmt(selectedProduct.bestPrice) : "—", color: "text-slate-700" },
     { label: "Highest (90d)", value: data?.stats?.highest90 ? fmt(data.stats.highest90) : selectedProduct ? fmt(selectedProduct.mrp) : "—", color: "text-red-600" },
@@ -140,6 +143,39 @@ export default function PriceIntelligence() {
               </div>
             </div>
           </div>
+
+          {/* Store selector with live prices */}
+          {selectedProduct && selectedProduct.storePrices && selectedProduct.storePrices.length > 0 && (
+            <div className="flex flex-wrap gap-2 items-center mb-5 p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide mr-1 pl-1">
+                Store History:
+              </span>
+              <button
+                onClick={() => setStoreFilter("All Stores")}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer border ${
+                  storeFilter === "All Stores"
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-2xs font-bold"
+                    : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300"
+                }`}
+              >
+                All Stores (Lowest: {fmt(selectedProduct.bestPrice)})
+              </button>
+              {selectedProduct.storePrices.map((sp) => (
+                <button
+                  key={sp.store}
+                  onClick={() => setStoreFilter(sp.store)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer border flex items-center gap-1.5 ${
+                    storeFilter === sp.store
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-2xs font-bold"
+                      : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300"
+                  }`}
+                >
+                  <span>{sp.store}:</span>
+                  <span className="font-mono">{fmt(sp.price)}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="mb-8">
             <ResponsiveContainer width="100%" height={280}>

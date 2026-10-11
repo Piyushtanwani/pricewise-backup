@@ -106,11 +106,30 @@ export default function ProductCard({ product, onCompare, selected }: {
             <span className="text-xl font-bold text-slate-900">{fmt(product.bestPrice)}</span>
             <span className="text-sm text-slate-400 line-through">{fmt(product.mrp)}</span>
           </div>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-xs text-slate-500">Best at</span>
-            <span className="text-xs font-semibold text-slate-700">{product.bestStore}</span>
-            <span className="text-xs text-slate-400">+{product.stores - 1} stores</span>
-          </div>
+          {product.storePrices && product.storePrices.length > 0 ? (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {product.storePrices.map((st) => (
+                <span
+                  key={st.store}
+                  className={`text-[11px] px-1.5 py-0.5 rounded font-medium border flex items-center gap-1 ${
+                    st.diff === 0
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200 font-semibold"
+                      : "bg-slate-50 text-slate-600 border-slate-200"
+                  }`}
+                >
+                  <span>{st.store}:</span>
+                  <span className="font-mono">{fmt(st.price)}</span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 mt-1.5">
+              <span className="text-[11px] px-1.5 py-0.5 rounded font-semibold border bg-emerald-50 text-emerald-800 border-emerald-200 flex items-center gap-1">
+                <span>{product.bestStore || "Amazon"}:</span>
+                <span className="font-mono">{fmt(product.bestPrice)}</span>
+              </span>
+            </div>
+          )}
         </div>
 
         <Badge variant={verdiantMap[product.verdictColor] || "neutral"} className="mb-3 text-xs">

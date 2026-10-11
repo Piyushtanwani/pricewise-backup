@@ -16,6 +16,7 @@ export interface Product {
   verdictColor: string
   category: string
   priceHistory: number[]
+  storePrices?: { store: string; price: number; diff: number; url?: string }[]
 }
 
 export interface CatalogMeta {

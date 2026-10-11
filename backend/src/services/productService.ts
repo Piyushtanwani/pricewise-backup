@@ -34,6 +34,7 @@ export interface ProductCard {
   aiVerdict: string;
   verdictColor: string;
   priceHistory: number[];
+  storePrices?: { store: string; price: number; diff: number; url?: string }[];
 }
 
 export interface StorePriceRow {
@@ -154,6 +155,12 @@ export const toProductCard = (product: ProductWithStores, rawSeries: DailyPoint[
     aiVerdict: verdict.label,
     verdictColor: verdict.color,
     priceHistory: sparkline(series),
+    storePrices: storePriceRows(product).map((s) => ({
+      store: s.store,
+      price: s.price,
+      diff: s.diff,
+      url: s.url,
+    })),
   };
 };
 

@@ -27,6 +27,7 @@ export default function ProductDetail() {
   const [error, setError] = useState<string | null>(null)
 
   const [timeRange, setTimeRange] = useState("3M")
+  const [selectedStore, setSelectedStore] = useState<string>("All Stores")
   const [wished, setWished] = useState(false)
   const [tracking, setTracking] = useState(false)
   const [tab, setTab] = useState<"history" | "prediction">("history")
@@ -76,6 +77,18 @@ export default function ProductDetail() {
   }, [id])
 
   useEffect(() => {
+    if (!id || loading) return
+    let isMounted = true
+    const storeParam = selectedStore === "All Stores" ? undefined : selectedStore
+    api.getProductHistory(id, timeRange, storeParam)
+      .then((pts) => {
+        if (isMounted) setHistory(pts)
+      })
+      .catch(console.error)
+    return () => { isMounted = false }
+  }, [id, timeRange, selectedStore, loading])
+
+  useEffect(() => {
     const prod = detail?.product || detail
     if (prod?.bestPrice && targetPrice === 0) {
       setTargetPrice(Math.round(prod.bestPrice * 0.95))
@@ -112,7 +125,20 @@ export default function ProductDetail() {
     )
   }
 
-  const stores: StorePriceRow[] = detail.storePrices || (Array.isArray(detail.stores) ? (detail.stores as unknown as StorePriceRow[]) : [])
+  const rawStores: StorePriceRow[] = detail.storePrices || (Array.isArray(detail.stores) ? (detail.stores as unknown as StorePriceRow[]) : [])
+  const stores: StorePriceRow[] = rawStores.length > 0 ? rawStores : (
+    product.bestStore ? [{
+      storeId: 'default',
+      store: product.bestStore,
+      price: product.bestPrice,
+      diff: 0,
+      url: product.affiliateUrl || '',
+      availability: 'In Stock',
+      shipping: 'Free',
+      rating: 4.5,
+      seller: product.bestStore
+    }] : []
+  )
   const stats = detail.stats
   const verdict = detail.verdict
   const insights = detail.insights || []
@@ -127,6 +153,14 @@ export default function ProductDetail() {
     : product.priceHistory?.length
     ? product.priceHistory.map((p, idx) => ({ date: `Pt ${idx + 1}`, price: p, avg: product.bestPrice }))
     : [{ date: "Current", price: product.bestPrice, avg: product.bestPrice }]
+
+  const currentStoreRow = selectedStore === "All Stores" ? null : stores.find((s) => s.store.toLowerCase() === selectedStore.toLowerCase())
+  const selectedCurrentPrice = currentStoreRow ? currentStoreRow.price : product.bestPrice
+
+  const historyPrices = chartHistoryData.map((d) => d.price).filter((p): p is number => typeof p === "number" && p > 0)
+  const calcLowest = historyPrices.length > 0 ? Math.min(...historyPrices, selectedCurrentPrice) : lowestPrice
+  const calcHighest = historyPrices.length > 0 ? Math.max(...historyPrices, selectedCurrentPrice) : highestPrice
+  const calcAvg = historyPrices.length > 0 ? Math.round(historyPrices.reduce((a, b) => a + b, 0) / historyPrices.length) : avgPrice
 
   const chartPredictionData = prediction.length > 0
     ? prediction
@@ -309,9 +343,61 @@ export default function ProductDetail() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-slate-500 mb-1">Best price at</p>
-                  <p className="text-sm font-bold text-slate-800">{product.bestStore}</p>
-                  <p className="text-xs text-slate-500">{stores.length} store{stores.length > 1 ? "s" : ""} verified</p>
+                  <p className="text-xs text-slate-500 mb-1">Lowest price at</p>
+                  <p className="text-sm font-bold text-slate-800">{product.bestStore || stores[0]?.store}</p>
+                  <span className="inline-block text-[11px] font-semibold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+                    {stores.length} Verified {stores.length === 1 ? "Store" : "Stores"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Live Current Store Prices Breakdown */}
+              <div className="mb-4 pt-3 border-t border-indigo-100/70">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 uppercase tracking-wide">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Live Store Prices:
+                  </span>
+                  <span className="text-[11px] text-slate-400">Current Selling Prices</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {stores.length > 0 ? (
+                    stores.map((s, idx) => (
+                      <a
+                        key={s.storeId || s.store || idx}
+                        href={getDirectBuyUrl(s)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all text-xs group ${
+                          idx === 0
+                            ? "bg-emerald-50/80 border-emerald-300 text-emerald-950 font-semibold shadow-2xs"
+                            : "bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-slate-900">{s.store}</span>
+                          {idx === 0 ? (
+                            <span className="bg-emerald-200 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-bold">
+                              Lowest
+                            </span>
+                          ) : s.diff > 0 ? (
+                            <span className="text-[10px] text-slate-500">
+                              +{fmt(s.diff)}
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-bold font-mono text-slate-900">{fmt(s.price)}</span>
+                          <ExternalLink size={12} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
+                        </div>
+                      </a>
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-white border border-slate-200 text-xs col-span-2">
+                      <span className="font-bold text-slate-900">{product.bestStore || "Amazon"} Store</span>
+                      <span className="text-sm font-bold font-mono text-slate-900">{fmt(product.bestPrice)} Current</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -507,7 +593,8 @@ export default function ProductDetail() {
                       setTimeRange(r)
                       if (id) {
                         try {
-                          const pts = await api.getProductHistory(id, r)
+                          const storeParam = selectedStore === "All Stores" ? undefined : selectedStore
+                          const pts = await api.getProductHistory(id, r, storeParam)
                           setHistory(pts)
                         } catch (e) {
                           console.error(e)
@@ -525,14 +612,46 @@ export default function ProductDetail() {
             )}
           </div>
 
+          {tab === "history" && stores.length > 1 && (
+            <div className="flex items-center flex-wrap gap-2 mb-4 p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide mr-1 pl-1">
+                Store History:
+              </span>
+              <button
+                onClick={() => setSelectedStore("All Stores")}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer border ${
+                  selectedStore === "All Stores"
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-2xs font-bold"
+                    : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300"
+                }`}
+              >
+                All Stores (Lowest: {fmt(product.bestPrice)})
+              </button>
+              {stores.map((s) => (
+                <button
+                  key={s.storeId || s.store}
+                  onClick={() => setSelectedStore(s.store)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer border flex items-center gap-1.5 ${
+                    selectedStore === s.store
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-2xs font-bold"
+                      : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300"
+                  }`}
+                >
+                  <span>{s.store}:</span>
+                  <span className="font-mono">{fmt(s.price)}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           {tab === "history" ? (
             <>
               <div className="grid grid-cols-4 gap-3 mb-4">
                 {[
-                  { label: "Lowest", value: fmt(lowestPrice), color: "text-emerald-700" },
-                  { label: "Highest", value: fmt(highestPrice), color: "text-red-600" },
-                  { label: "Average", value: fmt(avgPrice), color: "text-slate-700" },
-                  { label: "Current", value: fmt(product.bestPrice), color: "text-indigo-700" },
+                  { label: selectedStore !== "All Stores" ? `${selectedStore} Lowest` : "Lowest Recorded", value: fmt(calcLowest), color: "text-emerald-700" },
+                  { label: selectedStore !== "All Stores" ? `${selectedStore} Highest` : "Highest (90d)", value: fmt(calcHighest), color: "text-red-600" },
+                  { label: "Average", value: fmt(calcAvg), color: "text-slate-700" },
+                  { label: selectedStore !== "All Stores" ? `${selectedStore} Current` : "Current Best", value: fmt(selectedCurrentPrice), color: "text-indigo-700" },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="text-center p-2 rounded-xl bg-slate-50">
                     <p className="text-xs text-slate-500 mb-1">{label}</p>
