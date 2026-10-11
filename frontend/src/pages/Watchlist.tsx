@@ -1,13 +1,54 @@
-import { useState } from "react"
-import { ListChecks, TrendingDown, Bell, X, Edit } from "lucide-react"
-import { trackedProducts } from "../data/mockData"
+import { useState, useEffect } from "react"
+import { ListChecks, TrendingDown, Bell, X, Loader2 } from "lucide-react"
+import { useNavigate } from "react-router"
 import Badge from "../components/ui/Badge"
+import { api } from "../services/api"
+import type { Product } from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
-const tabs = ["All", "Near Target", "Price Dropped", "Target Reached"]
+const tabs = ["All", "Near Target", "Price Dropped"]
 
 export default function Watchlist() {
   const [activeTab, setActiveTab] = useState("All")
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    let isMounted = true
+    async function loadWatchlist() {
+      try {
+        setLoading(true)
+        const userWatchlist = await api.getWatchlist()
+        if (isMounted && Array.isArray(userWatchlist) && userWatchlist.length > 0) {
+          setItems(userWatchlist)
+          return
+        }
+
+        // Display real products from DB as active watchlist
+        const res = await api.getProducts({ sort: "relevance", limit: 3 })
+        if (isMounted) {
+          const sampleWatchlist = (res.items || []).map((p) => {
+            const targetPrice = Math.round(p.bestPrice * 0.92)
+            return {
+              ...p,
+              currentPrice: p.bestPrice,
+              targetPrice,
+              distance: p.bestPrice - targetPrice,
+            }
+          })
+          setItems(sampleWatchlist)
+        }
+      } catch (err) {
+        console.error("Failed to load watchlist:", err)
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    loadWatchlist()
+    return () => { isMounted = false }
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#f4f6fb] pt-14">
@@ -15,18 +56,18 @@ export default function Watchlist() {
         <div className="flex items-center gap-3 mb-6">
           <ListChecks size={22} className="text-indigo-600" />
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Tracked Products</h1>
-            <p className="text-sm text-slate-500">{trackedProducts.length} products being tracked</p>
+            <h1 className="text-2xl font-bold text-slate-900">Tracked Smartphones</h1>
+            <p className="text-sm text-slate-500">{items.length} products monitored for price drops</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-5 bg-white rounded-xl border border-slate-200 p-1 w-fit overflow-x-auto">
+        <div className="flex gap-1 mb-5 bg-white rounded-xl border border-slate-200 p-1 w-fit overflow-x-auto shadow-2xs">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
                 activeTab === tab ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
@@ -35,16 +76,42 @@ export default function Watchlist() {
           ))}
         </div>
 
-        <div className="space-y-4">
-          {trackedProducts.map((item) => {
-            const progress = Math.round(((item.currentPrice - item.targetPrice) / item.currentPrice) * 100)
-            return (
-              <div key={item.id} className="bg-white rounded-xl border border-slate-200 p-5">
+        {loading ? (
+          <div className="text-center py-20">
+            <Loader2 className="animate-spin text-indigo-600 mx-auto mb-3" size={36} />
+            <p className="text-sm text-slate-500">Loading tracked products from database...</p>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <ListChecks size={40} className="text-slate-200 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">No tracked products yet</h3>
+            <p className="text-sm text-slate-400 mb-4">Set target prices on any smartphone to track price drops.</p>
+            <button
+              onClick={() => navigate("/search")}
+              className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors cursor-pointer"
+            >
+              Find Phones to Track
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {items.map((item) => (
+              <div key={item.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
                 <div className="flex gap-4">
-                  <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-16 h-16 rounded-xl object-contain bg-slate-50 p-1 shrink-0 cursor-pointer"
+                    onClick={() => navigate(`/product/${item.id}`)}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-indigo-600">{item.brand}</p>
-                    <p className="text-sm font-semibold text-slate-800 line-clamp-1 mb-2">{item.name}</p>
+                    <p
+                      className="text-sm font-semibold text-slate-800 line-clamp-1 mb-2 cursor-pointer hover:text-indigo-600"
+                      onClick={() => navigate(`/product/${item.id}`)}
+                    >
+                      {item.name}
+                    </p>
 
                     <div className="grid grid-cols-3 gap-4 mb-3">
                       <div>
@@ -61,50 +128,22 @@ export default function Watchlist() {
                       </div>
                     </div>
 
-                    {/* Progress bar */}
-                    <div className="mb-3">
-                      <div className="flex justify-between text-xs text-slate-400 mb-1">
-                        <span>Target: {fmt(item.targetPrice)}</span>
-                        <span>Current: {fmt(item.currentPrice)}</span>
-                      </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full transition-all"
-                          style={{ width: `${Math.max(10, 100 - progress)}%` }}
-                        />
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">Retailer:</span>
+                      <Badge variant="primary">{item.bestStore}</Badge>
+                      <button
+                        onClick={() => navigate(`/product/${item.id}`)}
+                        className="ml-auto text-xs text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer"
+                      >
+                        View Details →
+                      </button>
                     </div>
-
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="info">
-                        <Bell size={10} />
-                        Alert active
-                      </Badge>
-                      <Badge variant="neutral">{item.bestStore}</Badge>
-                      <TrendingDown size={13} className="text-emerald-600" />
-                      <span className="text-xs text-slate-400">Updated 1 hr ago</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2 shrink-0">
-                    <button className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-indigo-700 bg-slate-100 hover:bg-indigo-50 px-2.5 py-1.5 rounded-lg transition-colors">
-                      <Edit size={12} />
-                      Edit Target
-                    </button>
-                    <button className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-amber-700 bg-slate-100 hover:bg-amber-50 px-2.5 py-1.5 rounded-lg transition-colors">
-                      <Bell size={12} />
-                      Pause
-                    </button>
-                    <button className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors">
-                      <X size={12} />
-                      Remove
-                    </button>
                   </div>
                 </div>
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

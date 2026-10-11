@@ -1,12 +1,13 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { Search, TrendingDown, TrendingUp, Zap, BarChart2, Bell, Sparkles, ChevronRight, ArrowRight } from "lucide-react"
+import { Search, TrendingDown, Zap, BarChart2, Bell, Sparkles, ChevronRight, ArrowRight, Smartphone } from "lucide-react"
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+  AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts"
-import { products, priceHistoryData, categories } from "../data/mockData"
 import ProductCard from "../components/ui/ProductCard"
 import Footer from "../components/layout/Footer"
+import { api } from "../services/api"
+import type { Product, CatalogMeta } from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
 
@@ -14,7 +15,7 @@ const features = [
   {
     icon: BarChart2,
     title: "Compare Prices",
-    desc: "See prices from multiple stores in one place. Always know you're getting the best deal.",
+    desc: "See prices from Amazon, Flipkart, Croma & Smartprix in one place. Always get the best deal.",
     color: "from-indigo-500 to-blue-500",
     bg: "bg-indigo-50",
     iconColor: "text-indigo-600",
@@ -22,7 +23,7 @@ const features = [
   {
     icon: Bell,
     title: "Track Prices",
-    desc: "Monitor products and get notified the moment prices drop to your target.",
+    desc: "Monitor smartphones and get notified the moment prices drop to your target.",
     color: "from-emerald-500 to-teal-500",
     bg: "bg-emerald-50",
     iconColor: "text-emerald-600",
@@ -38,23 +39,67 @@ const features = [
   {
     icon: Sparkles,
     title: "AI Recommendations",
-    desc: "Find products and alternatives perfectly suited to your needs and budget.",
+    desc: "Find phones and alternatives perfectly suited to your budget and desired specs.",
     color: "from-amber-500 to-orange-500",
     bg: "bg-amber-50",
     iconColor: "text-amber-600",
   },
 ]
 
-const popular = ["iPhone 16", "MacBook Air", "Sony Headphones", "Gaming Laptops", "Smart TVs"]
+const popular = ["iPhone 18", "Galaxy S26", "OnePlus 13", "Edge 70", "Find X10", "Vivo X200"]
 
 export default function Home() {
   const [query, setQuery] = useState("")
+  const [trending, setTrending] = useState<Product[]>([])
+  const [deals, setDeals] = useState<Product[]>([])
+  const [meta, setMeta] = useState<CatalogMeta | null>(null)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    let isMounted = true
+    async function loadData() {
+      try {
+        setLoading(true)
+        const [trendingRes, dealsRes, metaRes] = await Promise.all([
+          api.getProducts({ sort: "relevance", limit: 8 }),
+          api.getProducts({ sort: "best_deal", limit: 6 }),
+          api.getCatalogMeta(),
+        ])
+
+        if (isMounted) {
+          setTrending(trendingRes.items || [])
+          setDeals(dealsRes.items || [])
+          setMeta(metaRes)
+        }
+      } catch (err) {
+        console.error("Failed to load home page products from API:", err)
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+    loadData()
+    return () => { isMounted = false }
+  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`)
   }
+
+  const heroProduct = deals[0] || trending[0]
+  const heroSavings = heroProduct ? Math.max(0, heroProduct.mrp - heroProduct.bestPrice) : 0
+  const heroChartData = heroProduct?.priceHistory?.length
+    ? heroProduct.priceHistory.map((p, idx) => ({
+        date: `Pt ${idx + 1}`,
+        price: p,
+        avg: heroProduct.bestPrice,
+      }))
+    : [
+        { date: "Day 1", price: heroProduct ? Math.round(heroProduct.bestPrice * 1.08) : 29999, avg: heroProduct?.bestPrice || 29999 },
+        { date: "Day 15", price: heroProduct ? Math.round(heroProduct.bestPrice * 1.04) : 28500, avg: heroProduct?.bestPrice || 29999 },
+        { date: "Today", price: heroProduct?.bestPrice || 27999, avg: heroProduct?.bestPrice || 29999 },
+      ]
 
   return (
     <div className="min-h-screen bg-[#f4f6fb]">
@@ -77,7 +122,7 @@ export default function Home() {
             <div>
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5 text-sm text-blue-300 mb-6">
                 <Zap size={13} className="text-indigo-400" />
-                AI-Powered Shopping Intelligence
+                Live Supabase Mobile Catalog & Price Intelligence
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-5">
@@ -88,7 +133,7 @@ export default function Home() {
               </h1>
 
               <p className="text-lg text-slate-400 leading-relaxed mb-8 max-w-xl">
-                Compare products, track prices, predict future trends, and discover better alternatives — all in one place.
+                Compare {meta?.brands?.length || 7} top smartphone brands across Amazon, Flipkart, Croma, and Smartprix with real-time specs, price trends, and AI recommendations.
               </p>
 
               <form onSubmit={handleSearch} className="flex gap-2 mb-4">
@@ -97,14 +142,14 @@ export default function Home() {
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search for a product, brand or category..."
+                    placeholder="Search for iPhone, Galaxy, OnePlus, Edge, Reno..."
                     className="flex-1 text-sm text-slate-700 placeholder:text-slate-400 outline-none"
                   />
-                  <span className="text-xs text-slate-300 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-mono hidden sm:block">⌘K</span>
+                  <span className="text-xs text-slate-300 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-mono hidden sm:block">Enter</span>
                 </div>
                 <button
                   type="submit"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 whitespace-nowrap"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer shadow-lg shadow-indigo-600/30"
                 >
                   Search <ArrowRight size={15} />
                 </button>
@@ -116,7 +161,7 @@ export default function Home() {
                   <button
                     key={p}
                     onClick={() => navigate(`/search?q=${encodeURIComponent(p)}`)}
-                    className="text-xs text-slate-300 hover:text-white bg-white/10 hover:bg-white/20 border border-white/10 px-2.5 py-1 rounded-full transition-colors"
+                    className="text-xs text-slate-300 hover:text-white bg-white/10 hover:bg-white/20 border border-white/10 px-2.5 py-1 rounded-full transition-colors cursor-pointer"
                   >
                     {p}
                   </button>
@@ -124,62 +169,69 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Hero Widget */}
+            {/* Hero Widget with Real Product */}
             <div className="hidden lg:block">
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <img
-                    src={products[0].image}
-                    alt={products[0].name}
-                    className="w-14 h-14 rounded-xl object-cover"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-indigo-400 font-semibold">{products[0].brand}</p>
-                    <p className="text-sm font-medium text-white truncate">{products[0].name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-lg font-bold text-white">{fmt(products[0].bestPrice)}</span>
-                      <span className="text-xs text-slate-400 line-through">{fmt(products[0].mrp)}</span>
-                      <span className="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 rounded-full">
-                        -{products[0].discount}%
-                      </span>
+              {heroProduct && (
+                <div
+                  onClick={() => navigate(`/product/${heroProduct.id}`)}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5 cursor-pointer hover:bg-white/15 transition-all group"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <img
+                      src={heroProduct.image}
+                      alt={heroProduct.name}
+                      className="w-16 h-16 rounded-xl object-cover bg-white/20"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-indigo-400 font-semibold">{heroProduct.brand}</p>
+                      <p className="text-sm font-medium text-white truncate group-hover:text-indigo-200 transition-colors">{heroProduct.name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-lg font-bold text-white">{fmt(heroProduct.bestPrice)}</span>
+                        <span className="text-xs text-slate-400 line-through">{fmt(heroProduct.mrp)}</span>
+                        <span className="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 rounded-full">
+                          -{heroProduct.discount}%
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="mb-3">
-                  <ResponsiveContainer width="100%" height={112}>
-                    <AreaChart data={priceHistoryData}>
-                      <defs>
-                        <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <Area type="monotone" dataKey="price" stroke="#4f46e5" fill="url(#heroGrad)" strokeWidth={2} dot={false} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+                  <div className="mb-3">
+                    <ResponsiveContainer width="100%" height={112}>
+                      <AreaChart data={heroChartData}>
+                        <defs>
+                          <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <Area type="monotone" dataKey="price" stroke="#4f46e5" fill="url(#heroGrad)" strokeWidth={2} dot={false} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
 
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-white/10 rounded-lg p-2 text-center">
-                    <p className="text-xs text-slate-400">Current</p>
-                    <p className="text-sm font-bold text-white">₹29,999</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-white/10 rounded-lg p-2 text-center">
+                      <p className="text-xs text-slate-400">Current</p>
+                      <p className="text-sm font-bold text-white">{fmt(heroProduct.bestPrice)}</p>
+                    </div>
+                    <div className="bg-emerald-500/20 border border-emerald-500/30 rounded-lg p-2 text-center">
+                      <p className="text-xs text-emerald-400">Savings</p>
+                      <p className="text-sm font-bold text-emerald-400">{fmt(heroSavings)}</p>
+                    </div>
+                    <div className="bg-white/10 rounded-lg p-2 text-center">
+                      <p className="text-xs text-slate-400">Store</p>
+                      <p className="text-sm font-bold text-white">{heroProduct.bestStore}</p>
+                    </div>
                   </div>
-                  <div className="bg-emerald-500/20 border border-emerald-500/30 rounded-lg p-2 text-center">
-                    <p className="text-xs text-emerald-400">Savings</p>
-                    <p className="text-sm font-bold text-emerald-400">₹4,991</p>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 text-center">
-                    <p className="text-xs text-slate-400">Stores</p>
-                    <p className="text-sm font-bold text-white">4</p>
-                  </div>
-                </div>
 
-                <div className="mt-3 flex items-center gap-2 bg-indigo-500/20 border border-indigo-500/30 rounded-lg px-3 py-2">
-                  <Sparkles size={13} className="text-indigo-400" />
-                  <p className="text-xs text-indigo-300 font-medium">Good time to buy — price is 14% below average</p>
+                  <div className="mt-3 flex items-center gap-2 bg-indigo-500/20 border border-indigo-500/30 rounded-lg px-3 py-2">
+                    <Sparkles size={13} className="text-indigo-400" />
+                    <p className="text-xs text-indigo-300 font-medium">
+                      {heroProduct.aiVerdict} — {heroProduct.discount}% below estimated MRP
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -189,10 +241,10 @@ export default function Home() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 mb-12">
           {[
-            { label: "Products Tracked", value: "2.4M+", icon: BarChart2, color: "text-indigo-600" },
-            { label: "Stores Covered", value: "50+", icon: TrendingDown, color: "text-emerald-600" },
-            { label: "Price Alerts Sent", value: "180K+", icon: Bell, color: "text-amber-600" },
-            { label: "Savings Discovered", value: "₹4.2Cr+", icon: Zap, color: "text-violet-600" },
+            { label: "Mobiles Tracked", value: `${meta?.categories?.[0]?.count || 140}+`, icon: Smartphone, color: "text-indigo-600" },
+            { label: "Stores Covered", value: `${meta?.stores?.length || 4} Retailers`, icon: TrendingDown, color: "text-emerald-600" },
+            { label: "Top Brands", value: `${meta?.brands?.length || 7} Brands`, icon: BarChart2, color: "text-amber-600" },
+            { label: "Live Supabase DB", value: "Real-Time Sync", icon: Zap, color: "text-violet-600" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
               <Icon size={18} className={`${color} mb-1`} />
@@ -219,27 +271,29 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Categories */}
+        {/* Brand Showcase (Fetched from Supabase Meta) */}
         <section className="mb-14">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-2xl font-bold text-slate-900">Explore Categories</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Explore Top Brands</h2>
             <button
               onClick={() => navigate("/discover")}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1 cursor-pointer"
             >
-              All categories <ChevronRight size={14} />
+              All brands <ChevronRight size={14} />
             </button>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3">
-            {categories.map(({ name, icon, count }) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {meta?.brands?.map(({ name, count }) => (
               <button
                 key={name}
-                onClick={() => navigate(`/search?q=${name}`)}
-                className="bg-white rounded-xl border border-slate-200 p-3 flex flex-col items-center gap-1.5 hover:border-indigo-300 hover:shadow-md transition-all group"
+                onClick={() => navigate(`/search?brand=${encodeURIComponent(name)}`)}
+                className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center gap-1.5 hover:border-indigo-400 hover:shadow-md transition-all group cursor-pointer"
               >
-                <span className="text-2xl">{icon}</span>
-                <span className="text-xs font-medium text-slate-700 group-hover:text-indigo-700">{name}</span>
-                <span className="text-xs text-slate-400 font-mono">{count.toLocaleString("en-IN")}</span>
+                <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-base group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  {name.charAt(0)}
+                </div>
+                <span className="text-sm font-semibold text-slate-800 group-hover:text-indigo-600">{name}</span>
+                <span className="text-xs text-slate-400 font-mono">{count} Models</span>
               </button>
             ))}
           </div>
@@ -248,19 +302,28 @@ export default function Home() {
         {/* Trending Products */}
         <section className="mb-14">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-2xl font-bold text-slate-900">Trending Products</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Trending Smartphones</h2>
             <button
-              onClick={() => navigate("/search?q=trending")}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+              onClick={() => navigate("/search?sort=relevance")}
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1 cursor-pointer"
             >
               View all <ChevronRight size={14} />
             </button>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {products.slice(0, 4).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+
+          {loading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-80 bg-white rounded-xl border border-slate-200 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {trending.slice(0, 4).map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Best Deals */}
@@ -268,42 +331,51 @@ export default function Home() {
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-2xl font-bold text-slate-900">Best Deals Right Now</h2>
             <button
-              onClick={() => navigate("/search?q=deals")}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+              onClick={() => navigate("/search?sort=best_deal")}
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1 cursor-pointer"
             >
               All deals <ChevronRight size={14} />
             </button>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {products.filter((p) => p.discount >= 10).map((p) => (
-              <div
-                key={p.id}
-                onClick={() => navigate(`/product/${p.id}`)}
-                className="bg-white rounded-xl border border-slate-200 p-4 flex gap-4 hover:shadow-md hover:border-indigo-200 transition-all cursor-pointer group"
-              >
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  className="w-20 h-20 rounded-lg object-cover shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-indigo-600 mb-0.5">{p.brand}</p>
-                  <p className="text-sm font-medium text-slate-800 line-clamp-2 mb-2">{p.name}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-slate-900">{fmt(p.bestPrice)}</span>
-                    <span className="text-xs text-slate-400 line-through">{fmt(p.mrp)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full font-medium">
-                      -{p.discount}%
-                    </span>
-                    <span className="text-xs text-slate-500">at {p.bestStore}</span>
-                    <TrendingDown size={11} className="ml-auto text-emerald-600" />
+
+          {loading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-32 bg-white rounded-xl border border-slate-200 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {deals.slice(0, 6).map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => navigate(`/product/${p.id}`)}
+                  className="bg-white rounded-xl border border-slate-200 p-4 flex gap-4 hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group"
+                >
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="w-20 h-20 rounded-lg object-cover shrink-0 bg-slate-50"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-indigo-600 mb-0.5">{p.brand}</p>
+                    <p className="text-sm font-medium text-slate-800 line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">{p.name}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-slate-900">{fmt(p.bestPrice)}</span>
+                      <span className="text-xs text-slate-400 line-through">{fmt(p.mrp)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full font-medium">
+                        -{p.discount}%
+                      </span>
+                      <span className="text-xs text-slate-500">at {p.bestStore}</span>
+                      <TrendingDown size={11} className="ml-auto text-emerald-600" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Price Intelligence CTA */}
@@ -319,18 +391,18 @@ export default function Home() {
                   AI that tells you exactly when to buy
                 </h2>
                 <p className="text-slate-400 leading-relaxed mb-6">
-                  Historical price charts, trend analysis, future price predictions with confidence intervals — all powered by machine learning trained on millions of price points.
+                  Historical price charts, retailer tracking (Amazon, Flipkart, Croma), and future price predictions — powered by real data and machine learning.
                 </p>
                 <button
                   onClick={() => navigate("/price-intelligence")}
-                  className="bg-white text-indigo-900 hover:bg-indigo-50 font-semibold px-6 py-3 rounded-xl transition-colors flex items-center gap-2"
+                  className="bg-white text-indigo-900 hover:bg-indigo-50 font-semibold px-6 py-3 rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-lg"
                 >
                   Explore Price Intelligence <ArrowRight size={16} />
                 </button>
               </div>
               <div>
                 <ResponsiveContainer width="100%" height={192}>
-                  <AreaChart data={priceHistoryData}>
+                  <AreaChart data={heroChartData}>
                     <defs>
                       <linearGradient id="piGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.4} />

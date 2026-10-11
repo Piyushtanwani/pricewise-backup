@@ -104,6 +104,29 @@ export const bestPriceOf = (product: ProductWithStores): number | null => {
   return prices.length ? Math.min(...prices) : null;
 };
 
+export const resolveProductImageUrl = (url?: string | null, brand?: string, size: 'card' | 'detail' = 'card'): string => {
+  const dim = size === 'detail' ? 'w420-h420' : 'w280-h280';
+  if (url) {
+    const spMatch = url.match(/(?:images\.smartprix\.com\/|rx-i)([A-Za-z0-9_-]+)(?:\.webp|-w)/);
+    if (spMatch) {
+      return `https://cdn1.smartprix.com/rx-i${spMatch[1]}-${dim}/phone.webp`;
+    }
+    if (url.startsWith('http') && !url.includes('smartprix.com')) {
+      return url;
+    }
+  }
+
+  const b = (brand || '').toLowerCase();
+  if (b.includes('apple')) return 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80';
+  if (b.includes('samsung')) return 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80';
+  if (b.includes('oneplus')) return 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80';
+  if (b.includes('motorola')) return 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80';
+  if (b.includes('vivo')) return 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=600&auto=format&fit=crop&q=80';
+  if (b.includes('realme')) return 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=600&auto=format&fit=crop&q=80';
+  if (b.includes('oppo')) return 'https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?w=600&auto=format&fit=crop&q=80';
+  return 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80';
+};
+
 export const toProductCard = (product: ProductWithStores, rawSeries: DailyPoint[] = []): ProductCard => {
   const bestPrice = bestPriceOf(product) ?? 0;
   const series = withCurrentPrice(rawSeries, bestPrice || null);
@@ -117,7 +140,7 @@ export const toProductCard = (product: ProductWithStores, rawSeries: DailyPoint[
     id: product.id,
     brand: product.brand,
     name: product.name,
-    image: product.imageUrl ?? '',
+    image: resolveProductImageUrl(product.imageUrl, product.brand, 'card'),
     rating: product.rating,
     reviews: product.reviewCount,
     specs: product.specs,
