@@ -67,5 +67,7 @@ export const env = {
     user: str('GMAIL_USER', 'pricewise.noreply@gmail.com'),
     pass: str('GMAIL_APP_PASS', 'cgio qgff ifod pzke'),
   },
+
+  serpApiKey: str('SERPAPI_API_KEY', '72776c0479af1ab10619ac45f73c95f087bf0d7e4f331b0b7fea85872361364b'),
 };
 

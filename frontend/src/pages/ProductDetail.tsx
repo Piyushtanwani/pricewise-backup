@@ -25,6 +25,8 @@ export default function ProductDetail() {
   const [alternatives, setAlternatives] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [liveStores, setLiveStores] = useState<StorePriceRow[] | null>(null)
+  const [liveStoresLoading, setLiveStoresLoading] = useState(false)
 
   const [timeRange, setTimeRange] = useState("3M")
   const [selectedStore, setSelectedStore] = useState<string>("All Stores")
@@ -51,24 +53,44 @@ export default function ProductDetail() {
       try {
         setLoading(true)
         setError(null)
-        const [prodDetail, historyPoints, predPoints, alts] = await Promise.all([
-          api.getProduct(id!),
+
+        // 1. Load core product details first for instant UI render
+        const prodDetail = await api.getProduct(id!)
+        if (!isMounted) return
+
+        setDetail(prodDetail)
+        setLoading(false)
+
+        // 2. Fetch live SerpApi Google Shopping stores (fast background call)
+        setLiveStoresLoading(true)
+        api.getLiveStores(id!)
+          .then((res) => {
+            if (isMounted && res.stores && res.stores.length > 0) {
+              setLiveStores(res.stores)
+            }
+          })
+          .catch((err) => console.error("Error fetching live stores:", err))
+          .finally(() => {
+            if (isMounted) setLiveStoresLoading(false)
+          })
+
+        // 3. Load history, predictions, and alternatives in background (non-blocking)
+        Promise.all([
           api.getProductHistory(id!).catch(() => []),
           api.getProductPrediction(id!).catch(() => []),
           api.getProductAlternatives(id!).catch(() => []),
-        ])
-
-        if (isMounted) {
-          setDetail(prodDetail)
-          setHistory(historyPoints)
-          setPrediction(predPoints)
-          setAlternatives(alts)
-        }
+        ]).then(([historyPoints, predPoints, alts]) => {
+          if (!isMounted) return
+          if (historyPoints && historyPoints.length > 0) setHistory(historyPoints)
+          if (predPoints && predPoints.length > 0) setPrediction(predPoints)
+          if (alts && alts.length > 0) setAlternatives(alts)
+        })
       } catch (err: any) {
         console.error("Failed to load product details:", err)
-        if (isMounted) setError("Product could not be loaded or was not found.")
-      } finally {
-        if (isMounted) setLoading(false)
+        if (isMounted) {
+          setError("Product could not be loaded or was not found.")
+          setLoading(false)
+        }
       }
     }
 
@@ -125,18 +147,21 @@ export default function ProductDetail() {
     )
   }
 
-  const rawStores: StorePriceRow[] = detail.storePrices || (Array.isArray(detail.stores) ? (detail.stores as unknown as StorePriceRow[]) : [])
+  const rawStores: StorePriceRow[] = (liveStores && liveStores.length > 0)
+    ? liveStores
+    : (detail.storePrices || (Array.isArray(detail.stores) ? (detail.stores as unknown as StorePriceRow[]) : []))
   const stores: StorePriceRow[] = rawStores.length > 0 ? rawStores : (
     product.bestStore ? [{
       storeId: 'default',
       store: product.bestStore,
+      storeSlug: product.bestStore.toLowerCase(),
+      logoUrl: null,
       price: product.bestPrice,
+      mrp: product.mrp || null,
       diff: 0,
-      url: product.affiliateUrl || '',
+      url: (product as any).affiliateUrl || (product as any).url || '',
       availability: 'In Stock',
       shipping: 'Free',
-      rating: 4.5,
-      seller: product.bestStore
     }] : []
   )
   const stats = detail.stats
@@ -171,7 +196,7 @@ export default function ProductDetail() {
       ]
 
   const getDirectBuyUrl = (storeRow?: StorePriceRow) => {
-    if (storeRow?.url && (storeRow.url.includes("amazon.in") || storeRow.url.includes("flipkart.com"))) {
+    if (storeRow?.url && (storeRow.url.startsWith("http://") || storeRow.url.startsWith("https://"))) {
       return storeRow.url
     }
     const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
@@ -475,7 +500,20 @@ export default function ProductDetail() {
 
         {/* Store Price Comparison Table */}
         <div id="stores" className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Verified Retailers & Live Prices</h2>
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h2 className="text-lg font-bold text-slate-900">Verified Retailers & Live Prices</h2>
+            {liveStoresLoading ? (
+              <div className="flex items-center gap-1.5 text-xs text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full font-medium">
+                <Loader2 size={12} className="animate-spin" />
+                <span>Checking live store prices...</span>
+              </div>
+            ) : liveStores && liveStores.length > 0 ? (
+              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Google Shopping Rates
+              </span>
+            ) : null}
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
