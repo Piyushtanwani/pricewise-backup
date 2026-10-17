@@ -5,8 +5,12 @@ const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
 
 // Create Gmail transporter with credentials
 const getGmailTransporter = () => {
-  const user = (env.email?.user || process.env.GMAIL_USER || 'pricewise.noreply@gmail.com').trim();
-  const rawPass = (env.email?.pass || process.env.GMAIL_APP_PASS || 'cgio qgff ifod pzke').trim();
+  const user = (env.email?.user || process.env.GMAIL_USER || '').trim();
+  const rawPass = (env.email?.pass || process.env.GMAIL_APP_PASS || '').trim();
+
+  if (!user || !rawPass) {
+    return null;
+  }
 
   // Strip all spaces and quotes from app password to ensure clean authentication
   const pass = rawPass.replace(/[\s"']/g, '');
@@ -66,7 +70,12 @@ export const sendPriceAlertConfirmationEmail = async (params: AlertConfirmationP
   } = params;
 
   const transporter = getGmailTransporter();
-  const fromEmail = `PriceWise Alerts <pricewise.noreply@gmail.com>`;
+  if (!transporter) {
+    console.warn('[Email Service] Gmail SMTP credentials not configured. Skipping confirmation email.');
+    return { success: false, error: 'Email service credentials not configured' };
+  }
+  const fromUser = (env.email?.user || process.env.GMAIL_USER || 'noreply@pricewise.io').trim();
+  const fromEmail = `PriceWise Alerts <${fromUser}>`;
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -205,7 +214,12 @@ export const sendPriceDropAlertEmail = async (params: PriceDropNotificationParam
   } = params;
 
   const transporter = getGmailTransporter();
-  const fromEmail = `PriceWise Alerts <pricewise.noreply@gmail.com>`;
+  if (!transporter) {
+    console.warn('[Email Service] Gmail SMTP credentials not configured. Skipping price drop alert email.');
+    return { success: false, error: 'Email service credentials not configured' };
+  }
+  const fromUser = (env.email?.user || process.env.GMAIL_USER || 'noreply@pricewise.io').trim();
+  const fromEmail = `PriceWise Alerts <${fromUser}>`;
   const savings = previousPrice && previousPrice > currentPrice ? previousPrice - currentPrice : 0;
 
   const htmlContent = `

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router"
 import {
-  Star, Heart, Bell, GitCompare, ExternalLink, TrendingDown, Sparkles,
+  Star, Heart, Bell, GitCompare, ExternalLink, Sparkles,
   CheckCircle, ChevronRight, Info, Loader2, X, Mail, Send, CheckCircle2, AlertCircle
 } from "lucide-react"
 import {
@@ -11,6 +11,7 @@ import {
 import Badge from "../components/ui/Badge"
 import ProductCard from "../components/ui/ProductCard"
 import { api } from "../services/api"
+import { useAuth } from "../context/AuthContext"
 import type { Product, ProductDetailResponse, StorePriceRow, PricePoint, PredictionPoint } from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
@@ -18,6 +19,11 @@ const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const {
+    isAuthenticated,
+    isWishlisted: authIsWishlisted,
+    toggleWishlist,
+  } = useAuth()
 
   const [detail, setDetail] = useState<ProductDetailResponse | null>(null)
   const [history, setHistory] = useState<PricePoint[]>([])
@@ -59,6 +65,10 @@ export default function ProductDetail() {
         if (!isMounted) return
 
         setDetail(prodDetail)
+        if (prodDetail.userState) {
+          setWished(Boolean(prodDetail.userState.wishlisted))
+          setTracking(Boolean(prodDetail.userState.tracking))
+        }
         setLoading(false)
 
         // 2. Fetch live SerpApi Google Shopping stores (fast background call)
@@ -147,11 +157,35 @@ export default function ProductDetail() {
     )
   }
 
-  const rawStores: StorePriceRow[] = (liveStores && liveStores.length > 0)
-    ? liveStores
-    : (detail.storePrices || (Array.isArray(detail.stores) ? (detail.stores as unknown as StorePriceRow[]) : []))
-  const stores: StorePriceRow[] = rawStores.length > 0 ? rawStores : (
-    product.bestStore ? [{
+  // Merge verified database stores and auxiliary live stores with database priority
+  const dbStores: StorePriceRow[] = detail.storePrices || (Array.isArray(detail.stores) ? (detail.stores as unknown as StorePriceRow[]) : [])
+  const storeMap = new Map<string, StorePriceRow>()
+
+  // 1. Verified database listings are ground truth
+  for (const s of dbStores) {
+    storeMap.set(s.store.toLowerCase(), s)
+  }
+
+  // 2. Only add live stores that do not conflict with verified database stores
+  if (liveStores && liveStores.length > 0) {
+    for (const s of liveStores) {
+      const key = s.store.toLowerCase()
+      if (!storeMap.has(key)) {
+        storeMap.set(key, s)
+      }
+    }
+  }
+
+  let stores: StorePriceRow[] = Array.from(storeMap.values())
+  if (stores.length > 0) {
+    stores.sort((a, b) => a.price - b.price)
+    const lowest = stores[0].price
+    stores = stores.map((s) => ({
+      ...s,
+      diff: Math.max(0, s.price - lowest),
+    }))
+  } else if (product.bestStore) {
+    stores = [{
       storeId: 'default',
       store: product.bestStore,
       storeSlug: product.bestStore.toLowerCase(),
@@ -162,12 +196,18 @@ export default function ProductDetail() {
       url: (product as any).affiliateUrl || (product as any).url || '',
       availability: 'In Stock',
       shipping: 'Free',
-    }] : []
-  )
+    }]
+  }
+
+  const currentBestPrice = stores.length > 0 ? stores[0].price : (product.bestPrice || 0)
+  const currentBestStore = stores.length > 0 ? stores[0].store : (product.bestStore || "Amazon")
+  const currentMrp = product.mrp && product.mrp > currentBestPrice ? product.mrp : Math.round(currentBestPrice * 1.15)
+  const savings = Math.max(0, currentMrp - currentBestPrice)
+  const discountPct = Math.round(((currentMrp - currentBestPrice) / currentMrp) * 100)
+
   const stats = detail.stats
   const verdict = detail.verdict
   const insights = detail.insights || []
-  const savings = Math.max(0, (product.mrp || 0) - (product.bestPrice || 0))
 
   const avgPrice = stats?.average90 || product.bestPrice
   const lowestPrice = stats?.lowestEver || stats?.lowest90 || product.bestPrice
@@ -195,9 +235,33 @@ export default function ProductDetail() {
         { date: "30 Days", price: null, predicted: Math.round(product.bestPrice * 0.96), upper: Math.round(product.bestPrice * 1.03), lower: Math.round(product.bestPrice * 0.92) },
       ]
 
+  const isDirectProductUrl = (url?: string | null) => {
+    if (!url) return false
+    return (
+      (url.includes("flipkart.com") && (url.includes("/p/") || url.includes("pid="))) ||
+      (url.includes("amazon.in") && (url.includes("/dp/") || url.includes("/gp/product/"))) ||
+      (url.includes("croma.com") && url.includes("/p/")) ||
+      (url.includes("reliancedigital.in") && url.includes("/p/")) ||
+      (url.includes("vijaysales.com") && !url.includes("/search"))
+    )
+  }
+
   const getDirectBuyUrl = (storeRow?: StorePriceRow) => {
-    if (storeRow?.url && (storeRow.url.startsWith("http://") || storeRow.url.startsWith("https://"))) {
-      return storeRow.url
+    if (storeRow?.url) {
+      let finalUrl = storeRow.url
+      // Auto-correct path-based Vijay Sales search URLs to prevent 404
+      if (finalUrl.includes("vijaysales.com/search/") && !finalUrl.includes("?q=")) {
+        const rawQ = finalUrl.replace(/^https?:\/\/(?:www\.)?vijaysales\.com\/search\//i, "")
+        finalUrl = `https://www.vijaysales.com/search?q=${rawQ}`
+      }
+      if (isDirectProductUrl(finalUrl)) {
+        return finalUrl
+      }
+      if (finalUrl.includes("smartprix.com") || finalUrl.includes("linkredirect.in")) {
+        const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
+        return `http://localhost:5000/api/products/${product.id}/buy${storeParam}`
+      }
+      return finalUrl
     }
     const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
     return `http://localhost:5000/api/products/${product.id}/buy${storeParam}`
@@ -359,17 +423,17 @@ export default function ProductDetail() {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-baseline gap-3 mb-1">
-                    <span className="text-4xl font-bold text-slate-900">{fmt(product.bestPrice)}</span>
-                    <span className="text-lg text-slate-400 line-through">{fmt(product.mrp)}</span>
+                    <span className="text-4xl font-bold text-slate-900">{fmt(currentBestPrice)}</span>
+                    <span className="text-lg text-slate-400 line-through">{fmt(currentMrp)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="success">Save {fmt(savings)}</Badge>
-                    <Badge variant="success">{product.discount}% OFF</Badge>
+                    <Badge variant="success">{discountPct}% OFF</Badge>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-slate-500 mb-1">Lowest price at</p>
-                  <p className="text-sm font-bold text-slate-800">{product.bestStore || stores[0]?.store}</p>
+                  <p className="text-sm font-bold text-slate-800">{currentBestStore}</p>
                   <span className="inline-block text-[11px] font-semibold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
                     {stores.length} Verified {stores.length === 1 ? "Store" : "Stores"}
                   </span>
@@ -399,7 +463,7 @@ export default function ProductDetail() {
                             : "bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-slate-50"
                         }`}
                       >
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-bold text-slate-900">{s.store}</span>
                           {idx === 0 ? (
                             <span className="bg-emerald-200 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-bold">
@@ -410,6 +474,15 @@ export default function ProductDetail() {
                               +{fmt(s.diff)}
                             </span>
                           ) : null}
+                          {isDirectProductUrl(s.url) ? (
+                            <span className="bg-sky-100 text-sky-800 text-[9px] px-1 py-0.2 rounded font-semibold" title="Direct verified store product page">
+                              Direct Page
+                            </span>
+                          ) : (
+                            <span className="bg-slate-100 text-slate-600 text-[9px] px-1 py-0.2 rounded" title="Store keyword search">
+                              Search
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm font-bold font-mono text-slate-900">{fmt(s.price)}</span>
@@ -432,7 +505,7 @@ export default function ProductDetail() {
                 rel="noopener noreferrer"
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2 shadow-md shadow-indigo-600/20"
               >
-                View Best Deal at {stores[0]?.store || product.bestStore || "Amazon"} <ExternalLink size={15} />
+                View Best Deal at {stores[0]?.store || product.bestStore || "Amazon"} {isDirectProductUrl(stores[0]?.url) ? "(Direct Listing)" : ""} <ExternalLink size={15} />
               </a>
 
               <div className="grid grid-cols-3 gap-2">
@@ -452,14 +525,25 @@ export default function ProductDetail() {
                   {tracking ? "Tracking Active" : "Track Price"}
                 </button>
                 <button
-                  onClick={() => setWished(!wished)}
+                  onClick={async () => {
+                    if (!isAuthenticated) {
+                      navigate("/login", { state: { from: `/product/${id}` } })
+                      return
+                    }
+                    try {
+                      const next = await toggleWishlist(id!)
+                      setWished(next)
+                    } catch (err: any) {
+                      console.error("Wishlist error:", err?.response?.data?.message || err.message)
+                    }
+                  }}
                   className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${
-                    wished
+                    (id && authIsWishlisted(id)) || wished
                       ? "bg-red-50 text-red-600 border-red-200"
                       : "bg-white text-slate-700 border-slate-200 hover:border-red-300"
                   }`}
                 >
-                  <Heart size={13} className={wished ? "fill-red-500" : ""} />
+                  <Heart size={13} className={(id && authIsWishlisted(id)) || wished ? "fill-red-500" : ""} />
                   Wishlist
                 </button>
                 <button
@@ -618,7 +702,7 @@ export default function ProductDetail() {
                   tab === "prediction" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                Price Prediction
+                Trend Forecast
               </button>
             </div>
 
@@ -723,7 +807,7 @@ export default function ProductDetail() {
             <>
               <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
                 <Info size={14} className="text-amber-600 shrink-0" />
-                <p className="text-xs text-amber-700">Price predictions are calculated using time-series modeling on historical price points.</p>
+                <p className="text-xs text-amber-700">Trend forecasts are calculated via deterministic linear regression over verified historical price observations. Not a guaranteed future price.</p>
               </div>
               <div>
                 <ResponsiveContainer width="100%" height={256}>

@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { Prisma } from '../generated/prisma';
+import { Prisma, StockStatus } from '../generated/prisma';
 import prisma from '../utils/prisma';
 import { badRequest, notFound } from '../utils/http';
 import { queryInt, queryList, queryNumber, queryString } from '../utils/validate';
 import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } from '../services/priceAnalytics';
-import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard } from '../services/productService';
+import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard, StorePriceRow } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
 import { resolveDirectStoreUrl } from '../services/storeRedirectService';
 import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
@@ -174,37 +174,57 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
 export const getProductLiveStores = async (req: Request, res: Response): Promise<void> => {
   const productId = String(req.params.id);
   const product = await findProductOr404(productId);
+
+  // 1. Primary ground truth: verified database listings
+  const dbStores = storePriceRows(product).filter((s) => {
+    const match = matchAllowedStore(s.store, product.brand, product.name);
+    return match !== null;
+  });
+
+  // 2. Auxiliary live prices from SerpApi (with strict title and price tolerance checks)
   const livePrices = await getLiveSerpStorePrices(product.name, product.brand, product.bestPrice);
 
-  let stores = livePrices;
+  // 3. Merge: Database verified store listings always take precedence for known stores
+  const storeMap = new Map<string, StorePriceRow>();
 
-  // If SerpApi did not return allowed stores, only show allowed stores from DB listings
-  if (stores.length === 0) {
-    stores = storePriceRows(product).filter((s) => {
-      const match = matchAllowedStore(s.store, product.brand, product.name);
-      return match !== null;
-    });
+  for (const s of dbStores) {
+    storeMap.set(s.store.toLowerCase(), s);
   }
 
-  // If DB listing already has a direct retailer URL for Amazon or Flipkart, use that exact link
-  stores = stores.map((s) => {
-    const dbListing = product.stores.find(
-      (dbS) =>
-        dbS.store.name.toLowerCase().includes(s.store.toLowerCase()) ||
-        s.store.toLowerCase().includes(dbS.store.name.toLowerCase()),
-    );
-    if (
-      dbListing &&
-      dbListing.productUrl &&
-      (dbListing.productUrl.includes('amazon.in') || dbListing.productUrl.includes('flipkart.com'))
-    ) {
-      return {
-        ...s,
-        url: dbListing.productUrl,
+  // Augment with non-duplicate live store offers that passed verification
+  for (const s of livePrices) {
+    const key = s.store.toLowerCase();
+    if (!storeMap.has(key)) {
+      const row: StorePriceRow = {
+        storeId: s.storeId,
+        store: s.store,
+        storeSlug: s.storeSlug,
+        logoUrl: s.logoUrl ?? null,
+        price: s.price,
+        mrp: s.mrp ?? null,
+        shipping: s.shipping || 'Free',
+        shippingCost: 0,
+        availability: s.availability || 'In Stock',
+        stockStatus: StockStatus.IN_STOCK,
+        diff: s.diff,
+        url: s.url,
+        lastCheckedAt: s.lastCheckedAt ?? new Date().toISOString(),
       };
+      storeMap.set(key, row);
     }
-    return s;
-  });
+  }
+
+  let stores = Array.from(storeMap.values());
+  stores.sort((a, b) => a.price - b.price);
+
+  // Recompute relative diffs from the best available price
+  if (stores.length > 0) {
+    const lowest = stores[0].price;
+    stores = stores.map((s) => ({
+      ...s,
+      diff: Math.max(0, s.price - lowest),
+    }));
+  }
 
   res.json({
     stores,

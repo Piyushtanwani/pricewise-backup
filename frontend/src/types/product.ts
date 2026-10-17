@@ -97,6 +97,11 @@ export interface ProductDetailResponse {
     confidence?: string
   }
   insights?: { type?: string; label?: string; value?: string; text?: string }[]
+  userState?: {
+    wishlisted: boolean
+    tracking: boolean
+    alert: { id: string; targetPrice: number } | null
+  } | null
 }
 
 export interface PriceIntelligenceResponse {

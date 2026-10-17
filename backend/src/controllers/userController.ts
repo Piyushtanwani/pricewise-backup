@@ -84,6 +84,12 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
   res.status(204).end();
 };
 
+export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
+  const userId = currentUserId(req);
+  await prisma.user.delete({ where: { id: userId } });
+  res.status(204).end();
+};
+
 export const getNotificationSettings = async (req: Request, res: Response): Promise<void> => {
   const user = await prisma.user.findUnique({ where: { id: currentUserId(req) }, select: { notificationPrefs: true } });
   res.json(readPrefs(user?.notificationPrefs));
@@ -484,20 +490,27 @@ export const setPriceNotification = async (req: Request, res: Response): Promise
 
   let userId = req.user?.id;
   if (!userId) {
-    // If guest user, find or create user for this email
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      user = await prisma.user.create({
+    // If guest user, find or create guest user for this email
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      // If this email belongs to a real registered user account, require authentication
+      if (existing.password !== 'GUEST_NO_PASSWORD' && !existing.password.startsWith('GUEST_')) {
+        throw new HttpError(
+          409,
+          'This email is registered to a PriceWise account. Please sign in to create or manage alerts for your account.',
+        );
+      }
+      userId = existing.id;
+      if (!userName && existing.name) userName = existing.name;
+    } else {
+      const guestUser = await prisma.user.create({
         data: {
           email,
           name: userName || 'Shopper',
           password: 'GUEST_NO_PASSWORD',
         },
       });
-    }
-    userId = user.id;
-    if (!userName && user.name) {
-      userName = user.name;
+      userId = guestUser.id;
     }
   } else if (!userName) {
     const existing = await prisma.user.findUnique({ where: { id: userId } });

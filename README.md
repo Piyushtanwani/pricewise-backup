@@ -111,13 +111,101 @@ The system reduces the need to visit multiple shopping websites by bringing prod
 - **Data Collection & External API Integration:** Vivek Dhanwani, Aman Rohera
 - **Testing, Documentation & Deployment:** Diya Jain, Harshil Dodwani, Priya Shah
 
-## Timeline with Milestones
-- **Week 1:** Project Proposal - Finalize project scope, team roles, and submit the proposal.
-- **Week 2:** Planning & Requirements - Prepare project plan, gather requirements, create user stories and initial wireframes.
-- **Week 3:** System Design - Design database, system architecture, APIs, and UI mockups.
-- **Week 4–7:** Core Development - Develop frontend, backend APIs, authentication, and product management modules.
-- **Week 8–10:** Feature Integration - Implement product comparison, price tracking, historical graphs, and AI recommendation features.
-- **Week 11:** Mid-Sem Demo - Demonstrate a working prototype with core functionalities.
-- **Week 12–14:** Testing & Refinement - Perform testing, fix bugs, optimize performance, and complete documentation.
-- **Week 15:** Deployment - Deploy the application and integrate all modules.
-- **Week 16:** Final Submission - Submit the final project report and present the completed application.
+---
+
+## Architecture & Current Implementation
+
+PriceWise is built with a decoupled architecture focusing on data integrity, auditability, and speed:
+
+1. **Frontend (Vite + React 19 + TypeScript + Tailwind CSS)**:
+   - Centralized authentication & persistence state (`AuthContext.tsx`) managing tokens, user session restoration, optimistic wishlist/watchlist toggling, and rollback.
+   - Server-side search & filtering (`Search.tsx`) supporting search keywords (`q`), brand/store filters, price range, minimum rating, sorting, and pagination without client-side artificial caps.
+   - Dedicated user modules: `Wishlist.tsx`, `Watchlist.tsx`, `Alerts.tsx`, `Profile.tsx`, `Settings.tsx`, and `ForYou.tsx` (deterministic deal & category-based discovery).
+   - Real-time notification center in `Navbar.tsx` with unread count and mark-as-read API integration.
+
+2. **Backend (Node.js + Express 5 + TypeScript + Prisma ORM)**:
+   - Secure REST API with strict input validation, security headers (`nosniff`, `DENY`, `XSS`), and IP-based sliding-window rate limiting (`authRateLimiter`, `emailAlertRateLimiter`).
+   - Pure PostgreSQL database hosted on Supabase containing normalized tables: `Product`, `Store`, `ProductStore`, `PriceHistory`, `User`, `Wishlist`, `Watchlist`, `Alert`, and `Notification`.
+   - Strict retailer domain whitelisting in `serpShoppingService.ts` (Amazon, Flipkart, Croma, Vijay Sales, and official brand stores; rejecting untrusted or refurbished stores).
+   - Price tracking & alert engine in `alertEngine.ts` evaluating recorded prices, triggering target notifications, and preventing duplicate alerts.
+   - Deterministic linear regression trend forecasting in `priceAnalytics.ts` with honest labeling.
+
+---
+
+## Local Setup & Run Instructions
+
+### Prerequisites
+- Node.js v20+
+- PostgreSQL or Supabase account
+- npm
+
+### 1. Environment Configuration
+
+**Backend Configuration (`backend/.env`):**
+Copy `backend/.env.example` to `backend/.env` and supply your variables:
+```env
+PORT=5000
+DATABASE_URL="postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres"
+JWT_SECRET="your-256-bit-jwt-secret"
+JWT_EXPIRES_IN="7d"
+CORS_ORIGIN="http://localhost:5173"
+ADMIN_API_KEY="optional-admin-key"
+# Email Alerts (Optional)
+GMAIL_USER="your-email@gmail.com"
+GMAIL_APP_PASSWORD="your-app-password"
+# External Price Search (Optional)
+SERPAPI_KEY="your-serpapi-key"
+```
+
+**Frontend Configuration (`frontend/.env`):**
+Copy `frontend/.env.example` to `frontend/.env`:
+```env
+VITE_API_BASE_URL="http://localhost:5000/api"
+VITE_SUPABASE_URL="https://your-project.supabase.co"
+VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
+```
+
+### 2. Backend Installation & Startup
+```bash
+cd backend
+npm install
+npm run build
+npm run dev
+```
+The backend starts on `http://localhost:5000`. Health check endpoint: `GET http://localhost:5000/api/health`.
+
+### 3. Frontend Installation & Startup
+```bash
+cd frontend
+npm install
+npm run build
+npm run dev
+```
+The frontend starts on `http://localhost:5173`.
+
+---
+
+## Verification & Automated Testing
+
+### Backend Unit & Integration Tests
+Run all 43 automated tests covering authentication, rate limiting, security headers, search parameters, alert evaluations, and retailer normalization:
+```bash
+cd backend
+npm test
+```
+
+### Backend Typecheck & Build
+```bash
+cd backend
+npm run typecheck
+npm run build
+```
+
+### Frontend Linting & Production Build
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+

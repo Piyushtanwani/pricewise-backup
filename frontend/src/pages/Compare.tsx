@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { useSearchParams, useNavigate } from "react-router"
-import { ExternalLink, Loader2, Search, X, Plus, Trash2, ArrowLeft } from "lucide-react"
-import Badge from "../components/ui/Badge"
+import { ExternalLink, Loader2, Search, X, Plus, Trash2 } from "lucide-react"
 import { api } from "../services/api"
 import type { Product } from "../types/product"
 

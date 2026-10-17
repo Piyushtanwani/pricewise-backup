@@ -7,11 +7,13 @@ import userRoutes from './routes/userRoutes';
 import intelligenceRoutes from './routes/intelligenceRoutes';
 import { adminRouter, integrationRouter } from './routes/integrationRoutes';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
+import { securityHeaders } from './middlewares/security';
 
 export const createApp = () => {
   const app = express();
 
   app.disable('x-powered-by');
+  app.use(securityHeaders);
   app.use(cors({ origin: env.corsOrigins, credentials: true }));
   app.use(express.json({ limit: '100kb' }));
 

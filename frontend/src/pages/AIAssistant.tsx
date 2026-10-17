@@ -89,8 +89,8 @@ export default function AIAssistant() {
             <Sparkles size={18} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">PriceWise AI Shopping Assistant</h1>
-            <p className="text-xs text-slate-500">Live intelligence powered by Supabase & Groq AI</p>
+            <h1 className="text-xl font-bold text-slate-900">PriceWise Shopping Assistant</h1>
+            <p className="text-xs text-slate-500">Smart shopping assistant powered by PriceWise catalogue intelligence & rule-based engine</p>
           </div>
         </div>
 

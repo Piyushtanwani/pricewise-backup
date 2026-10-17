@@ -1,52 +1,124 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router"
-import { Heart, Bell, ListChecks, Settings, Star, TrendingDown, BarChart2, Sparkles, Loader2 } from "lucide-react"
+import { Heart, Bell, ListChecks, Settings, Star, TrendingDown, BarChart2, Sparkles, Loader2, User as UserIcon, LogIn } from "lucide-react"
+import { useAuth } from "../context/AuthContext"
 import { api } from "../services/api"
 import type { Product } from "../types/product"
+import type { ProfileStats } from "../types/user"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
 
 export default function Profile() {
   const navigate = useNavigate()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
+
+  const [stats, setStats] = useState<ProfileStats | null>(null)
   const [recentProducts, setRecentProducts] = useState<Product[]>([])
-  const [totalCount, setTotalCount] = useState(140)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true
-    api.getProducts({ limit: 3, sort: "relevance" }).then((res) => {
-      if (isMounted) {
-        setRecentProducts(res.items || [])
-        setTotalCount(res.total || 140)
+
+    async function loadData() {
+      try {
+        setLoading(true)
+        if (isAuthenticated) {
+          const profileData = await api.getProfile().catch(() => null)
+          if (isMounted && profileData) {
+            setStats(profileData.stats)
+          }
+        }
+
+        const recent = await api.getProducts({ limit: 4, sort: "relevance" }).catch(() => ({ items: [] }))
+        if (isMounted) {
+          setRecentProducts(recent.items || [])
+        }
+      } catch (err) {
+        console.error("Failed to load profile data:", err)
+      } finally {
+        if (isMounted) setLoading(false)
       }
-    }).catch(console.error)
+    }
+
+    if (!authLoading) {
+      loadData()
+    }
+
     return () => { isMounted = false }
-  }, [])
+  }, [isAuthenticated, authLoading])
+
+  if (authLoading || (isAuthenticated && loading)) {
+    return (
+      <div className="min-h-screen bg-[#f4f6fb] pt-24 text-center">
+        <Loader2 size={32} className="animate-spin text-indigo-600 mx-auto mb-3" />
+        <p className="text-sm text-slate-500">Loading your profile...</p>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="min-h-screen bg-[#f4f6fb] pt-20">
+        <div className="max-w-[500px] mx-auto px-6 py-12 text-center">
+          <div className="w-16 h-16 rounded-3xl bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-4">
+            <UserIcon size={28} />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Sign in to View Profile</h1>
+          <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+            Create an account or sign in to track smartphones, manage your wishlist, and set price drop alerts.
+          </p>
+          <div className="flex justify-center gap-3">
+            <Link
+              to="/login"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2"
+            >
+              <LogIn size={16} />
+              Sign In
+            </Link>
+            <Link
+              to="/signup"
+              className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
+            >
+              Create Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const initials = user.name
+    ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
+    : "PW"
 
   return (
     <div className="min-h-screen bg-[#f4f6fb] pt-14">
       <div className="max-w-[900px] mx-auto px-6 py-8">
         {/* Header */}
-        <div className="bg-gradient-to-br from-indigo-900 to-blue-900 rounded-2xl p-6 mb-6 flex items-center gap-5 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-500/30 border-2 border-white/20 flex items-center justify-center text-white text-xl font-bold">
-            PS
+        <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-blue-950 rounded-2xl p-6 mb-6 flex items-center gap-5 shadow-sm text-white relative overflow-hidden">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-500/30 border-2 border-white/20 flex items-center justify-center text-white text-xl font-bold shrink-0">
+            {initials}
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-white">PriceWise User</h1>
-            <p className="text-slate-400 text-sm">user@pricewise.io</p>
-            <p className="text-xs text-indigo-300 mt-0.5">Connected to Supabase Live Database</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl font-bold text-white truncate">{user.name}</h1>
+            <p className="text-slate-300 text-sm truncate">{user.email}</p>
+            {user.phone && <p className="text-xs text-slate-400 mt-0.5">{user.phone}</p>}
+            <p className="text-xs text-indigo-300 mt-1">
+              Member since {new Date(user.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+            </p>
           </div>
-          <Link to="/settings" className="ml-auto p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
-            <Settings size={16} className="text-white" />
+          <Link to="/settings" className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+            <Settings size={18} className="text-white" />
           </Link>
         </div>
 
-        {/* Stats */}
+        {/* Real User Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Products in DB", value: `${totalCount}`, icon: BarChart2, color: "text-indigo-600" },
-            { label: "Active Brands", value: "7 Brands", icon: Heart, color: "text-rose-600" },
-            { label: "Stores Sync", value: "4 Stores", icon: Bell, color: "text-amber-600" },
-            { label: "Price Intelligence", value: "Active", icon: TrendingDown, color: "text-emerald-600" },
+            { label: "Products Tracked", value: `${stats?.productsTracked ?? 0}`, icon: ListChecks, color: "text-indigo-600" },
+            { label: "Wishlist Items", value: `${stats?.wishlistItems ?? 0}`, icon: Heart, color: "text-rose-600" },
+            { label: "Active Alerts", value: `${stats?.activeAlerts ?? 0}`, icon: Bell, color: "text-amber-600" },
+            { label: "Savings Discovered", value: fmt(stats?.savingsDiscovered ?? 0), icon: TrendingDown, color: "text-emerald-600" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="bg-white rounded-xl border border-slate-200 p-4 text-center shadow-2xs">
               <Icon size={18} className={`${color} mx-auto mb-1`} />
@@ -80,9 +152,9 @@ export default function Profile() {
           ))}
         </div>
 
-        {/* Recently Viewed in Database */}
+        {/* Catalog Showcase */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
-          <h3 className="text-sm font-semibold text-slate-800 mb-4">Trending in Database</h3>
+          <h3 className="text-sm font-semibold text-slate-800 mb-4">Trending in Catalog</h3>
           <div className="space-y-3">
             {recentProducts.map((p) => (
               <div

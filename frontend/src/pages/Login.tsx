@@ -1,30 +1,100 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router"
+import { useState, useEffect } from "react"
+import { Link, useNavigate, useLocation } from "react-router"
 import { Zap, Eye, EyeOff, Sparkles, BarChart2, Bell, TrendingDown, Loader2 } from "lucide-react"
+import { useAuth } from "../context/AuthContext"
 import { signInWithGoogle } from "../services/supabase"
+import { triggerGoogleSignIn } from "../services/googleAuth"
 
 export default function Login() {
+  const location = useLocation()
+  const isSignUpInitial = location.pathname.includes("signup")
+
+  const [isSignUp, setIsSignUp] = useState(isSignUpInitial)
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPw, setShowPw] = useState(false)
   const [remember, setRemember] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+
+  const { login, register, loginWithGoogle, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    setIsSignUp(location.pathname.includes("signup"))
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true })
+    }
+  }, [isAuthenticated, navigate])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    navigate("/")
+    setAuthError(null)
+
+    if (!email.trim() || !password.trim()) {
+      setAuthError("Please fill in all required fields.")
+      return
+    }
+
+    if (isSignUp && !name.trim()) {
+      setAuthError("Please enter your name.")
+      return
+    }
+
+    if (password.length < 8) {
+      setAuthError("Password must be at least 8 characters long.")
+      return
+    }
+
+    try {
+      setLoading(true)
+      if (isSignUp) {
+        await register({ name: name.trim(), email: email.trim(), password })
+      } else {
+        await login({ email: email.trim(), password })
+      }
+      navigate("/")
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || "Authentication failed. Please check your credentials."
+      setAuthError(msg)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleGoogleLogin = async () => {
     try {
       setGoogleLoading(true)
       setAuthError(null)
+
+      // 1. First attempt direct Google Identity Services popup
+      try {
+        const { accessToken, credential } = await triggerGoogleSignIn()
+        if (accessToken || credential) {
+          await loginWithGoogle({ accessToken, credential })
+          navigate("/")
+          return
+        }
+      } catch (gisErr: any) {
+        const msg = String(gisErr?.message || "")
+        if (msg.includes("cancelled") || msg.includes("popup_closed_by_user")) {
+          setGoogleLoading(false)
+          return
+        }
+        console.warn("Direct Google sign-in fallback to Supabase:", msg)
+      }
+
+      // 2. Fallback to Supabase OAuth redirect if direct GIS not used
       await signInWithGoogle()
     } catch (err: any) {
       console.error("Google sign in error:", err)
-      setAuthError(err?.message || "Failed to sign in with Google via Supabase")
+      setAuthError(err?.message || "Failed to sign in with Google")
+    } finally {
       setGoogleLoading(false)
     }
   }
@@ -53,15 +123,15 @@ export default function Login() {
             Shop smarter.<br />Know the right price.
           </h2>
           <p className="text-slate-400 leading-relaxed">
-            Compare prices across 50+ stores, track price history, get AI-powered buy/wait recommendations, and never overpay again.
+            Compare prices across major stores, track price history, get rule-based buy/wait recommendations, and never overpay again.
           </p>
 
           <div className="mt-10 space-y-4">
             {[
               { icon: BarChart2, text: "Compare prices across all major stores in one view" },
-              { icon: Bell, text: "Set price alerts and get notified instantly" },
-              { icon: TrendingDown, text: "Track historical pricing and predict future trends" },
-              { icon: Sparkles, text: "AI-powered shopping recommendations tailored to you" },
+              { icon: Bell, text: "Set price alerts and get notified instantly via email" },
+              { icon: TrendingDown, text: "Track historical pricing and identify genuine discounts" },
+              { icon: Sparkles, text: "Smart shopping recommendations tailored to your budget" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-indigo-500/20 border border-indigo-500/30 rounded-lg flex items-center justify-center shrink-0">
@@ -73,7 +143,7 @@ export default function Login() {
           </div>
         </div>
         <p className="relative text-xs text-slate-600">
-          Trusted by 2.4M+ smart shoppers
+          Trusted by smart shoppers across India
         </p>
       </div>
 
@@ -90,10 +160,51 @@ export default function Login() {
             </span>
           </div>
 
-          <h2 className="text-2xl font-bold text-slate-900 mb-1">Welcome back</h2>
-          <p className="text-sm text-slate-500 mb-6">Sign in to your account to continue</p>
+          <div className="mb-6">
+            <div className="flex border-b border-slate-200 mb-5">
+              <button
+                type="button"
+                onClick={() => { setIsSignUp(false); setAuthError(null); }}
+                className={`flex-1 pb-3 text-sm font-semibold transition-colors cursor-pointer ${
+                  !isSignUp ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-700"
+                }`}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsSignUp(true); setAuthError(null); }}
+                className={`flex-1 pb-3 text-sm font-semibold transition-colors cursor-pointer ${
+                  isSignUp ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-700"
+                }`}
+              >
+                Create account
+              </button>
+            </div>
+
+            <h2 className="text-2xl font-bold text-slate-900 mb-1">
+              {isSignUp ? "Create an account" : "Welcome back"}
+            </h2>
+            <p className="text-sm text-slate-500">
+              {isSignUp ? "Join PriceWise to save wishlists & track drops" : "Sign in to your account to continue"}
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignUp && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Full Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Yash Tanwani"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email</label>
               <input
@@ -101,9 +212,11 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                required
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
               />
             </div>
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">Password</label>
               <div className="relative">
@@ -111,39 +224,47 @@ export default function Login() {
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="At least 8 characters"
+                  required
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
                 >
                   {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="rounded border-slate-300 text-indigo-600"
-                />
-                <span className="text-sm text-slate-600">Remember me</span>
-              </label>
-              <button type="button" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                Forgot password?
-              </button>
-            </div>
+            {!isSignUp && (
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="rounded border-slate-300 text-indigo-600"
+                  />
+                  <span className="text-sm text-slate-600">Remember me</span>
+                </label>
+              </div>
+            )}
+
+            {authError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+                {authError}
+              </div>
+            )}
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
-              Sign in
+              {loading && <Loader2 size={16} className="animate-spin" />}
+              {isSignUp ? "Create account" : "Sign in"}
             </button>
 
             <div className="relative flex items-center">
@@ -151,12 +272,6 @@ export default function Login() {
               <span className="px-3 text-xs text-slate-400">or</span>
               <div className="flex-1 border-t border-slate-200" />
             </div>
-
-            {authError && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
-                {authError}
-              </div>
-            )}
 
             <button
               type="button"
@@ -174,10 +289,29 @@ export default function Login() {
           </form>
 
           <p className="text-center text-sm text-slate-500 mt-5">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-indigo-600 hover:text-indigo-700 font-medium">
-              Create one
-            </Link>
+            {isSignUp ? (
+              <>
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => { setIsSignUp(false); setAuthError(null); }}
+                  className="text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer"
+                >
+                  Sign in
+                </button>
+              </>
+            ) : (
+              <>
+                Don't have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => { setIsSignUp(true); setAuthError(null); }}
+                  className="text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer"
+                >
+                  Create one
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>
