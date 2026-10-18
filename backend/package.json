@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/src/server.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "nodemon",
     "build": "tsc -p . && node -e \"const fs = require('fs'); fs.cpSync('src/generated','dist/src/generated',{recursive:true,filter:(src,dest)=>!(dest.endsWith('.dll.node')&&fs.existsSync(dest))})\"",
     "start": "node dist/src/server.js",
     "typecheck": "tsc --noEmit -p .",
@@ -39,6 +39,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.2.0",
     "@types/nodemailer": "^8.0.2",
+    "nodemon": "^3.1.14",
     "prisma": "^6.19.3",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.12",
