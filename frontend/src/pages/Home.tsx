@@ -121,7 +121,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5 text-sm text-blue-300 mb-6">
-                <Zap size={13} className="text-indigo-400" />
+                <img src="/logo-mark.png" alt="PriceWise" className="w-4 h-4 object-contain select-none" />
                 Live Supabase Mobile Catalog & Price Intelligence
               </div>
 

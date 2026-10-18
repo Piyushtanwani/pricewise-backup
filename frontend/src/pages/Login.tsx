@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "react-router"
-import { Zap, Eye, EyeOff, Sparkles, BarChart2, Bell, TrendingDown, Loader2 } from "lucide-react"
+import { Eye, EyeOff, Sparkles, BarChart2, Bell, TrendingDown, Loader2 } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
 import { signInWithGoogle } from "../services/supabase"
 import { triggerGoogleSignIn } from "../services/googleAuth"
@@ -111,13 +111,12 @@ export default function Login() {
           }}
         />
         <div className="relative">
-          <Link to="/" className="flex items-center gap-2 mb-12">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-              <Zap size={16} className="text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">
-              Price<span className="text-indigo-400">Wise</span>
-            </span>
+          <Link to="/" className="inline-block mb-12 hover:opacity-95 transition-opacity" aria-label="PriceWise Home">
+            <img
+              src="/logo-dark.png"
+              alt="PriceWise"
+              className="h-10 w-auto object-contain select-none"
+            />
           </Link>
           <h2 className="text-3xl font-bold text-white mb-4 leading-tight">
             Shop smarter.<br />Know the right price.
@@ -151,13 +150,14 @@ export default function Login() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-              <Zap size={16} className="text-white" />
-            </div>
-            <span className="text-xl font-bold text-slate-900">
-              Price<span className="text-indigo-600">Wise</span>
-            </span>
+          <div className="flex lg:hidden items-center mb-8">
+            <Link to="/" className="inline-block hover:opacity-95 transition-opacity" aria-label="PriceWise Home">
+              <img
+                src="/logo.png"
+                alt="PriceWise"
+                className="h-9 w-auto object-contain select-none"
+              />
+            </Link>
           </div>
 
           <div className="mb-6">

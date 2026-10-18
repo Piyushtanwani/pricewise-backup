@@ -1,5 +1,4 @@
 import { Link } from "react-router"
-import { Zap } from "lucide-react"
 
 const cols = [
   {
@@ -46,13 +45,12 @@ export default function Footer() {
       <div className="max-w-[1440px] mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                <Zap size={14} className="text-white" />
-              </div>
-              <span className="text-base font-bold text-white">
-                Price<span className="text-indigo-400">Wise</span>
-              </span>
+            <Link to="/" className="inline-block mb-3 hover:opacity-90 transition-opacity" aria-label="PriceWise Home">
+              <img
+                src="/logo-dark.png"
+                alt="PriceWise"
+                className="h-8 md:h-9 w-auto object-contain select-none"
+              />
             </Link>
             <p className="text-xs leading-relaxed text-slate-500">
               Shop smarter with AI-powered price intelligence. Compare, track, and predict prices across all major stores.

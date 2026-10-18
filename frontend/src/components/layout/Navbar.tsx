@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Link, useNavigate, useLocation } from "react-router"
 import {
-  Search, Heart, Bell, User, ChevronDown, Zap, GitCompare, X,
+  Search, Heart, Bell, User, ChevronDown, GitCompare, X,
   Home, Compass, BarChart2, Sparkles, Settings, LogOut, ListChecks,
   AlertCircle, Check, Loader2
 } from "lucide-react"
@@ -124,13 +124,12 @@ export default function Navbar() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-[1440px] mx-auto px-6 h-14 flex items-center gap-6">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-1.5 shrink-0">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center">
-              <Zap size={14} className="text-white" />
-            </div>
-            <span className="text-base font-bold tracking-tight text-slate-900">
-              Price<span className="text-indigo-600">Wise</span>
-            </span>
+          <Link to="/" className="flex items-center shrink-0 hover:opacity-95 transition-opacity" aria-label="PriceWise Home">
+            <img
+              src="/logo.png"
+              alt="PriceWise"
+              className="h-8 md:h-9 w-auto object-contain select-none"
+            />
           </Link>
 
           {/* Nav Links */}

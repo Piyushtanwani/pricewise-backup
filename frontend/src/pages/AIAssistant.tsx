@@ -85,8 +85,8 @@ export default function AIAssistant() {
       <div className="max-w-[1000px] mx-auto px-6 py-6 flex flex-col h-[calc(100vh-56px)]">
         {/* Header */}
         <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white shadow-md">
-            <Sparkles size={18} />
+          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shadow-xs">
+            <img src="/logo-mark.png" alt="PriceWise AI" className="w-full h-full object-contain" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900">PriceWise Shopping Assistant</h1>
@@ -99,8 +99,8 @@ export default function AIAssistant() {
           {messages.map((msg, i) => (
             <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               {msg.role === "assistant" && (
-                <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
-                  <Bot size={16} />
+                <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1 shrink-0 shadow-2xs">
+                  <img src="/logo-mark.png" alt="PriceWise AI" className="w-full h-full object-contain" />
                 </div>
               )}
 
