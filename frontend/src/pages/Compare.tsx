@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { useSearchParams, useNavigate } from "react-router"
 import { ExternalLink, Loader2, Search, X, Plus, Trash2 } from "lucide-react"
 import { api } from "../services/api"
+import { notifyCompareChange } from "../hooks/useCompareAction"
 import type { Product } from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
@@ -272,6 +273,7 @@ export default function Compare() {
   const navigate = useNavigate()
   const idsParam = params.get("ids")
   const fromEmptyParam = params.get("fromEmpty") === "true"
+  const trendingParam = params.get("trending") === "true"
 
   const [compareProducts, setCompareProducts] = useState<Product[]>([])
   const [catalog, setCatalog] = useState<Product[]>([])
@@ -298,13 +300,18 @@ export default function Compare() {
   }, [])
 
   useEffect(() => {
+    if (trendingParam) {
+      userClearedRef.current = false
+      lastLoadedIdsRef.current = null
+    }
+
     // If the URL param matches what we already have in state, don't re-trigger
     if (lastLoadedIdsRef.current === idsParam && (compareProducts.length > 0 || userClearedRef.current)) {
       setLoading(false)
       return
     }
 
-    // Explicit empty query state: ?ids= or cleared
+    // Explicit in-session empty query state: ?ids= or cleared during active session
     if (idsParam === "" || (idsParam === null && userClearedRef.current)) {
       setCompareProducts([])
       setLoading(false)
@@ -368,6 +375,7 @@ export default function Compare() {
                     localStorage.setItem("pricewise_trending_id", trending.id)
                     localStorage.removeItem("pricewise_compare_cleared")
                     localStorage.removeItem("pricewise_trending_removed")
+                    notifyCompareChange()
                   } catch {}
 
                   // Update URL with both IDs without reloading
@@ -390,6 +398,7 @@ export default function Compare() {
                 try {
                   localStorage.setItem("pricewise_compare_ids", JSON.stringify(ids))
                   localStorage.removeItem("pricewise_compare_cleared")
+                  notifyCompareChange()
                 } catch {}
                 setLoading(false)
                 return
@@ -404,6 +413,7 @@ export default function Compare() {
                   try {
                     localStorage.setItem("pricewise_compare_ids", JSON.stringify(ids))
                     localStorage.removeItem("pricewise_compare_cleared")
+                    notifyCompareChange()
                   } catch {}
                   setLoading(false)
                   return
@@ -423,11 +433,10 @@ export default function Compare() {
 
         // 2. Check localStorage if no URL param
         try {
-          const isCleared = localStorage.getItem("pricewise_compare_cleared") === "true"
-          if (isCleared) {
+          // If the user actively cleared within this active page session, reserve the empty state
+          if (userClearedRef.current) {
             if (isMounted) {
               setCompareProducts([])
-              userClearedRef.current = true
               setLoading(false)
             }
             return
@@ -436,15 +445,7 @@ export default function Compare() {
           const savedJson = localStorage.getItem("pricewise_compare_ids")
           if (savedJson) {
             const savedIds: string[] = JSON.parse(savedJson)
-            if (Array.isArray(savedIds)) {
-              if (savedIds.length === 0) {
-                if (isMounted) {
-                  setCompareProducts([])
-                  userClearedRef.current = true
-                  setLoading(false)
-                }
-                return
-              }
+            if (Array.isArray(savedIds) && savedIds.length > 0) {
               const res = await api.compareProducts(savedIds)
               if (isMounted && res.products && res.products.length > 0) {
                 setCompareProducts(res.products as Product[])
@@ -458,32 +459,46 @@ export default function Compare() {
           console.warn("localStorage check failed:", e)
         }
 
-        // 3. Fallback: when user triggers comparison view with zero active items
-        const trendingRemoved = localStorage.getItem("pricewise_trending_removed") === "true"
-        if (!trendingRemoved) {
-          const res = await api.getProducts({ limit: 60, sort: "relevance" })
-          if (isMounted) {
-            const items = res.items || []
-            setCatalog(items)
-            const defaultTrending = getDefaultTrendingPhone(items)
-            if (defaultTrending) {
-              setCompareProducts([defaultTrending])
-              setTrendingId(defaultTrending.id)
-              userClearedRef.current = false
-              try {
-                localStorage.setItem("pricewise_compare_ids", JSON.stringify([defaultTrending.id]))
-                localStorage.setItem("pricewise_trending_id", defaultTrending.id)
-              } catch {}
-              const newParams = new URLSearchParams()
-              newParams.set("ids", defaultTrending.id)
-              setParams(newParams, { replace: true })
-              lastLoadedIdsRef.current = defaultTrending.id
-            } else {
-              setCompareProducts([])
-            }
+        // 3. Fallback: Auto-load default Trending flagship on direct navigation with zero stored items
+        // (Or when navigating from Navbar/external link with empty comparison store)
+        try {
+          let candidates = catalog
+          if (candidates.length === 0) {
+            const res = await api.getProducts({ limit: 60, sort: "relevance" })
+            candidates = res.items || []
+            if (isMounted) setCatalog(candidates)
           }
-        } else {
-          if (isMounted) setCompareProducts([])
+
+          const defaultTrending = getDefaultTrendingPhone(candidates)
+          if (defaultTrending && isMounted) {
+            setCompareProducts([defaultTrending])
+            setTrendingId(defaultTrending.id)
+            userClearedRef.current = false
+            try {
+              localStorage.setItem("pricewise_compare_ids", JSON.stringify([defaultTrending.id]))
+              localStorage.setItem("pricewise_trending_id", defaultTrending.id)
+              localStorage.removeItem("pricewise_compare_cleared")
+              localStorage.removeItem("pricewise_trending_removed")
+              notifyCompareChange()
+            } catch {}
+            const newParams = new URLSearchParams()
+            newParams.set("ids", defaultTrending.id)
+            setParams(newParams, { replace: true })
+            lastLoadedIdsRef.current = defaultTrending.id
+            setLoading(false)
+            return
+          } else if (isMounted) {
+            setCompareProducts([])
+          }
+        } catch (err) {
+          console.error("Failed to auto-load trending product on direct navigation:", err)
+          if (isMounted && catalog.length > 0) {
+            setCompareProducts(catalog.slice(0, 1))
+          } else if (isMounted) {
+            setCompareProducts([])
+          }
+        } finally {
+          if (isMounted) setLoading(false)
         }
       } catch (err) {
         console.error("Failed to load products for comparison:", err)
@@ -497,7 +512,7 @@ export default function Compare() {
 
     loadCompare()
     return () => { isMounted = false }
-  }, [idsParam, catalog, fromEmptyParam])
+  }, [idsParam, catalog, fromEmptyParam, trendingParam])
 
   const getBest = (key: string, mode: string) => {
     if (mode === "none" || compareProducts.length === 0) return -1
@@ -533,6 +548,7 @@ export default function Compare() {
         localStorage.removeItem("pricewise_trending_id")
         localStorage.removeItem("pricewise_trending_removed")
       }
+      notifyCompareChange()
     } catch (e) {
       console.error("Failed to update localStorage:", e)
     }
@@ -557,6 +573,7 @@ export default function Compare() {
       localStorage.setItem("pricewise_compare_cleared", "true")
       localStorage.removeItem("pricewise_trending_id")
       localStorage.removeItem("pricewise_trending_removed")
+      notifyCompareChange()
     } catch (e) {
       console.error("Failed to clear localStorage:", e)
     }
@@ -586,6 +603,7 @@ export default function Compare() {
     try {
       localStorage.setItem("pricewise_compare_ids", JSON.stringify(newIds))
       localStorage.removeItem("pricewise_compare_cleared")
+      notifyCompareChange()
     } catch (e) {
       console.error("Failed to update localStorage:", e)
     }
@@ -625,6 +643,7 @@ export default function Compare() {
           localStorage.setItem("pricewise_trending_id", defaultTrending.id)
           localStorage.removeItem("pricewise_compare_cleared")
           localStorage.removeItem("pricewise_trending_removed")
+          notifyCompareChange()
         } catch {}
 
         const newParams = new URLSearchParams()

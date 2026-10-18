@@ -5,6 +5,7 @@ import {
   AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts"
 import ProductCard from "../components/ui/ProductCard"
+import PriceAlertModal from "../components/ui/PriceAlertModal"
 import Footer from "../components/layout/Footer"
 import { api } from "../services/api"
 import type { Product, CatalogMeta } from "../types/product"
@@ -54,7 +55,15 @@ export default function Home() {
   const [deals, setDeals] = useState<Product[]>([])
   const [meta, setMeta] = useState<CatalogMeta | null>(null)
   const [loading, setLoading] = useState(true)
+  const [trackModalProduct, setTrackModalProduct] = useState<Product | null>(null)
+  const [showTrackModal, setShowTrackModal] = useState(false)
+  const [trackedProductIds, setTrackedProductIds] = useState<Set<string>>(new Set())
   const navigate = useNavigate()
+
+  const handleOpenTrackModal = (p: Product) => {
+    setTrackModalProduct(p)
+    setShowTrackModal(true)
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -320,7 +329,12 @@ export default function Home() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {trending.slice(0, 4).map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  isTracking={trackedProductIds.has(p.id)}
+                  onTrackClick={handleOpenTrackModal}
+                />
               ))}
             </div>
           )}
@@ -369,7 +383,22 @@ export default function Home() {
                         -{p.discount}%
                       </span>
                       <span className="text-xs text-slate-500">at {p.bestStore}</span>
-                      <TrendingDown size={11} className="ml-auto text-emerald-600" />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleOpenTrackModal(p)
+                        }}
+                        className={`ml-auto p-1.5 rounded-lg border text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+                          trackedProductIds.has(p.id)
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold"
+                            : "bg-slate-50 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border-slate-200"
+                        }`}
+                        title={trackedProductIds.has(p.id) ? "Tracking Active" : "Track Price"}
+                      >
+                        <Bell size={11} className={trackedProductIds.has(p.id) ? "fill-emerald-600 text-emerald-600" : ""} />
+                        <span className="text-[11px]">{trackedProductIds.has(p.id) ? "Tracking" : "Track"}</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -424,6 +453,13 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      <PriceAlertModal
+        isOpen={showTrackModal}
+        onClose={() => setShowTrackModal(false)}
+        product={trackModalProduct}
+        onAlertActivated={(pid) => setTrackedProductIds((prev) => new Set(prev).add(pid))}
+      />
 
       <Footer />
     </div>

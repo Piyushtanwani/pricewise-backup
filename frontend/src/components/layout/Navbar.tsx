@@ -6,6 +6,7 @@ import {
   AlertCircle, Check, Loader2
 } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
+import { useCompareAction } from "../../hooks/useCompareAction"
 import { api } from "../../services/api"
 import type { NotificationItem } from "../../types/user"
 
@@ -27,6 +28,7 @@ export default function Navbar() {
   const [notifLoading, setNotifLoading] = useState(false)
 
   const { user, isAuthenticated, logout } = useAuth()
+  const { handleCompare, compareCount } = useCompareAction()
   const navigate = useNavigate()
   const location = useLocation()
   const searchRef = useRef<HTMLInputElement>(null)
@@ -134,19 +136,42 @@ export default function Navbar() {
 
           {/* Nav Links */}
           <div className="hidden lg:flex items-center gap-0.5">
-            {navLinks.map(({ to, label }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive(to)
-                    ? "bg-indigo-50 text-indigo-700 font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+            {navLinks.map(({ to, label }) => {
+              if (to === "/compare") {
+                return (
+                  <button
+                    key={to}
+                    type="button"
+                    onClick={() => handleCompare()}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
+                      isActive(to)
+                        ? "bg-indigo-50 text-indigo-700 font-semibold"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    }`}
+                  >
+                    <span>{label}</span>
+                    {compareCount > 0 && (
+                      <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">
+                        {compareCount}
+                      </span>
+                    )}
+                  </button>
+                )
+              }
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive(to)
+                      ? "bg-indigo-50 text-indigo-700 font-semibold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  {label}
+                </Link>
+              )
+            })}
           </div>
 
           {/* Search Bar */}
@@ -393,18 +418,42 @@ export default function Navbar() {
             { to: "/compare", label: "Compare", icon: GitCompare },
             { to: "/alerts", label: "Alerts", icon: Bell },
             { to: "/profile", label: "Profile", icon: User },
-          ].map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`flex flex-col items-center justify-center gap-0.5 text-xs transition-colors ${
-                isActive(to) ? "text-indigo-600 font-semibold" : "text-slate-400"
-              }`}
-            >
-              <Icon size={18} />
-              {label}
-            </Link>
-          ))}
+          ].map(({ to, label, icon: Icon }) => {
+            if (to === "/compare") {
+              return (
+                <button
+                  key={to}
+                  type="button"
+                  onClick={() => handleCompare()}
+                  className={`flex flex-col items-center justify-center gap-0.5 text-xs transition-colors relative cursor-pointer ${
+                    isActive(to) ? "text-indigo-600 font-semibold" : "text-slate-400"
+                  }`}
+                >
+                  <div className="relative">
+                    <Icon size={18} />
+                    {compareCount > 0 && (
+                      <span className="absolute -top-1 -right-2.5 w-3.5 h-3.5 rounded-full bg-indigo-600 text-white text-[9px] font-bold flex items-center justify-center">
+                        {compareCount}
+                      </span>
+                    )}
+                  </div>
+                  <span>{label}</span>
+                </button>
+              )
+            }
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={`flex flex-col items-center justify-center gap-0.5 text-xs transition-colors ${
+                  isActive(to) ? "text-indigo-600 font-semibold" : "text-slate-400"
+                }`}
+              >
+                <Icon size={18} />
+                {label}
+              </Link>
+            )
+          })}
         </div>
       </div>
 

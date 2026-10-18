@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import ProductCard from "../components/ui/ProductCard"
+import { getCompareState, notifyCompareChange, COMPARE_CLEARED_KEY, COMPARE_STORAGE_KEY } from "../hooks/useCompareAction"
 import { api } from "../services/api"
 import type { Product, CatalogMeta } from "../types/product"
 
@@ -797,16 +798,20 @@ export default function Search() {
           <button
             onClick={() => {
               const ids = compareList.map((x) => x.id)
-              const savedJson = localStorage.getItem("pricewise_compare_ids")
-              const isCleared = localStorage.getItem("pricewise_compare_cleared") === "true"
-              let existingIds: string[] = []
-              try {
-                existingIds = savedJson ? JSON.parse(savedJson) : []
-              } catch {}
+              const currentState = getCompareState()
 
-              if (ids.length === 1 && (!Array.isArray(existingIds) || existingIds.length === 0 || isCleared)) {
+              if (ids.length === 1 && currentState.isEmpty) {
+                try {
+                  localStorage.removeItem(COMPARE_CLEARED_KEY)
+                  notifyCompareChange()
+                } catch {}
                 navigate(`/compare?ids=${ids[0]}&fromEmpty=true`)
               } else {
+                try {
+                  localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(ids))
+                  localStorage.removeItem(COMPARE_CLEARED_KEY)
+                  notifyCompareChange()
+                } catch {}
                 navigate(`/compare?ids=${ids.join(",")}`)
               }
             }}

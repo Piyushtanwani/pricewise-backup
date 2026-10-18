@@ -2,6 +2,7 @@ import { Heart, GitCompare, Bell, TrendingDown, TrendingUp, Minus, Star, Loader2
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import Badge from "./Badge"
+import CompareButton from "./CompareButton"
 import { useAuth } from "../../context/AuthContext"
 import { api } from "../../services/api"
 import type { Product } from "../../types/product"
@@ -18,6 +19,7 @@ interface ProductCardProps {
   isTracking?: boolean
   onWishlistToggle?: (productId: string, newState: boolean) => void
   onTrackToggle?: (productId: string, newState: boolean) => void
+  onTrackClick?: (p: Product) => void
 }
 
 export default function ProductCard({
@@ -28,6 +30,7 @@ export default function ProductCard({
   isTracking: isTrackingProp,
   onWishlistToggle,
   onTrackToggle,
+  onTrackClick,
 }: ProductCardProps) {
   const navigate = useNavigate()
   const {
@@ -64,6 +67,10 @@ export default function ProductCard({
 
   const handleToggleTrack = async (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (onTrackClick) {
+      onTrackClick(product)
+      return
+    }
     if (!isAuthenticated) {
       navigate("/login", { state: { from: `/product/${product.id}` } })
       return
@@ -205,35 +212,12 @@ export default function ProductCard({
         </Badge>
 
         <div className="flex gap-1.5 pt-2 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              if (onCompare) {
-                onCompare(product)
-              } else {
-                const savedJson = localStorage.getItem("pricewise_compare_ids")
-                const isCleared = localStorage.getItem("pricewise_compare_cleared") === "true"
-                let existingIds: string[] = []
-                try {
-                  existingIds = savedJson ? JSON.parse(savedJson) : []
-                } catch {}
-
-                if (!Array.isArray(existingIds) || existingIds.length === 0 || isCleared) {
-                  navigate(`/compare?ids=${product.id}&fromEmpty=true`)
-                } else {
-                  const updated = Array.from(new Set([...existingIds, product.id])).slice(0, 4)
-                  navigate(`/compare?ids=${updated.join(",")}`)
-                }
-              }
-            }}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-              selected ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600"
-            }`}
-          >
-            <GitCompare size={11} />
-            Compare
-          </button>
+          <CompareButton
+            product={product}
+            variant="card"
+            active={selected}
+            onClick={onCompare ? (e) => { e.stopPropagation(); onCompare(product); } : undefined}
+          />
           <button
             type="button"
             onClick={handleToggleTrack}
