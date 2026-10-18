@@ -24,7 +24,6 @@ export function getCompareState(): CompareState {
   }
   try {
     const isCleared = localStorage.getItem(COMPARE_CLEARED_KEY) === "true"
-    const trendingRemoved = localStorage.getItem(TRENDING_REMOVED_KEY) === "true"
     const savedJson = localStorage.getItem(COMPARE_STORAGE_KEY)
     let ids: string[] = []
     if (savedJson) {
@@ -34,7 +33,7 @@ export function getCompareState(): CompareState {
       }
     }
     const isEmpty = isCleared || ids.length === 0
-    return { ids: isEmpty ? [] : ids, isCleared, isEmpty, trendingRemoved }
+    return { ids: isEmpty ? [] : ids, isCleared, isEmpty, trendingRemoved: false }
   } catch {
     return { ids: [], isCleared: false, isEmpty: true, trendingRemoved: false }
   }
@@ -69,11 +68,10 @@ export function useCompareAction() {
   /**
    * Unified click handler for all Compare buttons:
    * - If product passed:
-   *   - If list is empty: clear flags and navigate with fromEmpty=true to trigger baseline trending pairing
-   *   - If list has items: append product up to 4 items and navigate to compare
+   *   - Appends product up to 4 items and navigates to compare
    * - If no product passed (Navbar / generic links):
    *   - If list has items: navigate to compare with existing IDs
-   *   - If list is empty: navigate to /compare to initialize baseline trending phone
+   *   - If list is empty: navigate to /compare (empty state)
    */
   const handleCompare = useCallback(
     (product?: Product | { id: string } | null, e?: React.MouseEvent) => {
@@ -86,26 +84,19 @@ export function useCompareAction() {
       // 1. Product-specific Compare trigger (cards, product detail, recommendations)
       if (product && product.id) {
         const prodId = product.id
+        const currentIds = currentState.isEmpty ? [] : currentState.ids
+        const updated = currentIds.includes(prodId)
+          ? currentIds
+          : [...currentIds, prodId].slice(0, 4)
 
-        if (currentState.isEmpty) {
-          // Empty baseline: Clear reset flags and navigate with fromEmpty=true
-          // The compare module will pair the clicked phone with the smart default Trending flagship
-          try {
-            localStorage.removeItem(COMPARE_CLEARED_KEY)
-            localStorage.removeItem(TRENDING_REMOVED_KEY)
-          } catch {}
-          notifyCompareChange()
-          navigate(`/compare?ids=${prodId}&fromEmpty=true`)
-        } else {
-          // Already has items: append without random suggestions or extra trending phones
-          const updated = Array.from(new Set([...currentState.ids, prodId])).slice(0, 4)
-          try {
-            localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(updated))
-            localStorage.removeItem(COMPARE_CLEARED_KEY)
-          } catch {}
-          notifyCompareChange()
-          navigate(`/compare?ids=${updated.join(",")}`)
-        }
+        try {
+          localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(updated))
+          localStorage.removeItem(COMPARE_CLEARED_KEY)
+          localStorage.removeItem(TRENDING_REMOVED_KEY)
+          localStorage.removeItem(TRENDING_ID_KEY)
+        } catch {}
+        notifyCompareChange()
+        navigate(`/compare?ids=${updated.join(",")}`)
         return
       }
 
@@ -113,13 +104,7 @@ export function useCompareAction() {
       if (!currentState.isEmpty && currentState.ids.length > 0) {
         navigate(`/compare?ids=${currentState.ids.join(",")}`)
       } else {
-        // When empty, navigating to /compare initializes the baseline default Trending phone with its badge
-        try {
-          localStorage.removeItem(COMPARE_CLEARED_KEY)
-          localStorage.removeItem(TRENDING_REMOVED_KEY)
-        } catch {}
-        notifyCompareChange()
-        navigate("/compare?trending=true")
+        navigate("/compare")
       }
     },
     [navigate]

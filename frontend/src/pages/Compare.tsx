@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { useSearchParams, useNavigate } from "react-router"
 import { ExternalLink, Loader2, Search, X, Plus, Trash2 } from "lucide-react"
 import { api } from "../services/api"
-import { notifyCompareChange } from "../hooks/useCompareAction"
+import { notifyCompareChange, COMPARE_STORAGE_KEY, COMPARE_CLEARED_KEY } from "../hooks/useCompareAction"
 import type { Product } from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
@@ -197,96 +197,16 @@ export const techSpecRows: TechSpecRow[] = [
   },
 ]
 
-// Pick a top-tier flagship model as the smart trending comparison phone
-const findTrendingPhone = (mainProduct: Product, candidates: Product[]): Product | null => {
-  if (!candidates || candidates.length === 0) return null
-  const isApple = (mainProduct.brand || "").toLowerCase().includes("apple")
-
-  if (isApple) {
-    // If clicked product is Apple, suggest a top Samsung flagship
-    const samsungFlagship = candidates.find(
-      (p) =>
-        p.id !== mainProduct.id &&
-        (p.brand || "").toLowerCase().includes("samsung") &&
-        /(ultra|pro|s25|s26|s24)/i.test(p.name)
-    )
-    if (samsungFlagship) return samsungFlagship
-
-    const anySamsung = candidates.find(
-      (p) => p.id !== mainProduct.id && (p.brand || "").toLowerCase().includes("samsung")
-    )
-    if (anySamsung) return anySamsung
-  } else {
-    // If clicked product is non-Apple, suggest top Apple iPhone flagship
-    const appleFlagship = candidates.find(
-      (p) =>
-        p.id !== mainProduct.id &&
-        (p.brand || "").toLowerCase().includes("apple") &&
-        /(pro max|pro|iphone 18|iphone 17|iphone 16)/i.test(p.name)
-    )
-    if (appleFlagship) return appleFlagship
-
-    const anyApple = candidates.find(
-      (p) => p.id !== mainProduct.id && (p.brand || "").toLowerCase().includes("apple")
-    )
-    if (anyApple) return anyApple
-  }
-
-  // Fallback: top candidate that is not the main product
-  return candidates.find((p) => p.id !== mainProduct.id) || null
-}
-
-// Get the default flagship model when starting with zero active items
-export const getDefaultTrendingPhone = (candidates: Product[]): Product | null => {
-  if (!candidates || candidates.length === 0) return null
-
-  // 1. Look for top Apple flagship (e.g. iPhone 18 Pro Max, iPhone 16 Pro Max)
-  const appleFlagship = candidates.find(
-    (p) =>
-      (p.brand || "").toLowerCase().includes("apple") &&
-      /(pro max|pro|iphone 18|iphone 17|iphone 16)/i.test(p.name)
-  )
-  if (appleFlagship) return appleFlagship
-
-  // 2. Look for top Samsung flagship (e.g. Galaxy S25 Ultra, S24 Ultra)
-  const samsungFlagship = candidates.find(
-    (p) =>
-      (p.brand || "").toLowerCase().includes("samsung") &&
-      /(ultra|pro|s25|s26|s24)/i.test(p.name)
-  )
-  if (samsungFlagship) return samsungFlagship
-
-  // 3. Any Apple or Samsung phone
-  const anyTop = candidates.find(
-    (p) =>
-      (p.brand || "").toLowerCase().includes("apple") ||
-      (p.brand || "").toLowerCase().includes("samsung")
-  )
-  if (anyTop) return anyTop
-
-  // 4. Fallback to first candidate
-  return candidates[0] || null
-}
-
 export default function Compare() {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const idsParam = params.get("ids")
-  const fromEmptyParam = params.get("fromEmpty") === "true"
-  const trendingParam = params.get("trending") === "true"
 
   const [compareProducts, setCompareProducts] = useState<Product[]>([])
   const [catalog, setCatalog] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [trendingId, setTrendingId] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem("pricewise_trending_id") || null
-    } catch {
-      return null
-    }
-  })
 
   // Keep track of what we loaded to prevent re-fetching when user removes a product or clears all
   const lastLoadedIdsRef = useRef<string | null>(null)
@@ -300,11 +220,6 @@ export default function Compare() {
   }, [])
 
   useEffect(() => {
-    if (trendingParam) {
-      userClearedRef.current = false
-      lastLoadedIdsRef.current = null
-    }
-
     // If the URL param matches what we already have in state, don't re-trigger
     if (lastLoadedIdsRef.current === idsParam && (compareProducts.length > 0 || userClearedRef.current)) {
       setLoading(false)
@@ -331,73 +246,14 @@ export default function Compare() {
           const ids = idsParam.split(",").map((s) => s.trim()).filter(Boolean)
 
           if (ids.length > 0) {
-            // Check if user is starting comparison from an empty list with 1 phone
-            const savedJson = localStorage.getItem("pricewise_compare_ids")
-            const isCleared = localStorage.getItem("pricewise_compare_cleared") === "true"
-            const trendingRemoved = localStorage.getItem("pricewise_trending_removed") === "true"
-            let existingIds: string[] = []
-            try {
-              existingIds = savedJson ? JSON.parse(savedJson) : []
-            } catch {}
-
-            const isStartingFromEmpty =
-              ids.length === 1 &&
-              (fromEmptyParam || isCleared || !Array.isArray(existingIds) || existingIds.length === 0) &&
-              !trendingRemoved
-
-            if (isStartingFromEmpty) {
-              // Fetch the clicked product
-              const res = await api.compareProducts([ids[0]])
-              const clickedProd = res.products?.[0] as Product | undefined
-
-              if (clickedProd && isMounted) {
-                // Ensure we have candidates for trending phone
-                let candidates = catalog
-                if (candidates.length === 0) {
-                  try {
-                    const catRes = await api.getProducts({ limit: 60, sort: "relevance" })
-                    candidates = catRes.items || []
-                    setCatalog(candidates)
-                  } catch (e) {
-                    console.warn("Failed to load catalog candidates for trending phone:", e)
-                  }
-                }
-
-                const trending = findTrendingPhone(clickedProd, candidates)
-                if (trending) {
-                  const combined = [clickedProd, trending]
-                  setCompareProducts(combined)
-                  setTrendingId(trending.id)
-                  userClearedRef.current = false
-
-                  try {
-                    localStorage.setItem("pricewise_compare_ids", JSON.stringify(combined.map((p) => p.id)))
-                    localStorage.setItem("pricewise_trending_id", trending.id)
-                    localStorage.removeItem("pricewise_compare_cleared")
-                    localStorage.removeItem("pricewise_trending_removed")
-                    notifyCompareChange()
-                  } catch {}
-
-                  // Update URL with both IDs without reloading
-                  const newParams = new URLSearchParams()
-                  newParams.set("ids", combined.map((p) => p.id).join(","))
-                  setParams(newParams, { replace: true })
-                  lastLoadedIdsRef.current = combined.map((p) => p.id).join(",")
-                  setLoading(false)
-                  return
-                }
-              }
-            }
-
-            // Normal loading of explicit IDs (multiple IDs, trending already removed, or already had phones)
             try {
               const res = await api.compareProducts(ids)
               if (isMounted && res.products && res.products.length > 0) {
                 setCompareProducts(res.products as Product[])
                 userClearedRef.current = false
                 try {
-                  localStorage.setItem("pricewise_compare_ids", JSON.stringify(ids))
-                  localStorage.removeItem("pricewise_compare_cleared")
+                  localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(ids))
+                  localStorage.removeItem(COMPARE_CLEARED_KEY)
                   notifyCompareChange()
                 } catch {}
                 setLoading(false)
@@ -411,8 +267,8 @@ export default function Compare() {
                   setCompareProducts(matched)
                   userClearedRef.current = false
                   try {
-                    localStorage.setItem("pricewise_compare_ids", JSON.stringify(ids))
-                    localStorage.removeItem("pricewise_compare_cleared")
+                    localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(ids))
+                    localStorage.removeItem(COMPARE_CLEARED_KEY)
                     notifyCompareChange()
                   } catch {}
                   setLoading(false)
@@ -431,9 +287,8 @@ export default function Compare() {
           }
         }
 
-        // 2. Check localStorage if no URL param
+        // 2. Check localStorage if no URL param (e.g. navigation from Navbar or other page)
         try {
-          // If the user actively cleared within this active page session, reserve the empty state
           if (userClearedRef.current) {
             if (isMounted) {
               setCompareProducts([])
@@ -442,14 +297,18 @@ export default function Compare() {
             return
           }
 
-          const savedJson = localStorage.getItem("pricewise_compare_ids")
-          if (savedJson) {
+          const savedJson = localStorage.getItem(COMPARE_STORAGE_KEY)
+          const isCleared = localStorage.getItem(COMPARE_CLEARED_KEY) === "true"
+          if (savedJson && !isCleared) {
             const savedIds: string[] = JSON.parse(savedJson)
             if (Array.isArray(savedIds) && savedIds.length > 0) {
               const res = await api.compareProducts(savedIds)
               if (isMounted && res.products && res.products.length > 0) {
                 setCompareProducts(res.products as Product[])
                 userClearedRef.current = false
+                const newParams = new URLSearchParams()
+                newParams.set("ids", savedIds.join(","))
+                setParams(newParams, { replace: true })
                 setLoading(false)
                 return
               }
@@ -459,51 +318,15 @@ export default function Compare() {
           console.warn("localStorage check failed:", e)
         }
 
-        // 3. Fallback: Auto-load default Trending flagship on direct navigation with zero stored items
-        // (Or when navigating from Navbar/external link with empty comparison store)
-        try {
-          let candidates = catalog
-          if (candidates.length === 0) {
-            const res = await api.getProducts({ limit: 60, sort: "relevance" })
-            candidates = res.items || []
-            if (isMounted) setCatalog(candidates)
-          }
-
-          const defaultTrending = getDefaultTrendingPhone(candidates)
-          if (defaultTrending && isMounted) {
-            setCompareProducts([defaultTrending])
-            setTrendingId(defaultTrending.id)
-            userClearedRef.current = false
-            try {
-              localStorage.setItem("pricewise_compare_ids", JSON.stringify([defaultTrending.id]))
-              localStorage.setItem("pricewise_trending_id", defaultTrending.id)
-              localStorage.removeItem("pricewise_compare_cleared")
-              localStorage.removeItem("pricewise_trending_removed")
-              notifyCompareChange()
-            } catch {}
-            const newParams = new URLSearchParams()
-            newParams.set("ids", defaultTrending.id)
-            setParams(newParams, { replace: true })
-            lastLoadedIdsRef.current = defaultTrending.id
-            setLoading(false)
-            return
-          } else if (isMounted) {
-            setCompareProducts([])
-          }
-        } catch (err) {
-          console.error("Failed to auto-load trending product on direct navigation:", err)
-          if (isMounted && catalog.length > 0) {
-            setCompareProducts(catalog.slice(0, 1))
-          } else if (isMounted) {
-            setCompareProducts([])
-          }
-        } finally {
-          if (isMounted) setLoading(false)
+        // 3. Fallback: completely empty (NO auto-injected phones!)
+        if (isMounted) {
+          setCompareProducts([])
+          setLoading(false)
         }
       } catch (err) {
         console.error("Failed to load products for comparison:", err)
-        if (isMounted && catalog.length > 0) {
-          setCompareProducts(catalog.slice(0, 1))
+        if (isMounted) {
+          setCompareProducts([])
         }
       } finally {
         if (isMounted) setLoading(false)
@@ -512,7 +335,7 @@ export default function Compare() {
 
     loadCompare()
     return () => { isMounted = false }
-  }, [idsParam, catalog, fromEmptyParam, trendingParam])
+  }, [idsParam, catalog])
 
   const getBest = (key: string, mode: string) => {
     if (mode === "none" || compareProducts.length === 0) return -1
@@ -525,28 +348,17 @@ export default function Compare() {
     const next = compareProducts.filter((p) => p.id !== id)
     setCompareProducts(next)
 
-    // If the removed phone is the trending phone, keep it removed and do not force it back in
-    if (id === trendingId) {
-      setTrendingId(null)
-      try {
-        localStorage.removeItem("pricewise_trending_id")
-        localStorage.setItem("pricewise_trending_removed", "true")
-      } catch {}
-    }
-
     const newIds = next.map((p) => p.id)
     lastLoadedIdsRef.current = newIds.join(",")
 
     // Explicitly update localStorage
     try {
-      localStorage.setItem("pricewise_compare_ids", JSON.stringify(newIds))
+      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(newIds))
       if (next.length === 0) {
-        // List is completely empty again: reset cleared flag and remove trending_removed flag so it can trigger next time
         userClearedRef.current = true
-        setTrendingId(null)
-        localStorage.setItem("pricewise_compare_cleared", "true")
-        localStorage.removeItem("pricewise_trending_id")
-        localStorage.removeItem("pricewise_trending_removed")
+        localStorage.setItem(COMPARE_CLEARED_KEY, "true")
+      } else {
+        localStorage.removeItem(COMPARE_CLEARED_KEY)
       }
       notifyCompareChange()
     } catch (e) {
@@ -564,13 +376,12 @@ export default function Compare() {
   const clearAll = () => {
     userClearedRef.current = true
     lastLoadedIdsRef.current = ""
-    setTrendingId(null)
     setCompareProducts([])
 
     // Explicitly update localStorage to empty array and reset flags
     try {
-      localStorage.setItem("pricewise_compare_ids", JSON.stringify([]))
-      localStorage.setItem("pricewise_compare_cleared", "true")
+      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify([]))
+      localStorage.setItem(COMPARE_CLEARED_KEY, "true")
       localStorage.removeItem("pricewise_trending_id")
       localStorage.removeItem("pricewise_trending_removed")
       notifyCompareChange()
@@ -601,8 +412,8 @@ export default function Compare() {
 
     // Explicitly update localStorage with active comparison
     try {
-      localStorage.setItem("pricewise_compare_ids", JSON.stringify(newIds))
-      localStorage.removeItem("pricewise_compare_cleared")
+      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(newIds))
+      localStorage.removeItem(COMPARE_CLEARED_KEY)
       notifyCompareChange()
     } catch (e) {
       console.error("Failed to update localStorage:", e)
@@ -615,48 +426,13 @@ export default function Compare() {
     setSearchQuery("")
   }
 
-  // Open modal and ensure catalog is fetched; initialize default trending phone if starting from 0 items
-  const handleOpenModal = async () => {
-    // If the comparison list is currently completely empty (0 phones):
-    const trendingRemoved = localStorage.getItem("pricewise_trending_removed") === "true"
-
-    if (compareProducts.length === 0 && !trendingRemoved) {
-      let candidates = catalog
-      if (candidates.length === 0) {
-        try {
-          const res = await api.getProducts({ limit: 60, sort: "relevance" })
-          candidates = res.items || []
-          setCatalog(candidates)
-        } catch (e) {
-          console.warn("Failed to fetch catalog:", e)
-        }
-      }
-
-      const defaultTrending = getDefaultTrendingPhone(candidates)
-      if (defaultTrending) {
-        setCompareProducts([defaultTrending])
-        setTrendingId(defaultTrending.id)
-        userClearedRef.current = false
-
-        try {
-          localStorage.setItem("pricewise_compare_ids", JSON.stringify([defaultTrending.id]))
-          localStorage.setItem("pricewise_trending_id", defaultTrending.id)
-          localStorage.removeItem("pricewise_compare_cleared")
-          localStorage.removeItem("pricewise_trending_removed")
-          notifyCompareChange()
-        } catch {}
-
-        const newParams = new URLSearchParams()
-        newParams.set("ids", defaultTrending.id)
-        setParams(newParams, { replace: true })
-        lastLoadedIdsRef.current = defaultTrending.id
-      }
-    } else if (catalog.length === 0) {
+  // Open modal and ensure catalog is fetched
+  const handleOpenModal = () => {
+    if (catalog.length === 0) {
       api.getProducts({ limit: 150 })
         .then((res) => setCatalog(res.items || []))
         .catch(console.error)
     }
-
     setSearchQuery("")
     setModalOpen(true)
   }
@@ -785,22 +561,13 @@ export default function Compare() {
                     {compareProducts.map((p, i) => (
                       <div
                         key={p.id}
-                        className={`p-4 text-center group bg-white transition-all rounded-xl ${
-                          p.id === trendingId ? "bg-amber-50/20 ring-1 ring-amber-300/80" : ""
-                        }`}
+                        className="p-4 text-center group bg-white transition-all rounded-xl"
                       >
-                        {/* Top action row: Device tag / Trending tag + Delete button */}
+                        {/* Top action row: Device tag + Delete button */}
                         <div className="flex items-center justify-between mb-2 gap-1.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                              Device {i + 1}
-                            </span>
-                            {p.id === trendingId && (
-                              <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs uppercase tracking-wider">
-                                🔥 Trending
-                              </span>
-                            )}
-                          </div>
+                          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            Device {i + 1}
+                          </span>
                           <button
                             type="button"
                             onClick={() => removeProduct(p.id)}
@@ -811,14 +578,6 @@ export default function Compare() {
                             Delete
                           </button>
                         </div>
-
-                        {p.id === trendingId && (
-                          <div className="mb-2">
-                            <span className="text-[10px] font-medium text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-md">
-                              Default Trending Phone
-                            </span>
-                          </div>
-                        )}
 
                         <div className="w-24 h-24 mx-auto mb-2 bg-slate-50 rounded-xl p-2 flex items-center justify-center">
                           <img

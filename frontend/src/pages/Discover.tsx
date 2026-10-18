@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import ProductCard from "../components/ui/ProductCard"
-import Footer from "../components/layout/Footer"
 import { api } from "../services/api"
 import type { Product, CatalogMeta } from "../types/product"
 import { Loader2 } from "lucide-react"
@@ -110,7 +109,6 @@ export default function Discover() {
           </>
         )}
       </div>
-      <Footer />
     </div>
   )
 }

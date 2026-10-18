@@ -798,22 +798,12 @@ export default function Search() {
           <button
             onClick={() => {
               const ids = compareList.map((x) => x.id)
-              const currentState = getCompareState()
-
-              if (ids.length === 1 && currentState.isEmpty) {
-                try {
-                  localStorage.removeItem(COMPARE_CLEARED_KEY)
-                  notifyCompareChange()
-                } catch {}
-                navigate(`/compare?ids=${ids[0]}&fromEmpty=true`)
-              } else {
-                try {
-                  localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(ids))
-                  localStorage.removeItem(COMPARE_CLEARED_KEY)
-                  notifyCompareChange()
-                } catch {}
-                navigate(`/compare?ids=${ids.join(",")}`)
-              }
+              try {
+                localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(ids))
+                localStorage.removeItem(COMPARE_CLEARED_KEY)
+                notifyCompareChange()
+              } catch {}
+              navigate(`/compare?ids=${ids.join(",")}`)
             }}
             className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl transition-colors cursor-pointer"
           >
