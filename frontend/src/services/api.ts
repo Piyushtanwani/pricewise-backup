@@ -4,6 +4,7 @@ import type {
   CatalogMeta,
   ProductDetailResponse,
   PriceIntelligenceResponse,
+  MarketIntelligenceSummary,
   AIChatResponse,
   StorePriceRow,
   PricePoint,
@@ -165,6 +166,13 @@ export const api = {
   },
 
   // ---------------------------------------------------------------- Intelligence
+  async getMarketIntelligence(refresh = false): Promise<MarketIntelligenceSummary> {
+    const res = await apiClient.get<MarketIntelligenceSummary>('/intelligence/market', {
+      params: refresh ? { refresh: 'true' } : undefined,
+    });
+    return res.data;
+  },
+
   async getPriceIntelligence(productId?: string, range?: string, store?: string): Promise<PriceIntelligenceResponse> {
     const res = await apiClient.get<PriceIntelligenceResponse>('/intelligence/price', {
       params: { productId, range, store },

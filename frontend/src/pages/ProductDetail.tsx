@@ -139,7 +139,7 @@ export default function ProductDetail() {
     )
   }
 
-  const product = detail?.product || detail
+  const product = (detail?.product || detail) as unknown as Product
 
   if (error || !product || !product.id || !product.name) {
     return (

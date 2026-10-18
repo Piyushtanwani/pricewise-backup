@@ -15,6 +15,8 @@ import Profile from "../pages/Profile"
 import Settings from "../pages/Settings"
 import Login from "../pages/Login"
 
+import FloatingAssistantButton from "../components/ui/FloatingAssistantButton"
+
 function Root() {
   return (
     <>
@@ -22,6 +24,7 @@ function Root() {
       <main className="pb-16 lg:pb-0">
         <Outlet />
       </main>
+      <FloatingAssistantButton />
     </>
   )
 }
@@ -42,6 +45,8 @@ export const router = createBrowserRouter([
       { path: "compare", Component: Compare },
       { path: "price-intelligence", Component: PriceIntelligence },
       { path: "ai", Component: AIAssistant },
+      { path: "assistant", Component: AIAssistant },
+      { path: "shopping-assistant", Component: AIAssistant },
       { path: "for-you", Component: ForYou },
       { path: "wishlist", Component: Wishlist },
       { path: "watchlist", Component: Watchlist },

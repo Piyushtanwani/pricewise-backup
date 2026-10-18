@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { Send, Sparkles, Star, ExternalLink, Bot, Loader2 } from "lucide-react"
+import { Send, ExternalLink, Bot, Loader2, RotateCcw } from "lucide-react"
 import Badge from "../components/ui/Badge"
 import { api } from "../services/api"
 import type { Product } from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
+
+const CHAT_STORAGE_KEY = "pricewise_shopping_assistant_history"
 
 const quickPrompts = [
   "Best phone under ₹30,000",
@@ -22,25 +24,57 @@ type Message = {
   insights?: { label: string; value: string }[]
 }
 
+const INITIAL_MESSAGES: Message[] = [
+  {
+    role: "assistant",
+    content: "Hello! I'm your PriceWise AI Shopping Assistant. Ask me anything about smartphone pricing, specs comparison, retailer discounts, or the best time to buy.",
+    insights: [
+      { label: "Catalog Live", value: "140 smartphones tracked across Amazon, Flipkart, Croma" },
+      { label: "Price Analysis", value: "Smart predictions & historical discount tracking active" },
+    ],
+  },
+]
+
 export default function AIAssistant() {
   const navigate = useNavigate()
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hello! I'm your PriceWise AI Shopping Assistant. Ask me anything about smartphone pricing, specs comparison, retailer discounts, or the best time to buy.",
-      insights: [
-        { label: "Catalog Live", value: "140 smartphones tracked across Amazon, Flipkart, Croma" },
-        { label: "Price Analysis", value: "Smart predictions & historical discount tracking active" },
-      ],
-    },
-  ])
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem(CHAT_STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to load saved chat history from localStorage:", err)
+    }
+    return INITIAL_MESSAGES
+  })
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages))
+    } catch (err) {
+      console.warn("Failed to persist chat history to localStorage:", err)
+    }
+  }, [messages])
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
+
+  const handleClearChat = () => {
+    try {
+      localStorage.removeItem(CHAT_STORAGE_KEY)
+    } catch (err) {
+      console.warn("Failed to clear chat history from localStorage:", err)
+    }
+    setMessages(INITIAL_MESSAGES)
+  }
 
   const handleSend = async (text: string) => {
     if (!text.trim() || loading) return
@@ -84,14 +118,30 @@ export default function AIAssistant() {
     <div className="min-h-screen bg-[#f4f6fb] pt-14">
       <div className="max-w-[1000px] mx-auto px-6 py-6 flex flex-col h-[calc(100vh-56px)]">
         {/* Header */}
-        <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
-          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shadow-xs">
-            <img src="/logo-mark.png" alt="PriceWise AI" className="w-full h-full object-contain" />
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shadow-xs">
+              <img src="/logo-mark.png" alt="PriceWise AI" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-slate-900">PriceWise Shopping Assistant</h1>
+                <Badge variant="primary">AI</Badge>
+              </div>
+              <p className="text-xs text-slate-500">Smart shopping assistant powered by PriceWise catalogue intelligence & rule-based engine</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">PriceWise Shopping Assistant</h1>
-            <p className="text-xs text-slate-500">Smart shopping assistant powered by PriceWise catalogue intelligence & rule-based engine</p>
-          </div>
+          {messages.length > 1 && (
+            <button
+              type="button"
+              onClick={handleClearChat}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg transition-colors cursor-pointer shadow-xs"
+              title="Reset conversation and start a new chat"
+            >
+              <RotateCcw size={13} />
+              <span>New Chat</span>
+            </button>
+          )}
         </div>
 
         {/* Message Thread */}

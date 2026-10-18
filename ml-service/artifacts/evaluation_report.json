@@ -1,0 +1,534 @@
+{
+  "timestamp": "2026-10-18T11:46:45.672734Z",
+  "evaluated_products_count": 56,
+  "metrics_by_horizon": {
+    "7d": {
+      "naive_baseline": {
+        "mae": 979.98,
+        "rmse": 3430.06,
+        "mape": 1.23,
+        "smape": 1.27,
+        "count": 56
+      },
+      "linear_trend": {
+        "mae": 2082.98,
+        "rmse": 4500.99,
+        "mape": 3.23,
+        "smape": 3.32,
+        "count": 56
+      },
+      "xgboost": {
+        "mae": 2162.14,
+        "rmse": 4430.8,
+        "mape": 3.23,
+        "smape": 3.36,
+        "count": 56
+      },
+      "prophet": {
+        "mae": 1864.52,
+        "rmse": 4219.24,
+        "mape": 3.22,
+        "smape": 3.26,
+        "count": 56
+      }
+    },
+    "14d": {
+      "naive_baseline": {
+        "mae": 1671.82,
+        "rmse": 4184.5,
+        "mape": 2.17,
+        "smape": 2.23,
+        "count": 56
+      },
+      "linear_trend": {
+        "mae": 2833.62,
+        "rmse": 5462.58,
+        "mape": 4.25,
+        "smape": 4.37,
+        "count": 56
+      },
+      "xgboost": {
+        "mae": 2518.28,
+        "rmse": 4920.25,
+        "mape": 3.82,
+        "smape": 3.98,
+        "count": 56
+      },
+      "prophet": {
+        "mae": 2614.43,
+        "rmse": 4913.23,
+        "mape": 4.46,
+        "smape": 4.5,
+        "count": 56
+      }
+    },
+    "30d": {
+      "naive_baseline": {
+        "mae": 3313.7,
+        "rmse": 5618.26,
+        "mape": 7.11,
+        "smape": 7.33,
+        "count": 56
+      },
+      "linear_trend": {
+        "mae": 4557.01,
+        "rmse": 6562.75,
+        "mape": 9.54,
+        "smape": 9.74,
+        "count": 56
+      },
+      "xgboost": {
+        "mae": 3419.04,
+        "rmse": 5888.92,
+        "mape": 6.86,
+        "smape": 7.21,
+        "count": 56
+      },
+      "prophet": {
+        "mae": 4750.19,
+        "rmse": 7459.12,
+        "mape": 11.07,
+        "smape": 11.12,
+        "count": 56
+      }
+    }
+  },
+  "metrics_by_history_length": {
+    "short (<60d)": {
+      "7d": {
+        "naive_baseline": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 2
+        },
+        "linear_trend": {
+          "mae": 35.86,
+          "rmse": 50.71,
+          "mape": 0.22,
+          "smape": 0.22,
+          "count": 2
+        },
+        "xgboost": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 2
+        },
+        "prophet": {
+          "mae": 2.48,
+          "rmse": 3.5,
+          "mape": 0.02,
+          "smape": 0.02,
+          "count": 2
+        }
+      },
+      "30d": {
+        "naive_baseline": {
+          "mae": 63.0,
+          "rmse": 89.1,
+          "mape": 0.38,
+          "smape": 0.38,
+          "count": 2
+        },
+        "linear_trend": {
+          "mae": 158.31,
+          "rmse": 223.88,
+          "mape": 0.96,
+          "smape": 0.97,
+          "count": 2
+        },
+        "xgboost": {
+          "mae": 63.0,
+          "rmse": 89.1,
+          "mape": 0.38,
+          "smape": 0.38,
+          "count": 2
+        },
+        "prophet": {
+          "mae": 50.62,
+          "rmse": 71.59,
+          "mape": 0.31,
+          "smape": 0.31,
+          "count": 2
+        }
+      }
+    },
+    "medium (60-180d)": {
+      "7d": {
+        "naive_baseline": {
+          "mae": 1031.93,
+          "rmse": 3653.19,
+          "mape": 0.91,
+          "smape": 0.94,
+          "count": 29
+        },
+        "linear_trend": {
+          "mae": 2052.1,
+          "rmse": 4955.0,
+          "mape": 2.44,
+          "smape": 2.49,
+          "count": 29
+        },
+        "xgboost": {
+          "mae": 2564.49,
+          "rmse": 4968.3,
+          "mape": 3.81,
+          "smape": 3.98,
+          "count": 29
+        },
+        "prophet": {
+          "mae": 2046.19,
+          "rmse": 4842.27,
+          "mape": 3.2,
+          "smape": 3.23,
+          "count": 29
+        }
+      },
+      "30d": {
+        "naive_baseline": {
+          "mae": 2957.24,
+          "rmse": 5510.43,
+          "mape": 5.28,
+          "smape": 5.12,
+          "count": 29
+        },
+        "linear_trend": {
+          "mae": 5031.81,
+          "rmse": 7307.75,
+          "mape": 9.01,
+          "smape": 8.7,
+          "count": 29
+        },
+        "xgboost": {
+          "mae": 3128.77,
+          "rmse": 5950.45,
+          "mape": 5.2,
+          "smape": 5.14,
+          "count": 29
+        },
+        "prophet": {
+          "mae": 4847.88,
+          "rmse": 7355.38,
+          "mape": 10.52,
+          "smape": 9.87,
+          "count": 29
+        }
+      }
+    },
+    "long (>180d)": {
+      "7d": {
+        "naive_baseline": {
+          "mae": 998.12,
+          "rmse": 3297.45,
+          "mape": 1.7,
+          "smape": 1.74,
+          "count": 25
+        },
+        "linear_trend": {
+          "mae": 2282.57,
+          "rmse": 4110.9,
+          "mape": 4.39,
+          "smape": 4.52,
+          "count": 25
+        },
+        "xgboost": {
+          "mae": 1868.38,
+          "rmse": 3916.92,
+          "mape": 2.82,
+          "smape": 2.9,
+          "count": 25
+        },
+        "prophet": {
+          "mae": 1802.74,
+          "rmse": 3560.5,
+          "mape": 3.49,
+          "smape": 3.54,
+          "count": 25
+        }
+      },
+      "30d": {
+        "naive_baseline": {
+          "mae": 3987.24,
+          "rmse": 5956.64,
+          "mape": 9.76,
+          "smape": 10.46,
+          "count": 25
+        },
+        "linear_trend": {
+          "mae": 4358.12,
+          "rmse": 5875.74,
+          "mape": 10.84,
+          "smape": 11.64,
+          "count": 25
+        },
+        "xgboost": {
+          "mae": 4024.24,
+          "rmse": 6050.48,
+          "mape": 9.3,
+          "smape": 10.15,
+          "count": 25
+        },
+        "prophet": {
+          "mae": 5012.83,
+          "rmse": 7865.87,
+          "mape": 12.56,
+          "smape": 13.42,
+          "count": 25
+        }
+      }
+    }
+  },
+  "metrics_by_retailer": {
+    "Amazon": {
+      "7d": {
+        "naive_baseline": {
+          "mae": 979.98,
+          "rmse": 3430.06,
+          "mape": 1.23,
+          "smape": 1.27,
+          "count": 56
+        },
+        "linear_trend": {
+          "mae": 2082.98,
+          "rmse": 4500.99,
+          "mape": 3.23,
+          "smape": 3.32,
+          "count": 56
+        },
+        "xgboost": {
+          "mae": 2162.14,
+          "rmse": 4430.8,
+          "mape": 3.23,
+          "smape": 3.36,
+          "count": 56
+        },
+        "prophet": {
+          "mae": 1864.52,
+          "rmse": 4219.24,
+          "mape": 3.22,
+          "smape": 3.26,
+          "count": 56
+        }
+      },
+      "30d": {
+        "naive_baseline": {
+          "mae": 3313.7,
+          "rmse": 5618.26,
+          "mape": 7.11,
+          "smape": 7.33,
+          "count": 56
+        },
+        "linear_trend": {
+          "mae": 4557.01,
+          "rmse": 6562.75,
+          "mape": 9.54,
+          "smape": 9.74,
+          "count": 56
+        },
+        "xgboost": {
+          "mae": 3419.04,
+          "rmse": 5888.92,
+          "mape": 6.86,
+          "smape": 7.21,
+          "count": 56
+        },
+        "prophet": {
+          "mae": 4750.19,
+          "rmse": 7459.12,
+          "mape": 11.07,
+          "smape": 11.12,
+          "count": 56
+        }
+      }
+    },
+    "Flipkart": {
+      "7d": {
+        "naive_baseline": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "linear_trend": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "xgboost": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "prophet": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        }
+      },
+      "30d": {
+        "naive_baseline": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "linear_trend": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "xgboost": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "prophet": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        }
+      }
+    },
+    "Croma": {
+      "7d": {
+        "naive_baseline": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "linear_trend": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "xgboost": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "prophet": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        }
+      },
+      "30d": {
+        "naive_baseline": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "linear_trend": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "xgboost": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "prophet": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        }
+      }
+    },
+    "Vijay Sales": {
+      "7d": {
+        "naive_baseline": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "linear_trend": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "xgboost": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "prophet": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        }
+      },
+      "30d": {
+        "naive_baseline": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "linear_trend": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "xgboost": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        },
+        "prophet": {
+          "mae": 0.0,
+          "rmse": 0.0,
+          "mape": 0.0,
+          "smape": 0.0,
+          "count": 0
+        }
+      }
+    }
+  }
+}

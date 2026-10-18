@@ -74,6 +74,6 @@ export const getPricePrediction = async (productId: string) => {
   const product = await findProductOr404(productId);
   const series = await seriesFor(productId, 120, undefined, product.bestPrice);
 
-  return { productId, ...(await predictPrices(productId, series)) };
+  return { productId, ...(await predictPrices(productId, series, product.bestPrice)) };
 };
 

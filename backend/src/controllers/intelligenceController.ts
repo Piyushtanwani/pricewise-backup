@@ -7,6 +7,18 @@ import { toProductCard } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
 import { answer } from '../services/assistant';
 
+import { getMarketIntelligenceSummary } from '../services/marketIntelligenceService';
+
+/**
+ * Returns market-wide intelligence: direction, verified price drops, retailer competitiveness,
+ * volatility ranking, and buying opportunities across genuine catalogue products.
+ */
+export const getMarketIntelligence = async (req: Request, res: Response): Promise<void> => {
+  const forceRefresh = req.query.refresh === 'true';
+  const summary = await getMarketIntelligenceSummary({ forceRefresh });
+  res.json(summary);
+};
+
 /**
  * Everything the Price Intelligence page needs for one product in a single call.
  * Defaults to the most-reviewed product when no productId is given.

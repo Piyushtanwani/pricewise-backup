@@ -6,6 +6,7 @@ import { queryInt, queryList, queryNumber, queryString } from '../utils/validate
 import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } from '../services/priceAnalytics';
 import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard, StorePriceRow } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
+import { env } from '../config/env';
 import { resolveDirectStoreUrl } from '../services/storeRedirectService';
 import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
 
@@ -245,6 +246,40 @@ export const getAlternatives = async (req: Request, res: Response): Promise<void
   const limit = queryInt(req.query.limit, 4, { min: 1, max: 12 });
   const price = product.bestPrice ?? 0;
 
+  // 1. Content-based ML Recommender via FastAPI
+  if (env.mlServiceUrl) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2500);
+      const mlRes = await fetch(`${env.mlServiceUrl}/recommend/alternatives`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: product.id, limit }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (mlRes.ok) {
+        const payload = (await mlRes.json()) as { recommendations?: { product_id: string }[] };
+        if (payload.recommendations && payload.recommendations.length > 0) {
+          const recIds = payload.recommendations.map((r) => r.product_id);
+          const dbProducts = await prisma.product.findMany({
+            where: { id: { in: recIds } },
+            include: productInclude,
+          });
+          const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+          const ordered = recIds.map((id) => productMap.get(id)).filter((p): p is (typeof dbProducts)[0] => Boolean(p));
+          if (ordered.length > 0) {
+            res.json({ items: await presentCards(ordered) });
+            return;
+          }
+        }
+      }
+    } catch {
+      // Fall through to deterministic heuristic fallback
+    }
+  }
+
+  // 2. Deterministic SQL Heuristic Fallback
   const inBand = await prisma.product.findMany({
     where: {
       id: { not: product.id },

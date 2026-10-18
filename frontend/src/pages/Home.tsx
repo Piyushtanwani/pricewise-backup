@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { Search, TrendingDown, Zap, BarChart2, Bell, Sparkles, ChevronRight, ArrowRight, Smartphone } from "lucide-react"
+import { Search, TrendingDown, Zap, BarChart2, Bell, Sparkles, ChevronRight, ArrowRight, Smartphone, Bot } from "lucide-react"
 import {
   AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts"
@@ -20,6 +20,7 @@ const features = [
     color: "from-indigo-500 to-blue-500",
     bg: "bg-indigo-50",
     iconColor: "text-indigo-600",
+    to: "/compare",
   },
   {
     icon: Bell,
@@ -28,6 +29,7 @@ const features = [
     color: "from-emerald-500 to-teal-500",
     bg: "bg-emerald-50",
     iconColor: "text-emerald-600",
+    to: "/alerts",
   },
   {
     icon: TrendingDown,
@@ -36,14 +38,16 @@ const features = [
     color: "from-violet-500 to-purple-500",
     bg: "bg-violet-50",
     iconColor: "text-violet-600",
+    to: "/price-intelligence",
   },
   {
-    icon: Sparkles,
-    title: "AI Recommendations",
-    desc: "Find phones and alternatives perfectly suited to your budget and desired specs.",
-    color: "from-amber-500 to-orange-500",
-    bg: "bg-amber-50",
-    iconColor: "text-amber-600",
+    icon: Bot,
+    title: "Shopping Assistant",
+    desc: "Ask our conversational AI for custom recommendations, specs comparisons, and deal timing.",
+    color: "from-purple-500 to-indigo-500",
+    bg: "bg-purple-50",
+    iconColor: "text-purple-600",
+    to: "/ai",
   },
 ]
 
@@ -268,15 +272,53 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Everything you need to buy smarter</h2>
           <p className="text-slate-500 mb-6">Four powerful tools in one intelligent platform</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {features.map(({ icon: Icon, title, desc, bg, iconColor }) => (
-              <div key={title} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
-                <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3`}>
+            {features.map(({ icon: Icon, title, desc, bg, iconColor, to }) => (
+              <div
+                key={title}
+                onClick={() => to && navigate(to)}
+                className={`bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all ${
+                  to ? "cursor-pointer hover:border-indigo-300 group" : ""
+                }`}
+              >
+                <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
                   <Icon size={18} className={iconColor} />
                 </div>
-                <h3 className="font-semibold text-slate-800 mb-1.5">{title}</h3>
+                <div className="flex items-center justify-between mb-1.5">
+                  <h3 className="font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">{title}</h3>
+                  {to && <ChevronRight size={14} className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />}
+                </div>
                 <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Shopping Assistant Spotlight Banner */}
+        <section className="mb-14">
+          <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl border border-indigo-700/50">
+            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-60 h-60 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="max-w-xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-xs font-semibold mb-3">
+                  <Sparkles size={13} className="text-indigo-300" />
+                  <span>Conversational AI Assistant</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
+                  Meet your PriceWise Shopping Assistant
+                </h2>
+                <p className="text-indigo-200/90 text-sm sm:text-base leading-relaxed">
+                  Ask questions like <span className="text-white font-medium">"Best phone under ₹30,000"</span> or <span className="text-white font-medium">"Should I buy iPhone 16 now?"</span> and get real-time price intelligence instantly.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/ai")}
+                className="shrink-0 flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-white text-indigo-700 font-bold text-sm shadow-md hover:bg-indigo-50 hover:shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                <Bot size={18} />
+                <span>Open Assistant</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
         </section>
 

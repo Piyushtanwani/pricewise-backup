@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router"
 import {
   Search, Heart, Bell, User, ChevronDown, GitCompare, X,
   Home, Compass, BarChart2, Sparkles, Settings, LogOut, ListChecks,
-  AlertCircle, Check, Loader2
+  AlertCircle, Check, Loader2, Bot
 } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
 import { useCompareAction } from "../../hooks/useCompareAction"
@@ -14,6 +14,7 @@ const navLinks = [
   { to: "/", label: "Home", icon: Home },
   { to: "/discover", label: "Discover", icon: Compass },
   { to: "/compare", label: "Compare", icon: GitCompare },
+  { to: "/ai", label: "Shopping Assistant", icon: Bot, badge: "AI" },
   { to: "/price-intelligence", label: "Price Intelligence", icon: BarChart2 },
   { to: "/for-you", label: "For You", icon: Sparkles },
 ]
@@ -136,7 +137,8 @@ export default function Navbar() {
 
           {/* Nav Links */}
           <div className="hidden lg:flex items-center gap-0.5">
-            {navLinks.map(({ to, label }) => {
+            {navLinks.map((link) => {
+              const { to, label } = link
               if (to === "/compare") {
                 return (
                   <button
@@ -158,17 +160,23 @@ export default function Navbar() {
                   </button>
                 )
               }
+              const badge = (link as { badge?: string }).badge
               return (
                 <Link
                   key={to}
                   to={to}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     isActive(to)
                       ? "bg-indigo-50 text-indigo-700 font-semibold"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   }`}
                 >
-                  {label}
+                  <span>{label}</span>
+                  {badge && (
+                    <span className="px-1.5 py-0.2 rounded bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[9px] font-black tracking-wider uppercase shadow-2xs">
+                      {badge}
+                    </span>
+                  )}
                 </Link>
               )
             })}
@@ -344,6 +352,14 @@ export default function Navbar() {
 
                     <div className="py-1">
                       <Link
+                        to="/ai"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-indigo-600 font-semibold hover:bg-indigo-50/70 transition-colors"
+                      >
+                        <Bot size={15} className="text-indigo-600" />
+                        Shopping Assistant
+                      </Link>
+                      <Link
                         to="/profile"
                         onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
@@ -411,10 +427,11 @@ export default function Navbar() {
 
       {/* Mobile Bottom Nav */}
       <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/95 backdrop-blur-md border-t border-slate-200">
-        <div className="grid grid-cols-5 h-14">
+        <div className="grid grid-cols-6 h-14">
           {[
             { to: "/", label: "Home", icon: Home },
             { to: "/discover", label: "Discover", icon: Compass },
+            { to: "/ai", label: "Assistant", icon: Bot },
             { to: "/compare", label: "Compare", icon: GitCompare },
             { to: "/alerts", label: "Alerts", icon: Bell },
             { to: "/profile", label: "Profile", icon: User },

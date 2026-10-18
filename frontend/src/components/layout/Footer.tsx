@@ -6,6 +6,7 @@ const cols = [
     links: [
       { label: "Home", to: "/" },
       { label: "Discover", to: "/discover" },
+      { label: "Shopping Assistant (AI)", to: "/ai" },
       { label: "Compare", to: "/compare" },
       { label: "Price Intelligence", to: "/price-intelligence" },
     ],
