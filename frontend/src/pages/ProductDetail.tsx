@@ -40,6 +40,7 @@ export default function ProductDetail() {
   const [selectedStore, setSelectedStore] = useState<string>("All Stores")
   const [wished, setWished] = useState(false)
   const [tracking, setTracking] = useState(false)
+  const [targetPrice, setTargetPrice] = useState<number>(0)
   const [tab, setTab] = useState<"history" | "prediction">("history")
 
   // Nodemailer Email Notification Modal State
@@ -273,6 +274,9 @@ export default function ProductDetail() {
     const item = targetItem || detail?.product || (detail as any)
     if (!item) return
     setModalProduct(item)
+    if (item.bestPrice) {
+      setTargetPrice(Math.round(item.bestPrice * 0.95))
+    }
     setShowNotifyModal(true)
   }
 
