@@ -547,7 +547,22 @@ export default function ProductDetail() {
                   Wishlist
                 </button>
                 <button
-                  onClick={() => navigate(`/compare?ids=${product.id}`)}
+                  type="button"
+                  onClick={() => {
+                    const savedJson = localStorage.getItem("pricewise_compare_ids")
+                    const isCleared = localStorage.getItem("pricewise_compare_cleared") === "true"
+                    let existingIds: string[] = []
+                    try {
+                      existingIds = savedJson ? JSON.parse(savedJson) : []
+                    } catch {}
+
+                    if (!Array.isArray(existingIds) || existingIds.length === 0 || isCleared) {
+                      navigate(`/compare?ids=${product.id}&fromEmpty=true`)
+                    } else {
+                      const updated = Array.from(new Set([...existingIds, product.id])).slice(0, 4)
+                      navigate(`/compare?ids=${updated.join(",")}`)
+                    }
+                  }}
                   className="flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium border bg-white text-slate-700 border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer"
                 >
                   <GitCompare size={13} />

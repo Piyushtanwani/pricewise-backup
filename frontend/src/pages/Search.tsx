@@ -795,9 +795,21 @@ export default function Search() {
             ))}
           </div>
           <button
-            onClick={() =>
-              navigate(`/compare?ids=${compareList.map((x) => x.id).join(",")}`)
-            }
+            onClick={() => {
+              const ids = compareList.map((x) => x.id)
+              const savedJson = localStorage.getItem("pricewise_compare_ids")
+              const isCleared = localStorage.getItem("pricewise_compare_cleared") === "true"
+              let existingIds: string[] = []
+              try {
+                existingIds = savedJson ? JSON.parse(savedJson) : []
+              } catch {}
+
+              if (ids.length === 1 && (!Array.isArray(existingIds) || existingIds.length === 0 || isCleared)) {
+                navigate(`/compare?ids=${ids[0]}&fromEmpty=true`)
+              } else {
+                navigate(`/compare?ids=${ids.join(",")}`)
+              }
+            }}
             className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl transition-colors cursor-pointer"
           >
             Compare Now

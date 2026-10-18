@@ -281,27 +281,8 @@ export const getAlternatives = async (req: Request, res: Response): Promise<void
 };
 
 export const compareProducts = async (req: Request, res: Response): Promise<void> => {
-  let ids = [...new Set(queryList(req.query.ids))];
+  const ids = [...new Set(queryList(req.query.ids))];
   if (ids.length === 0) throw badRequest('Provide at least 1 product id, e.g. ?ids=a,b');
-
-  // If only 1 product ID is provided, automatically fetch 1 or 2 similar competitor phones in a similar price range
-  if (ids.length === 1) {
-    const mainProduct = await prisma.product.findUnique({ where: { id: ids[0] } });
-    if (mainProduct) {
-      const minP = Math.round((mainProduct.bestPrice || 25000) * 0.7);
-      const maxP = Math.round((mainProduct.bestPrice || 25000) * 1.35);
-      const competitors = await prisma.product.findMany({
-        where: {
-          id: { not: mainProduct.id },
-          brand: { not: mainProduct.brand },
-          bestPrice: { gte: minP, lte: maxP },
-        },
-        take: 2,
-        orderBy: { reviewCount: 'desc' },
-      });
-      ids = [mainProduct.id, ...competitors.map((c) => c.id)];
-    }
-  }
 
   const found = await prisma.product.findMany({ where: { id: { in: ids } }, include: productInclude });
   if (found.length === 0) {

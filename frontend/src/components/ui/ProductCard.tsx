@@ -207,7 +207,26 @@ export default function ProductCard({
         <div className="flex gap-1.5 pt-2 border-t border-slate-100">
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onCompare?.(product) }}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (onCompare) {
+                onCompare(product)
+              } else {
+                const savedJson = localStorage.getItem("pricewise_compare_ids")
+                const isCleared = localStorage.getItem("pricewise_compare_cleared") === "true"
+                let existingIds: string[] = []
+                try {
+                  existingIds = savedJson ? JSON.parse(savedJson) : []
+                } catch {}
+
+                if (!Array.isArray(existingIds) || existingIds.length === 0 || isCleared) {
+                  navigate(`/compare?ids=${product.id}&fromEmpty=true`)
+                } else {
+                  const updated = Array.from(new Set([...existingIds, product.id])).slice(0, 4)
+                  navigate(`/compare?ids=${updated.join(",")}`)
+                }
+              }
+            }}
             className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               selected ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600"
             }`}
