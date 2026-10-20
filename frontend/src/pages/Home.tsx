@@ -6,7 +6,7 @@ import {
 } from "recharts"
 import ProductCard from "../components/ui/ProductCard"
 import PriceAlertModal from "../components/ui/PriceAlertModal"
-import Footer from "../components/layout/Footer"
+import { useAuth } from "../context/AuthContext"
 import { api } from "../services/api"
 import type { Product, CatalogMeta } from "../types/product"
 
@@ -63,8 +63,17 @@ export default function Home() {
   const [showTrackModal, setShowTrackModal] = useState(false)
   const [trackedProductIds, setTrackedProductIds] = useState<Set<string>>(new Set())
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
 
   const handleOpenTrackModal = (p: Product) => {
+    if (!isAuthenticated) {
+      sessionStorage.setItem("pricewise_pending_track", JSON.stringify({
+        productId: p.id,
+        productName: p.name,
+      }))
+      navigate("/login", { state: { from: "/", pendingTrack: { productId: p.id, productName: p.name } } })
+      return
+    }
     setTrackModalProduct(p)
     setShowTrackModal(true)
   }
@@ -135,7 +144,7 @@ export default function Home() {
             <div>
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5 text-sm text-blue-300 mb-6">
                 <img src="/logo-mark.png" alt="PriceWise" className="w-4 h-4 object-contain select-none" />
-                Live Supabase Mobile Catalog & Price Intelligence
+                Live Smartphone Catalog & Price Intelligence
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-5">
@@ -257,7 +266,7 @@ export default function Home() {
             { label: "Mobiles Tracked", value: `${meta?.categories?.[0]?.count || 140}+`, icon: Smartphone, color: "text-indigo-600" },
             { label: "Stores Covered", value: `${meta?.stores?.length || 4} Retailers`, icon: TrendingDown, color: "text-emerald-600" },
             { label: "Top Brands", value: `${meta?.brands?.length || 7} Brands`, icon: BarChart2, color: "text-amber-600" },
-            { label: "Live Supabase DB", value: "Real-Time Sync", icon: Zap, color: "text-violet-600" },
+            { label: "Verified Catalog", value: "Real-Time Sync", icon: Zap, color: "text-indigo-600" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
               <Icon size={18} className={`${color} mb-1`} />
@@ -502,8 +511,6 @@ export default function Home() {
         product={trackModalProduct}
         onAlertActivated={(pid) => setTrackedProductIds((prev) => new Set(prev).add(pid))}
       />
-
-      <Footer />
     </div>
   )
 }

@@ -72,6 +72,23 @@ export default function ProductDetail() {
         }
         setLoading(false)
 
+        // Check if resumed from login with ?track=true
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search)
+          if (params.get("track") === "true") {
+            const cleanUrl = window.location.pathname
+            window.history.replaceState({}, "", cleanUrl)
+            const prod = prodDetail.product || prodDetail
+            if (prod) {
+              setModalProduct(prod as any)
+              if (prod.bestPrice) {
+                setTargetPrice(Math.round(prod.bestPrice * 0.95))
+              }
+              setShowNotifyModal(true)
+            }
+          }
+        }
+
         // 2. Fetch live SerpApi Google Shopping stores (fast background call)
         setLiveStoresLoading(true)
         api.getLiveStores(id!)
@@ -133,7 +150,7 @@ export default function ProductDetail() {
       <div className="min-h-screen bg-[#f4f6fb] pt-24 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="animate-spin text-indigo-600 mx-auto mb-3" size={36} />
-          <p className="text-sm text-slate-500">Loading product details from Supabase...</p>
+          <p className="text-sm text-slate-500">Loading product details...</p>
         </div>
       </div>
     )
@@ -273,6 +290,18 @@ export default function ProductDetail() {
   const openTrackModal = (targetItem?: Product) => {
     const item = targetItem || detail?.product || (detail as any)
     if (!item) return
+
+    if (!isAuthenticated) {
+      sessionStorage.setItem("pricewise_pending_track", JSON.stringify({
+        productId: item.id,
+        productName: item.name,
+      }))
+      navigate("/login", {
+        state: { from: `/product/${item.id}`, pendingTrack: { productId: item.id, productName: item.name } },
+      })
+      return
+    }
+
     setModalProduct(item)
     if (item.bestPrice) {
       setTargetPrice(Math.round(item.bestPrice * 0.95))

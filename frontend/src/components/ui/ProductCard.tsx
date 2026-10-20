@@ -67,12 +67,17 @@ export default function ProductCard({
 
   const handleToggleTrack = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (onTrackClick) {
-      onTrackClick(product)
+    if (!isAuthenticated) {
+      sessionStorage.setItem("pricewise_pending_track", JSON.stringify({
+        productId: product.id,
+        productName: product.name,
+      }))
+      navigate("/login", { state: { from: `/product/${product.id}`, pendingTrack: { productId: product.id, productName: product.name } } })
       return
     }
-    if (!isAuthenticated) {
-      navigate("/login", { state: { from: `/product/${product.id}` } })
+
+    if (onTrackClick) {
+      onTrackClick(product)
       return
     }
 

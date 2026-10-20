@@ -16,16 +16,18 @@ import Settings from "../pages/Settings"
 import Login from "../pages/Login"
 
 import FloatingAssistantButton from "../components/ui/FloatingAssistantButton"
+import Footer from "../components/layout/Footer"
 
 function Root() {
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-[#f4f6fb]">
       <Navbar />
-      <main className="pb-16 lg:pb-0">
+      <main className="flex-1 pb-16 lg:pb-0">
         <Outlet />
       </main>
+      <Footer />
       <FloatingAssistantButton />
-    </>
+    </div>
   )
 }
 

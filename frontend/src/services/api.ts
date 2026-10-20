@@ -90,11 +90,18 @@ export const api = {
     return res.data;
   },
 
-  async register(data: { name: string; email: string; password: string }): Promise<AuthResponse> {
-    const res = await apiClient.post<AuthResponse>('/auth/register', data);
-    if (res.data?.token) {
-      localStorage.setItem('token', res.data.token);
-    }
+  async register(data: { name: string; email: string; password: string }): Promise<{ success: boolean; requireOtp: boolean; email: string; message: string }> {
+    const res = await apiClient.post<{ success: boolean; requireOtp: boolean; email: string; message: string }>('/auth/register', data);
+    return res.data;
+  },
+
+  async verifyOtp(data: { email: string; otp: string }): Promise<{ success: boolean; message: string }> {
+    const res = await apiClient.post<{ success: boolean; message: string }>('/auth/verify-otp', data);
+    return res.data;
+  },
+
+  async resendOtp(email: string): Promise<{ success: boolean; message: string }> {
+    const res = await apiClient.post<{ success: boolean; message: string }>('/auth/resend-otp', { email });
     return res.data;
   },
 

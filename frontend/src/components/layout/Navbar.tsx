@@ -384,14 +384,6 @@ export default function Navbar() {
                         Tracked Products
                       </Link>
                       <Link
-                        to="/alerts"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
-                      >
-                        <AlertCircle size={15} className="text-slate-400" />
-                        Price Alerts
-                      </Link>
-                      <Link
                         to="/settings"
                         onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors"

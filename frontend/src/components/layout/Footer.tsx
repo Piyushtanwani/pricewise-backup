@@ -16,6 +16,7 @@ const cols = [
     links: [
       { label: "Profile", to: "/profile" },
       { label: "Wishlist", to: "/wishlist" },
+      { label: "Tracked Products", to: "/watchlist" },
       { label: "Price Alerts", to: "/alerts" },
       { label: "Settings", to: "/settings" },
     ],
@@ -24,7 +25,7 @@ const cols = [
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400 mt-16 border-t border-slate-800">
+    <footer className="bg-slate-900 text-slate-400 mt-auto border-t border-slate-800">
       <div className="max-w-[1440px] mx-auto px-6 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start gap-10">
           {/* Brand Info */}

@@ -14,7 +14,9 @@ interface AuthContextType {
   toggleWatchlist: (productId: string) => Promise<boolean>;
   refreshSavedState: () => Promise<void>;
   login: (credentials: { email: string; password: string }) => Promise<void>;
-  register: (data: { name: string; email: string; password: string }) => Promise<void>;
+  register: (data: { name: string; email: string; password: string }) => Promise<{ success: boolean; requireOtp: boolean; email: string; message: string }>;
+  verifyOtp: (data: { email: string; otp: string }) => Promise<{ success: boolean; message: string }>;
+  resendOtp: (email: string) => Promise<{ success: boolean; message: string }>;
   loginWithGoogle: (payload: { credential?: string; code?: string; redirectUri?: string; accessToken?: string }) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -98,9 +100,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (data: { name: string; email: string; password: string }) => {
-    const res = await api.register(data);
-    setUser(res.user);
-    await refreshSavedState();
+    return await api.register(data);
+  };
+
+  const verifyOtp = async (data: { email: string; otp: string }) => {
+    return await api.verifyOtp(data);
+  };
+
+  const resendOtp = async (email: string) => {
+    return await api.resendOtp(email);
   };
 
   const loginWithGoogle = async (payload: { credential?: string; code?: string; redirectUri?: string; accessToken?: string }) => {
@@ -196,6 +204,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         refreshSavedState,
         login,
         register,
+        verifyOtp,
+        resendOtp,
         loginWithGoogle,
         logout,
         refreshUser,

@@ -23,16 +23,16 @@ import {
   setPriceNotification,
   testPriceAlertEmail,
 } from '../controllers/userController';
-import { authenticateToken, optionalAuth } from '../middlewares/auth';
+import { authenticateToken } from '../middlewares/auth';
 import { emailAlertRateLimiter } from '../middlewares/security';
 
 const router = Router();
 
-// Public / Guest & Authenticated Price Alerts via Nodemailer Email
-router.post('/alerts/notify', optionalAuth, emailAlertRateLimiter, setPriceNotification);
-router.post('/alerts/test-email', optionalAuth, emailAlertRateLimiter, testPriceAlertEmail);
+router.use(authenticateToken); // Protect all user and alert routes
 
-router.use(authenticateToken); // Protect rest of user routes
+// Authenticated Price Alerts via Email
+router.post('/alerts/notify', emailAlertRateLimiter, setPriceNotification);
+router.post('/alerts/test-email', emailAlertRateLimiter, testPriceAlertEmail);
 
 // Profile & settings
 router.get('/profile', getProfile);

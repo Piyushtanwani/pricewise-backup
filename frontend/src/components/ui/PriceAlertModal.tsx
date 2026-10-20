@@ -102,7 +102,7 @@ export default function PriceAlertModal({
         userName: notifyName || undefined,
       })
 
-      setNotifySuccessMsg(`✓ Test notification sent to ${notifyEmail} for ${product.name} via Nodemailer! Check your inbox or spam.`)
+      setNotifySuccessMsg(`✓ Test notification sent to ${notifyEmail} for ${product.name}! Check your inbox or spam.`)
     } catch (err: any) {
       console.error("Test email failed:", err)
       setNotifyErrorMsg(err?.response?.data?.message || err?.message || "Failed to send test email.")
@@ -138,7 +138,7 @@ export default function PriceAlertModal({
             </div>
             <div>
               <h3 className="font-bold text-base text-white">Track Price & Get Email Alert</h3>
-              <p className="text-xs text-indigo-200">Nodemailer Service (pricewise.noreply@gmail.com)</p>
+              <p className="text-xs text-indigo-200">Email Price Alerts (pricewise.noreply@gmail.com)</p>
             </div>
           </div>
           <button
@@ -289,7 +289,7 @@ export default function PriceAlertModal({
             onClick={handleSendTestEmail}
             disabled={testSending || notifyLoading}
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-            title="Test sending an alert email right now via Nodemailer"
+            title="Send a sample price alert to your email"
           >
             {testSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={13} />}
             Send Test Email
