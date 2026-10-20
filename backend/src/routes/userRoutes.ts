@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getProfile,
   updateProfile,
+  deleteAccount,
   changePassword,
   getNotificationSettings,
   updateNotificationSettings,
@@ -22,19 +23,22 @@ import {
   setPriceNotification,
   testPriceAlertEmail,
 } from '../controllers/userController';
-import { authenticateToken, optionalAuth } from '../middlewares/auth';
+import { authenticateToken } from '../middlewares/auth';
+import { emailAlertRateLimiter } from '../middlewares/security';
 
 const router = Router();
 
-// Public / Guest & Authenticated Price Alerts via Nodemailer Email
-router.post('/alerts/notify', optionalAuth, setPriceNotification);
-router.post('/alerts/test-email', optionalAuth, testPriceAlertEmail);
+router.use(authenticateToken); // Protect all user and alert routes
 
-router.use(authenticateToken); // Protect rest of user routes
+// Authenticated Price Alerts via Email
+router.post('/alerts/notify', emailAlertRateLimiter, setPriceNotification);
+router.post('/alerts/test-email', emailAlertRateLimiter, testPriceAlertEmail);
 
 // Profile & settings
 router.get('/profile', getProfile);
 router.patch('/profile', updateProfile);
+router.put('/profile', updateProfile);
+router.delete('/profile', deleteAccount);
 router.put('/password', changePassword);
 router.get('/settings/notifications', getNotificationSettings);
 router.put('/settings/notifications', updateNotificationSettings);

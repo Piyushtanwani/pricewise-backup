@@ -1,4 +1,5 @@
 import { env } from '../config/env';
+import { titleSimilarity, MATCH_THRESHOLD } from './matching';
 
 export interface SerpStoreRate {
   storeId: string;
@@ -101,7 +102,7 @@ export const matchAllowedStore = (
     return {
       key: 'vijay_sales',
       displayName: 'Vijay Sales',
-      directUrl: `https://www.vijaysales.com/search/${q}`,
+      directUrl: `https://www.vijaysales.com/search?q=${q}`,
     };
   }
 
@@ -245,9 +246,23 @@ export const getLiveSerpStorePrices = async (
       const price = (item.price && item.price.includes('$')) ? Math.round(rawPrice * 86) : Math.round(rawPrice);
       if (price < minThreshold) continue;
 
-      const title = (item.title || '').toLowerCase();
+      // Price tolerance check against catalog base price (prevent mismatched luxury items or accessories)
+      if (typeof basePrice === 'number' && basePrice > 0) {
+        if (price < basePrice * 0.65 || price > basePrice * 1.35) {
+          continue;
+        }
+      }
+
+      const rawTitle = String(item.title || '');
+      const title = rawTitle.toLowerCase();
       const isAccessory = ACCESSORY_KEYWORDS.some((kw) => title.includes(kw));
       if (isAccessory) continue;
+
+      // STRICT MODEL MATCH: Ensure the retailer product title actually matches the requested phone
+      const sim = titleSimilarity(rawTitle, productName, brandName);
+      if (sim < MATCH_THRESHOLD) {
+        continue;
+      }
 
       // STRICT FILTER: Check if source matches Amazon, Flipkart, Croma, Vijay Sales, or official brand site
       const match = matchAllowedStore(item.source || '', brandName, productName);

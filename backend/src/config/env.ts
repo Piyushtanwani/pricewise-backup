@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-dotenv.config({ quiet: true });
+dotenv.config();
 
 const str = (key: string, fallback = ''): string => (process.env[key] ?? fallback).trim();
 
@@ -64,10 +64,14 @@ export const env = {
   },
 
   email: {
-    user: str('GMAIL_USER', 'pricewise.noreply@gmail.com'),
-    pass: str('GMAIL_APP_PASS', 'cgio qgff ifod pzke'),
+    user: str('GMAIL_USER', ''),
+    pass: str('GMAIL_APP_PASS') || str('GMAIL_APP_PASSWORD', ''),
   },
 
-  serpApiKey: str('SERPAPI_API_KEY', '72776c0479af1ab10619ac45f73c95f087bf0d7e4f331b0b7fea85872361364b'),
+  serpApiKey: str('SERPAPI_API_KEY') || str('SERPAPI_KEY', ''),
+  google: {
+    clientId: str('GOOGLE_CLIENT_ID') || str('Client_ID', ''),
+    clientSecret: str('GOOGLE_CLIENT_SECRET') || str('Client_secret', ''),
+  },
 };
 

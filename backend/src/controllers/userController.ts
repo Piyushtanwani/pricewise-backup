@@ -16,9 +16,10 @@ import {
 import { currentUserId } from '../middlewares/auth';
 import { publicUser } from './authController';
 import { PREF_KEYS, readPrefs } from '../services/notificationPrefs';
-import { evaluatePriceChange } from '../services/alertEngine';
 import { ProductCard, ProductWithStores, presentCards, productInclude } from '../services/productService';
-import { sendPriceAlertConfirmationEmail, sendPriceDropAlertEmail } from '../services/emailService';
+import { sendPriceAlertConfirmationEmail, sendPriceDropAlertEmail, isValidHttpUrl } from '../services/emailService';
+import { isSyntheticProduct } from '../services/dataProvenance';
+import { env } from '../config/env';
 
 const round = (n: number) => Math.round(n);
 
@@ -81,6 +82,12 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
     throw new HttpError(400, 'Current password is incorrect');
   }
   await prisma.user.update({ where: { id: userId }, data: { password: await bcrypt.hash(newPassword, 10) } });
+  res.status(204).end();
+};
+
+export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
+  const userId = currentUserId(req);
+  await prisma.user.delete({ where: { id: userId } });
   res.status(204).end();
 };
 
@@ -231,7 +238,6 @@ export const addToWatchlist = async (req: Request, res: Response): Promise<void>
   let alertId: string | null = null;
   if (targetPrice !== undefined) {
     alertId = (await upsertAlert(userId, product.id, targetPrice, {})).alert.id;
-    if (product.bestPrice !== null) await evaluatePriceChange(product.id, null, product.bestPrice);
   }
 
   res.status(existing ? 200 : 201).json({ id: item.id, productId: product.id, trackedSince: item.createdAt.toISOString(), alertId });
@@ -332,7 +338,30 @@ export const addAlert = async (req: Request, res: Response): Promise<void> => {
     update: {},
     create: { userId, productId: product.id },
   });
-  if (product.bestPrice !== null) await evaluatePriceChange(product.id, null, product.bestPrice);
+
+  if (alert.notifyEmail) {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } });
+    const bestListing = product.stores?.find((s) => s.storeId === product.bestStoreId) || product.stores?.[0];
+    const bestStoreName = product.bestStore?.name || bestListing?.store?.name;
+    const appBaseUrl = (env.corsOrigins[0] || 'http://localhost:5173').replace(/\/+$/, '');
+    const canonicalProductUrl = `${appBaseUrl}/product/${product.id}`;
+    const productUrl =
+      bestListing?.productUrl && isValidHttpUrl(bestListing.productUrl) ? bestListing.productUrl : canonicalProductUrl;
+
+    if (user?.email && bestStoreName && product.bestPrice && product.bestPrice > 0) {
+      sendPriceAlertConfirmationEmail({
+        email: user.email,
+        userName: user.name || undefined,
+        productName: product.name,
+        brand: product.brand,
+        currentPrice: product.bestPrice,
+        targetPrice,
+        bestStore: bestStoreName,
+        productUrl,
+        imageUrl: product.imageUrl || undefined,
+      }).catch((err) => console.error('[Alert Confirmation Email Error]:', err));
+    }
+  }
 
   const fresh = await prisma.alert.findUniqueOrThrow({ where: { id: alert.id } });
   res.status(created ? 201 : 200).json({
@@ -477,34 +506,16 @@ export const getRecommendations = async (req: Request, res: Response): Promise<v
 // ---------------------------------------------------------------- Email Notifications (Nodemailer)
 
 export const setPriceNotification = async (req: Request, res: Response): Promise<void> => {
-  const email = requireEmail(req.body, 'email');
-  const targetPrice = requirePositiveNumber(req.body, 'targetPrice');
-  const product = await requireProduct(req.body?.productId);
-  let userName = optionalString(req.body, 'userName');
-
-  let userId = req.user?.id;
-  if (!userId) {
-    // If guest user, find or create user for this email
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: userName || 'Shopper',
-          password: 'GUEST_NO_PASSWORD',
-        },
-      });
-    }
-    userId = user.id;
-    if (!userName && user.name) {
-      userName = user.name;
-    }
-  } else if (!userName) {
-    const existing = await prisma.user.findUnique({ where: { id: userId } });
-    if (existing?.name) userName = existing.name;
+  const userId = currentUserId(req);
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new HttpError(401, 'Authentication required to set price alerts.');
   }
 
-  userName = userName || 'Shopper';
+  const email = req.body?.email ? requireEmail(req.body, 'email') : user.email;
+  const targetPrice = requirePositiveNumber(req.body, 'targetPrice');
+  const product = await requireProduct(req.body?.productId);
+  const userName = optionalString(req.body, 'userName') || user.name || 'Shopper';
 
   // Create or update alert in database
   const { alert } = await upsertAlert(userId, product.id, targetPrice, {
@@ -521,16 +532,28 @@ export const setPriceNotification = async (req: Request, res: Response): Promise
   });
 
   // Send confirmation email via Nodemailer
-  const bestStoreName = product.bestStore?.name || product.stores?.[0]?.store?.name || 'Amazon';
+  const bestListing = product.stores?.find((s) => s.storeId === product.bestStoreId) || product.stores?.[0];
+  const bestStoreName = product.bestStore?.name || bestListing?.store?.name;
+  if (!bestStoreName) {
+    throw badRequest('This product has no active retailer listings.');
+  }
+  if (!product.bestPrice || product.bestPrice <= 0) {
+    throw badRequest('This product has no verified current price.');
+  }
+  const appBaseUrl = (env.corsOrigins[0] || 'http://localhost:5173').replace(/\/+$/, '');
+  const canonicalProductUrl = `${appBaseUrl}/product/${product.id}`;
+  const productUrl =
+    bestListing?.productUrl && isValidHttpUrl(bestListing.productUrl) ? bestListing.productUrl : canonicalProductUrl;
+
   const emailResult = await sendPriceAlertConfirmationEmail({
     email,
     userName,
     productName: product.name,
     brand: product.brand,
-    currentPrice: product.bestPrice || targetPrice,
+    currentPrice: product.bestPrice,
     targetPrice,
     bestStore: bestStoreName,
-    productUrl: `http://localhost:5173/product/${product.id}`,
+    productUrl,
     imageUrl: product.imageUrl || undefined,
   });
 
@@ -545,9 +568,36 @@ export const setPriceNotification = async (req: Request, res: Response): Promise
 export const testPriceAlertEmail = async (req: Request, res: Response): Promise<void> => {
   const email = requireEmail(req.body, 'email');
   const product = await requireProduct(req.body?.productId);
-  const currentPrice = product.bestPrice || 25000;
-  const previousPrice = Math.round(currentPrice * 1.15);
-  const bestStoreName = product.bestStore?.name || product.stores?.[0]?.store?.name || 'Amazon';
+
+  if (isSyntheticProduct(product)) {
+    throw badRequest('Cannot send price alert emails for synthetic seed products. Please select a genuine tracked product.');
+  }
+
+  const currentPrice = product.bestPrice;
+  if (!currentPrice || currentPrice <= 0) {
+    throw badRequest('Product has no verified current price in database.');
+  }
+
+  const bestListing = product.stores?.find((s) => s.storeId === product.bestStoreId) || product.stores?.[0];
+  const bestStoreName = product.bestStore?.name || bestListing?.store?.name;
+  if (!bestStoreName) {
+    throw badRequest('Product has no verified store listing in database.');
+  }
+
+  // Look up genuine historical price points to find a verified previous price
+  const history = await prisma.priceHistory.findMany({
+    where: { productStore: { productId: product.id } },
+    orderBy: { timestamp: 'desc' },
+    take: 10,
+  });
+
+  const previousHigherPrice = history.find((h) => h.price > currentPrice)?.price || null;
+  const previousPrice = previousHigherPrice ?? (product.mrp && product.mrp > currentPrice ? product.mrp : null);
+
+  const appBaseUrl = (env.corsOrigins[0] || 'http://localhost:5173').replace(/\/+$/, '');
+  const canonicalProductUrl = `${appBaseUrl}/product/${product.id}`;
+  const productUrl =
+    bestListing?.productUrl && isValidHttpUrl(bestListing.productUrl) ? bestListing.productUrl : canonicalProductUrl;
 
   const result = await sendPriceDropAlertEmail({
     email,
@@ -557,11 +607,15 @@ export const testPriceAlertEmail = async (req: Request, res: Response): Promise<
     previousPrice,
     currentPrice,
     targetPrice: currentPrice,
-    dropAmount: previousPrice - currentPrice,
+    dropAmount: previousPrice && previousPrice > currentPrice ? previousPrice - currentPrice : undefined,
     bestStore: bestStoreName,
-    productUrl: `http://localhost:5173/product/${product.id}`,
+    productUrl,
     imageUrl: product.imageUrl || undefined,
   });
+
+  if (!result.success) {
+    throw new HttpError(400, result.error || 'Failed to send price drop alert email');
+  }
 
   res.json({ success: true, message: `Test price drop alert email sent to ${email}`, result });
 };

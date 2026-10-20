@@ -1,206 +1,75 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useSearchParams, useNavigate } from "react-router"
-import { SlidersHorizontal, Star, X, GitCompare, Loader2, Search as SearchIcon, ArrowRight, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  SlidersHorizontal,
+  Star,
+  X,
+  GitCompare,
+  Loader2,
+  Search as SearchIcon,
+  ArrowRight,
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 import ProductCard from "../components/ui/ProductCard"
+import { getCompareState, notifyCompareChange, COMPARE_CLEARED_KEY, COMPARE_STORAGE_KEY } from "../hooks/useCompareAction"
 import { api } from "../services/api"
 import type { Product, CatalogMeta } from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
 
-const sortOptions = ["Relevance", "Price: Low to High", "Price: High to Low", "Rating", "Best Deal"]
+const sortOptions = [
+  "Relevance",
+  "Price: Low to High",
+  "Price: High to Low",
+  "Rating",
+  "Best Deal",
+]
 
 const KNOWN_BRANDS = ["apple", "iphone", "samsung", "oneplus", "vivo", "realme", "motorola", "oppo"]
 
-export default function Search() {
-  const [params, setParams] = useSearchParams()
-  const query = params.get("q") || params.get("search") || ""
-  const brandParam = params.get("brand")
-  const navigate = useNavigate()
+interface SearchSidebarProps {
+  brandFilters: string[]
+  storeFilters: string[]
+  selectedBrands: string[]
+  selectedStores: string[]
+  priceRange: [number, number]
+  priceAdjusted: boolean
+  minRating: number | undefined
+  meta: CatalogMeta | null
+  query: string
+  onToggleBrand: (b: string) => void
+  onToggleStore: (s: string) => void
+  onPriceChange: (val: number) => void
+  onRatingChange: (r: number) => void
+  onClearAll: () => void
+}
 
-  const [searchInput, setSearchInput] = useState(query)
-  const [allProducts, setAllProducts] = useState<Product[]>([])
-  const [meta, setMeta] = useState<CatalogMeta | null>(null)
-  const [loading, setLoading] = useState(true)
+function SearchSidebar({
+  brandFilters,
+  storeFilters,
+  selectedBrands,
+  selectedStores,
+  priceRange,
+  priceAdjusted,
+  minRating,
+  meta,
+  query,
+  onToggleBrand,
+  onToggleStore,
+  onPriceChange,
+  onRatingChange,
+  onClearAll,
+}: SearchSidebarProps) {
+  const hasActiveFilters =
+    Boolean(query) ||
+    selectedBrands.length > 0 ||
+    selectedStores.length > 0 ||
+    minRating !== undefined ||
+    priceAdjusted
 
-  const [sort, setSort] = useState("Relevance")
-  const [selectedStores, setSelectedStores] = useState<string[]>([])
-  const [selectedBrands, setSelectedBrands] = useState<string[]>(brandParam ? [brandParam] : [])
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 450000])
-  const [priceAdjusted, setPriceAdjusted] = useState(false)
-  const [minRating, setMinRating] = useState<number | undefined>(undefined)
-  const [compareList, setCompareList] = useState<Product[]>([])
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const pageSize = 20
-
-  // Keep search input in sync with query parameter
-  useEffect(() => {
-    setSearchInput(query)
-  }, [query])
-
-  // Sync URL brand parameter if present
-  useEffect(() => {
-    if (brandParam && !selectedBrands.includes(brandParam)) {
-      setSelectedBrands([brandParam])
-    }
-  }, [brandParam])
-
-  // Fetch catalog products and metadata
-  useEffect(() => {
-    let isMounted = true
-    setLoading(true)
-
-    Promise.all([
-      api.getCatalogMeta().catch(() => null),
-      api.getProducts({ limit: 200 }).catch(() => ({ items: [], total: 0 })),
-    ]).then(([metaData, productsRes]) => {
-      if (!isMounted) return
-      if (metaData) {
-        setMeta(metaData)
-        if (metaData.priceRange) {
-          setPriceRange([metaData.priceRange.min, metaData.priceRange.max])
-        }
-      }
-      if (productsRes && productsRes.items) {
-        setAllProducts(productsRes.items)
-      }
-    }).finally(() => {
-      if (isMounted) setLoading(false)
-    })
-
-    return () => { isMounted = false }
-  }, [])
-
-  // Handle client-side filtering and sorting for instant response
-  const displayedProducts = useMemo(() => {
-    let list = [...allProducts]
-    const qLower = query.trim().toLowerCase()
-
-    // Query filter
-    if (qLower) {
-      list = list.filter((p) => {
-        const nameMatch = p.name.toLowerCase().includes(qLower)
-        const brandMatch = p.brand.toLowerCase().includes(qLower)
-        const specMatch = (p.specs || []).some((s) => s.toLowerCase().includes(qLower))
-        return nameMatch || brandMatch || specMatch
-      })
-    }
-
-    // Brand filter
-    if (selectedBrands.length > 0) {
-      list = list.filter((p) =>
-        selectedBrands.some((b) => b.toLowerCase() === (p.brand || "").toLowerCase())
-      )
-    }
-
-    // Store filter
-    if (selectedStores.length > 0) {
-      list = list.filter((p) =>
-        selectedStores.some((s) => s.toLowerCase() === (p.bestStore || "").toLowerCase())
-      )
-    }
-
-    // Price range filter
-    if (priceAdjusted) {
-      list = list.filter((p) => p.bestPrice >= priceRange[0] && p.bestPrice <= priceRange[1])
-    }
-
-    // Rating filter
-    if (minRating !== undefined) {
-      list = list.filter((p) => p.rating >= minRating)
-    }
-
-    // Sort
-    switch (sort) {
-      case "Price: Low to High":
-        list.sort((a, b) => a.bestPrice - b.bestPrice)
-        break
-      case "Price: High to Low":
-        list.sort((a, b) => b.bestPrice - a.bestPrice)
-        break
-      case "Rating":
-        list.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews)
-        break
-      case "Best Deal":
-        list.sort((a, b) => (b.discount || 0) - (a.discount || 0))
-        break
-      case "Relevance":
-      default:
-        // Keep natural relevance / review count
-        break
-    }
-
-    return list
-  }, [allProducts, query, selectedBrands, selectedStores, priceAdjusted, priceRange, minRating, sort])
-
-  // Reset to page 1 whenever filters change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [query, selectedBrands, selectedStores, priceAdjusted, priceRange, minRating, sort])
-
-  const totalPages = Math.max(1, Math.ceil(displayedProducts.length / pageSize))
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * pageSize
-    return displayedProducts.slice(start, start + pageSize)
-  }, [displayedProducts, currentPage, pageSize])
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const nextQ = searchInput.trim()
-    const newParams = new URLSearchParams()
-    if (nextQ) newParams.set("q", nextQ)
-    setParams(newParams)
-  }
-
-  const clearSearchQuery = () => {
-    const newParams = new URLSearchParams(params)
-    newParams.delete("q")
-    newParams.delete("search")
-    setParams(newParams)
-    setSearchInput("")
-  }
-
-  const toggleStore = (s: string) =>
-    setSelectedStores((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])
-
-  const toggleBrand = (b: string) => {
-    setSelectedBrands((prev) => {
-      const exists = prev.includes(b)
-      const next = exists ? prev.filter((x) => x !== b) : [...prev, b]
-
-      // If user adds a brand and current search query was a conflicting brand name, clear search query
-      if (!exists && query) {
-        const qLower = query.toLowerCase()
-        const isConflictingBrand = KNOWN_BRANDS.some((kb) => qLower.includes(kb)) && !qLower.includes(b.toLowerCase())
-        if (isConflictingBrand) {
-          clearSearchQuery()
-        }
-      }
-      return next
-    })
-  }
-
-  const toggleCompare = (p: Product) =>
-    setCompareList((prev) => prev.find((x) => x.id === p.id) ? prev.filter((x) => x.id !== p.id) : prev.length < 3 ? [...prev, p] : prev)
-
-  const clearAllFilters = () => {
-    setSelectedBrands([])
-    setSelectedStores([])
-    setMinRating(undefined)
-    setPriceAdjusted(false)
-    if (meta?.priceRange) setPriceRange([meta.priceRange.min, meta.priceRange.max])
-    clearSearchQuery()
-  }
-
-  const brandFilters = meta?.brands?.map((b) => b.name) || ["Apple", "Samsung", "OnePlus", "Vivo", "Realme", "Motorola", "OPPO"]
-  const storeFilters = meta?.stores?.map((s) => s.name) || ["Amazon", "Flipkart", "Croma", "Smartprix"]
-
-  const Sidebar = () => (
+  return (
     <aside className="space-y-5">
       <div>
         <h3 className="text-sm font-semibold text-slate-800 mb-3">Brand</h3>
@@ -210,7 +79,7 @@ export default function Search() {
               <input
                 type="checkbox"
                 checked={selectedBrands.includes(b)}
-                onChange={() => toggleBrand(b)}
+                onChange={() => onToggleBrand(b)}
                 className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               />
               <span className="text-sm text-slate-600 group-hover:text-slate-900">{b}</span>
@@ -228,10 +97,7 @@ export default function Search() {
             max={meta?.priceRange?.max || 450000}
             step={2000}
             value={priceRange[1]}
-            onChange={(e) => {
-              setPriceRange([priceRange[0], +e.target.value])
-              setPriceAdjusted(true)
-            }}
+            onChange={(e) => onPriceChange(+e.target.value)}
             className="w-full accent-indigo-600 cursor-pointer"
           />
           <div className="flex justify-between text-xs text-slate-500 font-mono">
@@ -249,7 +115,7 @@ export default function Search() {
               <input
                 type="checkbox"
                 checked={selectedStores.includes(s)}
-                onChange={() => toggleStore(s)}
+                onChange={() => onToggleStore(s)}
                 className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               />
               <span className="text-sm text-slate-600 group-hover:text-slate-900">{s}</span>
@@ -266,7 +132,7 @@ export default function Search() {
               type="radio"
               name="rating"
               checked={minRating === r}
-              onChange={() => setMinRating(minRating === r ? undefined : r)}
+              onChange={() => onRatingChange(r)}
               className="border-slate-300 text-indigo-600 cursor-pointer"
             />
             <span className="flex items-center gap-1 text-sm text-slate-600">
@@ -279,9 +145,9 @@ export default function Search() {
         ))}
       </div>
 
-      {(selectedBrands.length > 0 || selectedStores.length > 0 || minRating !== undefined || priceAdjusted || query) && (
+      {hasActiveFilters && (
         <button
-          onClick={clearAllFilters}
+          onClick={onClearAll}
           className="w-full text-sm text-red-500 hover:text-red-700 border border-red-200 rounded-lg py-2 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
         >
           <RotateCcw size={13} />
@@ -290,6 +156,235 @@ export default function Search() {
       )}
     </aside>
   )
+}
+
+export default function Search() {
+  const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  const query = params.get("q") || params.get("search") || ""
+  const brandParam = params.get("brand")
+  const storeParam = params.get("store")
+  const sortParam = params.get("sort") || "Relevance"
+  const pageParam = parseInt(params.get("page") || "1", 10)
+
+  const [searchInput, setSearchInput] = useState(query)
+  const [products, setProducts] = useState<Product[]>([])
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [meta, setMeta] = useState<CatalogMeta | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [sort, setSort] = useState(sortParam)
+  const [selectedStores, setSelectedStores] = useState<string[]>(
+    storeParam ? storeParam.split(",").filter(Boolean) : []
+  )
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(
+    brandParam ? brandParam.split(",").filter(Boolean) : []
+  )
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 450000])
+  const [priceAdjusted, setPriceAdjusted] = useState(false)
+  const [minRating, setMinRating] = useState<number | undefined>(undefined)
+  const [compareList, setCompareList] = useState<Product[]>([])
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(pageParam || 1)
+  const pageSize = 20
+
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Fetch catalog metadata once on mount
+  useEffect(() => {
+    let isMounted = true
+    api.getCatalogMeta()
+      .then((metaData) => {
+        if (!isMounted || !metaData) return
+        setMeta(metaData)
+        if (metaData.priceRange && !priceAdjusted) {
+          setPriceRange([metaData.priceRange.min, metaData.priceRange.max])
+        }
+      })
+      .catch((err) => console.error("Error loading catalog metadata:", err))
+
+    return () => { isMounted = false }
+  }, [priceAdjusted])
+
+  // Sync search input if query param changes externally
+  useEffect(() => {
+    setSearchInput(query)
+  }, [query])
+
+  // Fetch products from server whenever query, filters, sort, or page changes
+  const executeSearch = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await api.getProducts({
+        q: query || undefined,
+        brand: selectedBrands.length > 0 ? selectedBrands : undefined,
+        store: selectedStores.length > 0 ? selectedStores : undefined,
+        minPrice: priceAdjusted ? priceRange[0] : undefined,
+        maxPrice: priceAdjusted ? priceRange[1] : undefined,
+        minRating,
+        sort,
+        page: currentPage,
+        limit: pageSize,
+      })
+
+      setProducts(res.items || [])
+      setTotalProducts(res.total || 0)
+    } catch (err: any) {
+      console.error("Search query failed:", err)
+      setError("Failed to load products. Please check your connection and try again.")
+      setProducts([])
+      setTotalProducts(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [query, selectedBrands, selectedStores, priceAdjusted, priceRange, minRating, sort, currentPage, pageSize])
+
+  // Debounced search trigger to avoid excessive API calls while adjusting range
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      executeSearch()
+    }, 200)
+
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    }
+  }, [executeSearch])
+
+  // Update URL parameters when main filters change
+  const updateUrlParams = (newQuery?: string, newBrands?: string[], newStores?: string[], newSort?: string, newPage?: number) => {
+    const nextParams = new URLSearchParams()
+    const qVal = newQuery !== undefined ? newQuery : query
+    const bVal = newBrands !== undefined ? newBrands : selectedBrands
+    const sVal = newStores !== undefined ? newStores : selectedStores
+    const sortVal = newSort !== undefined ? newSort : sort
+    const pVal = newPage !== undefined ? newPage : currentPage
+
+    if (qVal) nextParams.set("q", qVal)
+    if (bVal.length > 0) nextParams.set("brand", bVal.join(","))
+    if (sVal.length > 0) nextParams.set("store", sVal.join(","))
+    if (sortVal && sortVal !== "Relevance") nextParams.set("sort", sortVal)
+    if (pVal > 1) nextParams.set("page", String(pVal))
+
+    setParams(nextParams)
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const nextQ = searchInput.trim()
+    setCurrentPage(1)
+    updateUrlParams(nextQ, undefined, undefined, undefined, 1)
+  }
+
+  const clearSearchQuery = () => {
+    setSearchInput("")
+    setCurrentPage(1)
+    updateUrlParams("", undefined, undefined, undefined, 1)
+  }
+
+  const toggleBrand = (b: string) => {
+    const next = selectedBrands.includes(b)
+      ? selectedBrands.filter((x) => x !== b)
+      : [...selectedBrands, b]
+
+    setSelectedBrands(next)
+    setCurrentPage(1)
+
+    // Clear conflicting query if brand name was in query
+    let nextQuery = query
+    if (!selectedBrands.includes(b) && query) {
+      const qLower = query.toLowerCase()
+      const isConflicting = KNOWN_BRANDS.some((kb) => qLower.includes(kb)) && !qLower.includes(b.toLowerCase())
+      if (isConflicting) {
+        nextQuery = ""
+        setSearchInput("")
+      }
+    }
+
+    updateUrlParams(nextQuery, next, undefined, undefined, 1)
+  }
+
+  const toggleStore = (s: string) => {
+    const next = selectedStores.includes(s)
+      ? selectedStores.filter((x) => x !== s)
+      : [...selectedStores, s]
+
+    setSelectedStores(next)
+    setCurrentPage(1)
+    updateUrlParams(undefined, undefined, next, undefined, 1)
+  }
+
+  const handlePriceChange = (maxPriceVal: number) => {
+    setPriceRange([priceRange[0], maxPriceVal])
+    setPriceAdjusted(true)
+    setCurrentPage(1)
+  }
+
+  const handleRatingChange = (r: number) => {
+    const next = minRating === r ? undefined : r
+    setMinRating(next)
+    setCurrentPage(1)
+  }
+
+  const handleSortChange = (newSort: string) => {
+    setSort(newSort)
+    setCurrentPage(1)
+    updateUrlParams(undefined, undefined, undefined, newSort, 1)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+    updateUrlParams(undefined, undefined, undefined, undefined, newPage)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const clearAllFilters = () => {
+    setSelectedBrands([])
+    setSelectedStores([])
+    setMinRating(undefined)
+    setPriceAdjusted(false)
+    if (meta?.priceRange) {
+      setPriceRange([meta.priceRange.min, meta.priceRange.max])
+    }
+    setSearchInput("")
+    setCurrentPage(1)
+    setParams(new URLSearchParams())
+  }
+
+  const toggleCompare = (p: Product) => {
+    setCompareList((prev) =>
+      prev.find((x) => x.id === p.id)
+        ? prev.filter((x) => x.id !== p.id)
+        : prev.length < 3
+        ? [...prev, p]
+        : prev
+    )
+  }
+
+  const brandFilters =
+    meta?.brands?.map((b) => b.name) || [
+      "Apple",
+      "Samsung",
+      "OnePlus",
+      "Vivo",
+      "Realme",
+      "Motorola",
+      "OPPO",
+    ]
+  const storeFilters =
+    meta?.stores?.map((s) => s.name) || [
+      "Amazon",
+      "Flipkart",
+      "Croma",
+      "Vijay Sales",
+    ]
 
   const activeFiltersCount =
     (query ? 1 : 0) +
@@ -297,6 +392,8 @@ export default function Search() {
     selectedStores.length +
     (minRating !== undefined ? 1 : 0) +
     (priceAdjusted ? 1 : 0)
+
+  const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize))
 
   return (
     <div className="min-h-screen bg-[#f4f6fb] pt-14">
@@ -315,10 +412,7 @@ export default function Search() {
               {searchInput && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setSearchInput("")
-                    clearSearchQuery()
-                  }}
+                  onClick={clearSearchQuery}
                   className="text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
                   <X size={15} />
@@ -347,7 +441,7 @@ export default function Search() {
                 : "All Smartphones"}
             </h1>
             <p className="text-sm text-slate-500">
-              Showing {displayedProducts.length} of {allProducts.length} smartphones in database
+              Showing {products.length} of {totalProducts} smartphones in database
             </p>
           </div>
         </div>
@@ -356,7 +450,22 @@ export default function Search() {
           {/* Sidebar — desktop */}
           <div className="hidden lg:block w-56 shrink-0">
             <div className="bg-white rounded-xl border border-slate-200 p-5 sticky top-20 shadow-sm">
-              <Sidebar />
+              <SearchSidebar
+                brandFilters={brandFilters}
+                storeFilters={storeFilters}
+                selectedBrands={selectedBrands}
+                selectedStores={selectedStores}
+                priceRange={priceRange}
+                priceAdjusted={priceAdjusted}
+                minRating={minRating}
+                meta={meta}
+                query={query}
+                onToggleBrand={toggleBrand}
+                onToggleStore={toggleStore}
+                onPriceChange={handlePriceChange}
+                onRatingChange={handleRatingChange}
+                onClearAll={clearAllFilters}
+              />
             </div>
           </div>
 
@@ -378,9 +487,11 @@ export default function Search() {
                 {sortOptions.map((s) => (
                   <button
                     key={s}
-                    onClick={() => setSort(s)}
+                    onClick={() => handleSortChange(s)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                      sort === s ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      sort === s
+                        ? "bg-indigo-600 text-white font-semibold"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
                     {s}
@@ -394,41 +505,76 @@ export default function Search() {
               <div className="lg:hidden bg-white rounded-xl border border-slate-200 p-5 mb-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-semibold text-slate-800">Filters</span>
-                  <button onClick={() => setFilterOpen(false)} className="text-slate-400 hover:text-slate-600">
+                  <button
+                    onClick={() => setFilterOpen(false)}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
                     <X size={18} />
                   </button>
                 </div>
-                <Sidebar />
+                <SearchSidebar
+                  brandFilters={brandFilters}
+                  storeFilters={storeFilters}
+                  selectedBrands={selectedBrands}
+                  selectedStores={selectedStores}
+                  priceRange={priceRange}
+                  priceAdjusted={priceAdjusted}
+                  minRating={minRating}
+                  meta={meta}
+                  query={query}
+                  onToggleBrand={toggleBrand}
+                  onToggleStore={toggleStore}
+                  onPriceChange={handlePriceChange}
+                  onRatingChange={handleRatingChange}
+                  onClearAll={clearAllFilters}
+                />
               </div>
             )}
 
             {/* Active filter chips */}
             {activeFiltersCount > 0 && (
               <div className="flex flex-wrap items-center gap-2 mb-4 bg-white/70 p-3 rounded-xl border border-slate-200">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active:</span>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Active:
+                </span>
 
                 {query && (
                   <span className="inline-flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-full font-medium">
                     Search: "{query}"
-                    <button onClick={clearSearchQuery} className="cursor-pointer hover:text-indigo-900">
+                    <button
+                      onClick={clearSearchQuery}
+                      className="cursor-pointer hover:text-indigo-900"
+                    >
                       <X size={12} />
                     </button>
                   </span>
                 )}
 
                 {selectedBrands.map((b) => (
-                  <span key={b} className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full font-medium">
+                  <span
+                    key={b}
+                    className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full font-medium"
+                  >
                     Brand: {b}
-                    <button onClick={() => toggleBrand(b)} className="cursor-pointer hover:text-blue-900">
+                    <button
+                      onClick={() => toggleBrand(b)}
+                      className="cursor-pointer hover:text-blue-900"
+                    >
                       <X size={12} />
                     </button>
                   </span>
                 ))}
 
                 {selectedStores.map((s) => (
-                  <span key={s} className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-medium">
+                  <span
+                    key={s}
+                    className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-medium"
+                  >
                     Store: {s}
-                    <button onClick={() => toggleStore(s)} className="cursor-pointer hover:text-emerald-900">
+                    <button
+                      onClick={() => toggleStore(s)}
+                      className="cursor-pointer hover:text-emerald-900"
+                    >
                       <X size={12} />
                     </button>
                   </span>
@@ -437,7 +583,15 @@ export default function Search() {
                 {priceAdjusted && (
                   <span className="inline-flex items-center gap-1.5 text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-1 rounded-full font-medium">
                     Max: {fmt(priceRange[1])}
-                    <button onClick={() => setPriceAdjusted(false)} className="cursor-pointer hover:text-purple-900">
+                    <button
+                      onClick={() => {
+                        setPriceAdjusted(false)
+                        if (meta?.priceRange) {
+                          setPriceRange([meta.priceRange.min, meta.priceRange.max])
+                        }
+                      }}
+                      className="cursor-pointer hover:text-purple-900"
+                    >
                       <X size={12} />
                     </button>
                   </span>
@@ -446,7 +600,10 @@ export default function Search() {
                 {minRating !== undefined && (
                   <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full font-medium">
                     ★ {minRating}+ Stars
-                    <button onClick={() => setMinRating(undefined)} className="cursor-pointer hover:text-amber-900">
+                    <button
+                      onClick={() => setMinRating(undefined)}
+                      className="cursor-pointer hover:text-amber-900"
+                    >
                       <X size={12} />
                     </button>
                   </span>
@@ -461,18 +618,40 @@ export default function Search() {
               </div>
             )}
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-sm text-red-700 flex items-center justify-between">
+                <span>{error}</span>
+                <button
+                  onClick={executeSearch}
+                  className="font-semibold underline cursor-pointer hover:text-red-900"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
             {/* Loading Indicator */}
             {loading ? (
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-80 bg-white rounded-xl border border-slate-200 animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-80 bg-white rounded-xl border border-slate-200 animate-pulse flex flex-col p-4 justify-between"
+                  >
+                    <div className="w-full h-40 bg-slate-100 rounded-lg" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-slate-100 rounded w-3/4" />
+                      <div className="h-3 bg-slate-100 rounded w-1/2" />
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (
               /* Product grid */
               <>
                 <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {paginatedProducts.map((p) => (
+                  {products.map((p) => (
                     <ProductCard
                       key={p.id}
                       product={p}
@@ -483,12 +662,20 @@ export default function Search() {
                 </div>
 
                 {/* Pagination Controls */}
-                {!loading && displayedProducts.length > pageSize && (
+                {!loading && totalProducts > pageSize && (
                   <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-xs text-slate-500 font-medium">
-                      Showing <span className="font-semibold text-slate-800">{(currentPage - 1) * pageSize + 1}</span>–
-                      <span className="font-semibold text-slate-800">{Math.min(currentPage * pageSize, displayedProducts.length)}</span> of{" "}
-                      <span className="font-semibold text-slate-800">{displayedProducts.length}</span> smartphones
+                      Showing{" "}
+                      <span className="font-semibold text-slate-800">
+                        {(currentPage - 1) * pageSize + 1}
+                      </span>
+                      –
+                      <span className="font-semibold text-slate-800">
+                        {Math.min(currentPage * pageSize, totalProducts)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-semibold text-slate-800">{totalProducts}</span>{" "}
+                      smartphones
                     </p>
 
                     <div className="flex items-center gap-1.5">
@@ -502,9 +689,16 @@ export default function Search() {
                       </button>
 
                       {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                        .filter(
+                          (p) =>
+                            p === 1 ||
+                            p === totalPages ||
+                            Math.abs(p - currentPage) <= 1
+                        )
                         .reduce<(number | string)[]>((acc, p, idx, arr) => {
-                          if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...")
+                          if (idx > 0 && p - (arr[idx - 1] as number) > 1) {
+                            acc.push("...")
+                          }
                           acc.push(p)
                           return acc
                         }, [])
@@ -543,13 +737,15 @@ export default function Search() {
             )}
 
             {/* Empty State */}
-            {!loading && displayedProducts.length === 0 && (
+            {!loading && products.length === 0 && (
               <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
                 <div className="text-5xl mb-4">📱</div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">No smartphones match these filters</h3>
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                  No smartphones match these filters
+                </h3>
                 <p className="text-slate-500 text-sm mb-5 max-w-md mx-auto">
                   {query
-                    ? `No products found for "${query}" with the current filters. Try removing the search query or selecting a different brand.`
+                    ? `No products found for "${query}" with the current filters. Try adjusting your search term or clearing filters.`
                     : "No products found matching the selected brand and store filters."}
                 </p>
                 <div className="flex justify-center gap-3">
@@ -600,7 +796,15 @@ export default function Search() {
             ))}
           </div>
           <button
-            onClick={() => navigate(`/compare?ids=${compareList.map((x) => x.id).join(",")}`)}
+            onClick={() => {
+              const ids = compareList.map((x) => x.id)
+              try {
+                localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(ids))
+                localStorage.removeItem(COMPARE_CLEARED_KEY)
+                notifyCompareChange()
+              } catch {}
+              navigate(`/compare?ids=${ids.join(",")}`)
+            }}
             className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-1.5 rounded-xl transition-colors cursor-pointer"
           >
             Compare Now

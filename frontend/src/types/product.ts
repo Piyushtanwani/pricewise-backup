@@ -97,6 +97,11 @@ export interface ProductDetailResponse {
     confidence?: string
   }
   insights?: { type?: string; label?: string; value?: string; text?: string }[]
+  userState?: {
+    wishlisted: boolean
+    tracking: boolean
+    alert: { id: string; targetPrice: number } | null
+  } | null
 }
 
 export interface PriceIntelligenceResponse {
@@ -119,3 +124,114 @@ export interface AIChatResponse {
   products?: Product[]
   insights?: { label: string; value: string }[]
 }
+
+export interface MarketPriceDirection {
+  cohortSize: number
+  cohortDescription: string
+  averageChangePercent: number
+  medianChangePercent: number
+  direction: 'FALLING' | 'RISING' | 'STABLE'
+  fallingCount: number
+  risingCount: number
+  stableCount: number
+  fallingPercent: number
+  risingPercent: number
+  stablePercent: number
+  asymmetryExplanation: string
+  lastUpdated: string
+  trendSeries: Array<{
+    date: string
+    timestamp: string
+    avgPrice: number
+    sampleSize: number
+  }>
+}
+
+export interface VerifiedPriceDrop {
+  productId: string
+  productName: string
+  brand: string
+  imageUrl: string | null
+  retailer: string
+  retailerSlug: string
+  currentPrice: number
+  previousPrice: number
+  absoluteChange: number
+  percentageChange: number
+  timestamp: string
+  lastVerifiedAt: string
+  productLink: string
+  storeUrl: string
+}
+
+export interface RetailerCompetitiveness {
+  storeName: string
+  storeSlug: string
+  activeListingsCount: number
+  sharedListingsCount: number
+  lowestPriceWins: number
+  exclusiveWins: number
+  tiedWins: number
+  winRatePercent: number
+  marketLowestShare: number
+  avgPriceDifferenceVsBest: number
+  sampleSize: number
+  methodologyNote: string
+}
+
+export interface VolatilityProduct {
+  productId: string
+  productName: string
+  brand: string
+  imageUrl: string | null
+  currentPrice: number
+  lowestPrice: number
+  highestPrice: number
+  averagePrice: number
+  volatilityPercent: number
+  historyPoints: number
+  daysCovered: number
+  productLink: string
+}
+
+export interface VolatilitySummary {
+  qualifiedCount: number
+  insufficientHistoryCount: number
+  minimumRequirements: string
+  mostVolatile: VolatilityProduct[]
+  mostStable: VolatilityProduct[]
+}
+
+export interface BuyingOpportunity {
+  productId: string
+  productName: string
+  brand: string
+  imageUrl: string | null
+  currentPrice: number
+  lowestEver: number
+  average90: number
+  discountFromAveragePercent: number
+  verdictLabel: string
+  recommendation: 'BUY'
+  predicted30d: number
+  confidence: 'High' | 'Moderate' | 'Low'
+  bestStore: string
+  isNearAllTimeLow: boolean
+  productLink: string
+  disclaimer: string
+}
+
+export interface MarketIntelligenceSummary {
+  direction: MarketPriceDirection
+  topPriceDrops: VerifiedPriceDrop[]
+  retailerCompetitiveness: RetailerCompetitiveness[]
+  volatility: VolatilitySummary
+  buyingOpportunities: BuyingOpportunity[]
+  metadata: {
+    totalCatalogProducts: number
+    genuineProductsAnalyzed: number
+    syntheticProductsExcluded: number
+    generatedAt: string
+  }
+}
+

@@ -17,14 +17,16 @@ export const resolveDirectStoreUrl = async (
     return getFallbackStoreSearch(storeName, productName);
   }
 
-  // Already a direct retailer URL
+  // Check if rawUrl is already a direct retailer URL (product page or search URL)
   if (
     rawUrl.includes('amazon.in') ||
     rawUrl.includes('amazon.com') ||
     rawUrl.includes('flipkart.com') ||
-    rawUrl.includes('croma.com')
+    rawUrl.includes('croma.com') ||
+    rawUrl.includes('vijaysales.com') ||
+    rawUrl.includes('reliancedigital.in')
   ) {
-    return rawUrl;
+    return cleanDestinationUrl(rawUrl);
   }
 
   // Check cache
@@ -33,18 +35,28 @@ export const resolveDirectStoreUrl = async (
     return urlCache.get(cacheKey)!;
   }
 
-  // If already a tracking link (l.smartprix.com)
-  if (rawUrl.includes('l.smartprix.com')) {
+  // If already a tracking link (l.smartprix.com or linkredirect.in)
+  if (rawUrl.includes('l.smartprix.com') || rawUrl.includes('linkredirect.in')) {
     try {
-      const head = execSync(`curl -s -I "${rawUrl}"`, { maxBuffer: 1024 * 1024, timeout: 8000 }).toString('utf-8');
-      const locMatch = head.match(/location:\s*([^\r\n]+)/i);
-      if (locMatch) {
-        const dest = cleanDestinationUrl(locMatch[1].trim());
+      const resp = await fetch(rawUrl, { redirect: 'manual', headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+      const loc = resp.headers.get('location');
+      if (loc) {
+        const dest = cleanDestinationUrl(loc.trim());
         urlCache.set(cacheKey, dest);
         return dest;
       }
-    } catch (err) {
-      console.warn('[StoreRedirect] Failed to resolve tracking link:', err);
+    } catch {
+      try {
+        const head = execSync(`curl -s -I "${rawUrl}"`, { maxBuffer: 1024 * 1024, timeout: 8000 }).toString('utf-8');
+        const locMatch = head.match(/location:\s*([^\r\n]+)/i);
+        if (locMatch) {
+          const dest = cleanDestinationUrl(locMatch[1].trim());
+          urlCache.set(cacheKey, dest);
+          return dest;
+        }
+      } catch (err) {
+        console.warn('[StoreRedirect] Failed to resolve tracking link:', err);
+      }
     }
   }
 
@@ -63,10 +75,10 @@ export const resolveDirectStoreUrl = async (
       for (const m of trackingMatches) {
         const link = m[1];
         try {
-          const head = execSync(`curl -s -I "${link}"`, { maxBuffer: 1024 * 1024, timeout: 6000 }).toString('utf-8');
-          const locMatch = head.match(/location:\s*([^\r\n]+)/i);
-          if (locMatch) {
-            const dest = cleanDestinationUrl(locMatch[1].trim());
+          const resp = await fetch(link, { redirect: 'manual', headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+          const loc = resp.headers.get('location');
+          if (loc) {
+            const dest = cleanDestinationUrl(loc.trim());
             const destLower = dest.toLowerCase();
 
             if (
@@ -78,7 +90,6 @@ export const resolveDirectStoreUrl = async (
               return dest;
             }
 
-            // If we found any valid retailer destination, keep it as candidate
             if (!urlCache.has(cacheKey) && (destLower.includes('amazon') || destLower.includes('flipkart'))) {
               urlCache.set(cacheKey, dest);
             }
@@ -105,19 +116,39 @@ export const resolveDirectStoreUrl = async (
 /**
  * Clean up affiliate wrappers and extract true destination URL
  */
-const cleanDestinationUrl = (url: string): string => {
+export const cleanDestinationUrl = (url: string): string => {
   // If wrapped in linkredirect / dl= query parameter
   if (url.includes('dl=')) {
     try {
       const parsed = new URL(url);
       const dl = parsed.searchParams.get('dl');
-      if (dl && (dl.includes('flipkart.com') || dl.includes('amazon.in'))) {
-        return decodeURIComponent(dl);
+      if (dl) {
+        let clean = decodeURIComponent(dl);
+        clean = clean.replace(/^https?:\/\/dl\.flipkart\.com\/dl\//, 'https://www.flipkart.com/');
+        return clean;
       }
     } catch {
       // Ignore URL parse error
     }
   }
+  if (url.includes('dl.flipkart.com/dl/')) {
+    return url.replace(/^https?:\/\/dl\.flipkart\.com\/dl\//, 'https://www.flipkart.com/');
+  }
+
+  // Fix Vijay Sales search URLs falling back to refrigerator filters
+  if (url.includes('vijaysales.com/search') && !url.includes('/p/')) {
+    if (url.toLowerCase().includes('apple') || url.toLowerCase().includes('iphone')) {
+      return 'https://www.vijaysales.com/c/smartphones?brand=Apple';
+    }
+    if (url.toLowerCase().includes('samsung') || url.toLowerCase().includes('galaxy')) {
+      return 'https://www.vijaysales.com/c/smartphones?brand=Samsung';
+    }
+    if (url.toLowerCase().includes('oneplus')) {
+      return 'https://www.vijaysales.com/c/smartphones?brand=OnePlus';
+    }
+    return 'https://www.vijaysales.com/c/smartphones';
+  }
+
   return url;
 };
 
@@ -127,12 +158,25 @@ const cleanDestinationUrl = (url: string): string => {
 export const getFallbackStoreSearch = (storeName: string, productName: string): string => {
   const query = encodeURIComponent(productName || 'smartphone');
   const s = (storeName || '').toLowerCase();
+  const prod = (productName || '').toLowerCase();
 
   if (s.includes('flipkart')) {
     return `https://www.flipkart.com/search?q=${query}`;
   }
   if (s.includes('croma')) {
     return `https://www.croma.com/searchB?q=${query}`;
+  }
+  if (s.includes('vijay')) {
+    if (prod.includes('apple') || prod.includes('iphone')) {
+      return 'https://www.vijaysales.com/c/smartphones?brand=Apple';
+    }
+    if (prod.includes('samsung') || prod.includes('galaxy')) {
+      return 'https://www.vijaysales.com/c/smartphones?brand=Samsung';
+    }
+    if (prod.includes('oneplus')) {
+      return 'https://www.vijaysales.com/c/smartphones?brand=OnePlus';
+    }
+    return 'https://www.vijaysales.com/c/smartphones';
   }
   return `https://www.amazon.in/s?k=${query}`;
 };

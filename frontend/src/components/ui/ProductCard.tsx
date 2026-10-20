@@ -1,21 +1,96 @@
-import { Heart, GitCompare, Bell, TrendingDown, TrendingUp, Minus, Star } from "lucide-react"
-import { useState } from "react"
+import { Heart, GitCompare, Bell, TrendingDown, TrendingUp, Minus, Star, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import Badge from "./Badge"
-
+import CompareButton from "./CompareButton"
+import { useAuth } from "../../context/AuthContext"
+import { api } from "../../services/api"
 import type { Product } from "../../types/product"
+
 export type { Product }
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
 
-export default function ProductCard({ product, onCompare, selected }: {
+interface ProductCardProps {
   product: Product
   onCompare?: (p: Product) => void
   selected?: boolean
-}) {
+  isWishlisted?: boolean
+  isTracking?: boolean
+  onWishlistToggle?: (productId: string, newState: boolean) => void
+  onTrackToggle?: (productId: string, newState: boolean) => void
+  onTrackClick?: (p: Product) => void
+}
+
+export default function ProductCard({
+  product,
+  onCompare,
+  selected,
+  isWishlisted: isWishlistedProp,
+  isTracking: isTrackingProp,
+  onWishlistToggle,
+  onTrackToggle,
+  onTrackClick,
+}: ProductCardProps) {
   const navigate = useNavigate()
-  const [wished, setWished] = useState(false)
-  const [tracking, setTracking] = useState(false)
+  const {
+    isAuthenticated,
+    isWishlisted: authIsWishlisted,
+    isTracking: authIsTracking,
+    toggleWishlist,
+    toggleWatchlist,
+  } = useAuth()
+
+  const [wishLoading, setWishLoading] = useState(false)
+  const [trackLoading, setTrackLoading] = useState(false)
+
+  const wished = isWishlistedProp !== undefined ? isWishlistedProp : authIsWishlisted(product.id)
+  const tracking = isTrackingProp !== undefined ? isTrackingProp : authIsTracking(product.id)
+
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: `/product/${product.id}` } })
+      return
+    }
+
+    setWishLoading(true)
+    try {
+      const nextState = await toggleWishlist(product.id)
+      onWishlistToggle?.(product.id, nextState)
+    } catch (err: any) {
+      console.error("Failed to toggle wishlist:", err?.response?.data?.message || err.message)
+    } finally {
+      setWishLoading(false)
+    }
+  }
+
+  const handleToggleTrack = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isAuthenticated) {
+      sessionStorage.setItem("pricewise_pending_track", JSON.stringify({
+        productId: product.id,
+        productName: product.name,
+      }))
+      navigate("/login", { state: { from: `/product/${product.id}`, pendingTrack: { productId: product.id, productName: product.name } } })
+      return
+    }
+
+    if (onTrackClick) {
+      onTrackClick(product)
+      return
+    }
+
+    setTrackLoading(true)
+    try {
+      const nextState = await toggleWatchlist(product.id)
+      onTrackToggle?.(product.id, nextState)
+    } catch (err: any) {
+      console.error("Failed to toggle tracking:", err?.response?.data?.message || err.message)
+    } finally {
+      setTrackLoading(false)
+    }
+  }
 
   const TrendIcon = product.trend === "down" ? TrendingDown : product.trend === "up" ? TrendingUp : Minus
   const trendColor = product.trend === "down" ? "text-emerald-600" : product.trend === "up" ? "text-red-500" : "text-slate-400"
@@ -38,11 +113,16 @@ export default function ProductCard({ product, onCompare, selected }: {
           </span>
         </div>
       )}
+
+      {/* Wishlist Heart Icon */}
       <button
-        onClick={(e) => { e.stopPropagation(); setWished(!wished) }}
-        className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+        type="button"
+        onClick={handleToggleWishlist}
+        disabled={wishLoading}
+        aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+        className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors cursor-pointer disabled:opacity-50"
       >
-        <Heart size={14} className={wished ? "fill-red-500 text-red-500" : "text-slate-400"} />
+        <Heart size={14} className={wished ? "fill-red-500 text-red-500" : "text-slate-400 hover:text-slate-600"} />
       </button>
 
       <div className="p-4">
@@ -96,7 +176,7 @@ export default function ProductCard({ product, onCompare, selected }: {
         </div>
 
         <div className="flex flex-wrap gap-1 mb-3">
-          {product.specs.slice(0, 3).map(s => (
+          {product.specs.slice(0, 3).map((s) => (
             <span key={s} className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md">{s}</span>
           ))}
         </div>
@@ -137,22 +217,21 @@ export default function ProductCard({ product, onCompare, selected }: {
         </Badge>
 
         <div className="flex gap-1.5 pt-2 border-t border-slate-100">
+          <CompareButton
+            product={product}
+            variant="card"
+            active={selected}
+            onClick={onCompare ? (e) => { e.stopPropagation(); onCompare(product); } : undefined}
+          />
           <button
-            onClick={(e) => { e.stopPropagation(); onCompare?.(product) }}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              selected ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600"
+            type="button"
+            onClick={handleToggleTrack}
+            disabled={trackLoading}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer disabled:opacity-50 ${
+              tracking ? "bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200" : "bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
             }`}
           >
-            <GitCompare size={11} />
-            Compare
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setTracking(!tracking) }}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              tracking ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
-            }`}
-          >
-            <Bell size={11} />
+            {trackLoading ? <Loader2 size={11} className="animate-spin" /> : <Bell size={11} />}
             {tracking ? "Tracking" : "Track"}
           </button>
         </div>

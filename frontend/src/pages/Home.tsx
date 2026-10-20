@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { Search, TrendingDown, Zap, BarChart2, Bell, Sparkles, ChevronRight, ArrowRight, Smartphone } from "lucide-react"
+import { Search, TrendingDown, Zap, BarChart2, Bell, Sparkles, ChevronRight, ArrowRight, Smartphone, Bot } from "lucide-react"
 import {
   AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts"
 import ProductCard from "../components/ui/ProductCard"
-import Footer from "../components/layout/Footer"
+import PriceAlertModal from "../components/ui/PriceAlertModal"
+import { useAuth } from "../context/AuthContext"
 import { api } from "../services/api"
 import type { Product, CatalogMeta } from "../types/product"
 
@@ -19,6 +20,7 @@ const features = [
     color: "from-indigo-500 to-blue-500",
     bg: "bg-indigo-50",
     iconColor: "text-indigo-600",
+    to: "/compare",
   },
   {
     icon: Bell,
@@ -27,6 +29,7 @@ const features = [
     color: "from-emerald-500 to-teal-500",
     bg: "bg-emerald-50",
     iconColor: "text-emerald-600",
+    to: "/alerts",
   },
   {
     icon: TrendingDown,
@@ -35,14 +38,16 @@ const features = [
     color: "from-violet-500 to-purple-500",
     bg: "bg-violet-50",
     iconColor: "text-violet-600",
+    to: "/price-intelligence",
   },
   {
-    icon: Sparkles,
-    title: "AI Recommendations",
-    desc: "Find phones and alternatives perfectly suited to your budget and desired specs.",
-    color: "from-amber-500 to-orange-500",
-    bg: "bg-amber-50",
-    iconColor: "text-amber-600",
+    icon: Bot,
+    title: "Shopping Assistant",
+    desc: "Ask our conversational AI for custom recommendations, specs comparisons, and deal timing.",
+    color: "from-purple-500 to-indigo-500",
+    bg: "bg-purple-50",
+    iconColor: "text-purple-600",
+    to: "/ai",
   },
 ]
 
@@ -54,7 +59,24 @@ export default function Home() {
   const [deals, setDeals] = useState<Product[]>([])
   const [meta, setMeta] = useState<CatalogMeta | null>(null)
   const [loading, setLoading] = useState(true)
+  const [trackModalProduct, setTrackModalProduct] = useState<Product | null>(null)
+  const [showTrackModal, setShowTrackModal] = useState(false)
+  const [trackedProductIds, setTrackedProductIds] = useState<Set<string>>(new Set())
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
+
+  const handleOpenTrackModal = (p: Product) => {
+    if (!isAuthenticated) {
+      sessionStorage.setItem("pricewise_pending_track", JSON.stringify({
+        productId: p.id,
+        productName: p.name,
+      }))
+      navigate("/login", { state: { from: "/", pendingTrack: { productId: p.id, productName: p.name } } })
+      return
+    }
+    setTrackModalProduct(p)
+    setShowTrackModal(true)
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -121,8 +143,8 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5 text-sm text-blue-300 mb-6">
-                <Zap size={13} className="text-indigo-400" />
-                Live Supabase Mobile Catalog & Price Intelligence
+                <img src="/logo-mark.png" alt="PriceWise" className="w-4 h-4 object-contain select-none" />
+                Live Smartphone Catalog & Price Intelligence
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-5">
@@ -244,7 +266,7 @@ export default function Home() {
             { label: "Mobiles Tracked", value: `${meta?.categories?.[0]?.count || 140}+`, icon: Smartphone, color: "text-indigo-600" },
             { label: "Stores Covered", value: `${meta?.stores?.length || 4} Retailers`, icon: TrendingDown, color: "text-emerald-600" },
             { label: "Top Brands", value: `${meta?.brands?.length || 7} Brands`, icon: BarChart2, color: "text-amber-600" },
-            { label: "Live Supabase DB", value: "Real-Time Sync", icon: Zap, color: "text-violet-600" },
+            { label: "Verified Catalog", value: "Real-Time Sync", icon: Zap, color: "text-indigo-600" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
               <Icon size={18} className={`${color} mb-1`} />
@@ -259,15 +281,53 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Everything you need to buy smarter</h2>
           <p className="text-slate-500 mb-6">Four powerful tools in one intelligent platform</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {features.map(({ icon: Icon, title, desc, bg, iconColor }) => (
-              <div key={title} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
-                <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3`}>
+            {features.map(({ icon: Icon, title, desc, bg, iconColor, to }) => (
+              <div
+                key={title}
+                onClick={() => to && navigate(to)}
+                className={`bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all ${
+                  to ? "cursor-pointer hover:border-indigo-300 group" : ""
+                }`}
+              >
+                <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
                   <Icon size={18} className={iconColor} />
                 </div>
-                <h3 className="font-semibold text-slate-800 mb-1.5">{title}</h3>
+                <div className="flex items-center justify-between mb-1.5">
+                  <h3 className="font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">{title}</h3>
+                  {to && <ChevronRight size={14} className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />}
+                </div>
                 <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Shopping Assistant Spotlight Banner */}
+        <section className="mb-14">
+          <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl border border-indigo-700/50">
+            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-60 h-60 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="max-w-xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-xs font-semibold mb-3">
+                  <Sparkles size={13} className="text-indigo-300" />
+                  <span>Conversational AI Assistant</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
+                  Meet your PriceWise Shopping Assistant
+                </h2>
+                <p className="text-indigo-200/90 text-sm sm:text-base leading-relaxed">
+                  Ask questions like <span className="text-white font-medium">"Best phone under ₹30,000"</span> or <span className="text-white font-medium">"Should I buy iPhone 16 now?"</span> and get real-time price intelligence instantly.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/ai")}
+                className="shrink-0 flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-white text-indigo-700 font-bold text-sm shadow-md hover:bg-indigo-50 hover:shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                <Bot size={18} />
+                <span>Open Assistant</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
         </section>
 
@@ -320,7 +380,12 @@ export default function Home() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {trending.slice(0, 4).map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  isTracking={trackedProductIds.has(p.id)}
+                  onTrackClick={handleOpenTrackModal}
+                />
               ))}
             </div>
           )}
@@ -369,7 +434,22 @@ export default function Home() {
                         -{p.discount}%
                       </span>
                       <span className="text-xs text-slate-500">at {p.bestStore}</span>
-                      <TrendingDown size={11} className="ml-auto text-emerald-600" />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleOpenTrackModal(p)
+                        }}
+                        className={`ml-auto p-1.5 rounded-lg border text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+                          trackedProductIds.has(p.id)
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold"
+                            : "bg-slate-50 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border-slate-200"
+                        }`}
+                        title={trackedProductIds.has(p.id) ? "Tracking Active" : "Track Price"}
+                      >
+                        <Bell size={11} className={trackedProductIds.has(p.id) ? "fill-emerald-600 text-emerald-600" : ""} />
+                        <span className="text-[11px]">{trackedProductIds.has(p.id) ? "Tracking" : "Track"}</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -425,7 +505,12 @@ export default function Home() {
         </section>
       </div>
 
-      <Footer />
+      <PriceAlertModal
+        isOpen={showTrackModal}
+        onClose={() => setShowTrackModal(false)}
+        product={trackModalProduct}
+        onAlertActivated={(pid) => setTrackedProductIds((prev) => new Set(prev).add(pid))}
+      />
     </div>
   )
 }

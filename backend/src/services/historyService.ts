@@ -39,30 +39,6 @@ export const seriesFor = async (productId: string, days: number | null, storeId?
   return withCurrentPrice(series, currentPrice);
 };
 
-const ensureRichHistory = (full: DailyPoint[], currentPrice: number, mrp: number, targetDays: number): DailyPoint[] => {
-  if (full.length >= 7) return full;
-  const points: DailyPoint[] = [];
-  const basePrice = currentPrice || 25000;
-  const highPrice = Math.max(mrp || Math.round(basePrice * 1.15), Math.round(basePrice * 1.1));
-  const now = Date.now();
-  const dayMs = 24 * 60 * 60 * 1000;
-  const totalDays = Math.min(Math.max(targetDays || 90, 30), 120);
-
-  for (let i = totalDays; i >= 0; i--) {
-    const day = new Date(now - i * dayMs);
-    day.setUTCHours(0, 0, 0, 0);
-
-    // Gradual realistic decline from launch/retail MRP down to current best price with slight market fluctuations
-    const progress = (totalDays - i) / totalDays;
-    const wave = Math.sin(i * 0.4) * (basePrice * 0.025);
-    const interpolated = highPrice - (highPrice - basePrice) * Math.pow(progress, 0.85) + wave;
-    const price = i === 0 ? basePrice : Math.round(Math.max(basePrice * 0.95, interpolated));
-
-    points.push({ day, price });
-  }
-  return points;
-};
-
 export const getPriceHistory = async (productId: string, range: RangeKey, store?: string) => {
   const product = await findProductOr404(productId);
   const listing = resolveListing(product, store);
@@ -74,9 +50,7 @@ export const getPriceHistory = async (productId: string, range: RangeKey, store?
     listing?.storeId,
     listing ? listing.currentPrice : product.bestPrice,
   );
-  const currentP = listing ? listing.currentPrice : (product.bestPrice ?? 25000);
-  const mrpP = listing?.mrp ?? product.mrp ?? Math.round(currentP * 1.15);
-  const full = raw.length >= 7 ? raw : ensureRichHistory(raw, currentP, mrpP, days ?? 90);
+  const full = raw;
 
   const averages = trailingAverage(full, AVERAGE_WINDOW_DAYS);
   const withAvg = full.map((p, i) => ({ ...p, avg: averages[i] }));
@@ -98,11 +72,8 @@ export const getPriceHistory = async (productId: string, range: RangeKey, store?
 
 export const getPricePrediction = async (productId: string) => {
   const product = await findProductOr404(productId);
-  const raw = await seriesFor(productId, 120, undefined, product.bestPrice);
-  const currentP = product.bestPrice ?? 25000;
-  const mrpP = product.mrp ?? Math.round(currentP * 1.15);
-  const series = raw.length >= 7 ? raw : ensureRichHistory(raw, currentP, mrpP, 120);
+  const series = await seriesFor(productId, 120, undefined, product.bestPrice);
 
-  return { productId, ...(await predictPrices(productId, series)) };
+  return { productId, ...(await predictPrices(productId, series, product.bestPrice)) };
 };
 

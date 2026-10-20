@@ -5,6 +5,7 @@ import { evaluatePriceChange } from './alertEngine';
 import { MATCH_THRESHOLD, titleSimilarity } from './matching';
 import { refreshProductAggregates } from './productService';
 import { ProviderId, StoreOffer, StoreProvider, configuredProviders, providers } from './stores';
+import { clearMarketIntelligenceCache } from './marketIntelligenceService';
 
 export interface ProviderSyncResult {
   provider: ProviderId;
@@ -41,6 +42,7 @@ const applyAggregatesAndAlerts = async (productIds: Iterable<string>): Promise<n
     const { previousBest, bestPrice } = await refreshProductAggregates(productId);
     if (bestPrice !== null) notifications += await evaluatePriceChange(productId, previousBest, bestPrice);
   }
+  clearMarketIntelligenceCache();
   return notifications;
 };
 

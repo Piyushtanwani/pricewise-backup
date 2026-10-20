@@ -75,11 +75,17 @@ export const queryString = (value: unknown): string | undefined => {
   return typeof first === 'string' && first.trim() !== '' ? first.trim() : undefined;
 };
 
-export const queryInt = (value: unknown, fallback: number, { min, max }: { min: number; max: number }): number => {
+export const queryInt = (
+  value: unknown,
+  fallback: number,
+  options: { min?: number; max?: number } = {},
+): number => {
   const raw = queryString(value);
   if (raw === undefined) return fallback;
   const parsed = Number.parseInt(raw, 10);
   if (!Number.isFinite(parsed)) throw badRequest(`Expected an integer, received "${raw}"`);
+  const min = options.min ?? -Infinity;
+  const max = options.max ?? Infinity;
   return Math.min(max, Math.max(min, parsed));
 };
 

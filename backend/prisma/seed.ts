@@ -19,7 +19,7 @@ const STORES = [
   { key: 'amazon', name: 'Amazon', url: 'https://www.amazon.in', search: (q: string) => `https://www.amazon.in/s?k=${q}` },
   { key: 'flipkart', name: 'Flipkart', url: 'https://www.flipkart.com', search: (q: string) => `https://www.flipkart.com/search?q=${q}` },
   { key: 'croma', name: 'Croma', url: 'https://www.croma.com', search: (q: string) => `https://www.croma.com/searchB?q=${q}` },
-  { key: 'vijay-sales', name: 'Vijay Sales', url: 'https://www.vijaysales.com', search: (q: string) => `https://www.vijaysales.com/search/${q}` },
+  { key: 'vijay-sales', name: 'Vijay Sales', url: 'https://www.vijaysales.com', search: (q: string) => `https://www.vijaysales.com/search?q=${q}` },
   { key: 'samsung', name: 'Samsung', url: 'https://www.samsung.com/in', search: (q: string) => `https://www.samsung.com/in/search/?searchvalue=${q}` },
 ] as const;
 
@@ -363,12 +363,12 @@ const main = async () => {
     read: boolean;
     at: Date;
   }[] = [
-    { type: 'PRICE_DROP', title: 'Price dropped!', body: 'Sony WH-1000XM5 dropped by ₹5,000 — now ₹29,999', product: 'sony-xm5', prev: 34999, next: 29999, read: false, at: ago(2 * 60 * 1000) },
-    { type: 'TARGET_REACHED', title: 'Target price reached!', body: 'MacBook Air M3 is now at ₹99,900 — your target was ₹1,00,000', product: 'macbook-air-m3', prev: 109999, next: 99900, target: 100000, read: false, at: ago(60 * 60 * 1000) },
-    { type: 'RECOMMENDATION', title: 'New recommendation', body: 'We found a better-value alternative to your tracked Galaxy S25 Ultra', product: 'galaxy-s25-ultra', read: true, at: ago(3 * 60 * 60 * 1000) },
-    { type: 'DIGEST', title: 'Weekly price digest', body: '3 products in your wishlist have dropped in price this week', read: true, at: ago(DAY_MS) },
-    { type: 'PRICE_DROP', title: 'Price dropped!', body: 'LG 55" C3 OLED dropped by ₹10,000 — now ₹79,990', product: 'lg-c3-55', prev: 89990, next: 79990, target: 75000, read: true, at: ago(4 * DAY_MS) },
-  ];
+      { type: 'PRICE_DROP', title: 'Price dropped!', body: 'Sony WH-1000XM5 dropped by ₹5,000 — now ₹29,999', product: 'sony-xm5', prev: 34999, next: 29999, read: false, at: ago(2 * 60 * 1000) },
+      { type: 'TARGET_REACHED', title: 'Target price reached!', body: 'MacBook Air M3 is now at ₹99,900 — your target was ₹1,00,000', product: 'macbook-air-m3', prev: 109999, next: 99900, target: 100000, read: false, at: ago(60 * 60 * 1000) },
+      { type: 'RECOMMENDATION', title: 'New recommendation', body: 'We found a better-value alternative to your tracked Galaxy S25 Ultra', product: 'galaxy-s25-ultra', read: true, at: ago(3 * 60 * 60 * 1000) },
+      { type: 'DIGEST', title: 'Weekly price digest', body: '3 products in your wishlist have dropped in price this week', read: true, at: ago(DAY_MS) },
+      { type: 'PRICE_DROP', title: 'Price dropped!', body: 'LG 55" C3 OLED dropped by ₹10,000 — now ₹79,990', product: 'lg-c3-55', prev: 89990, next: 79990, target: 75000, read: true, at: ago(4 * DAY_MS) },
+    ];
   await prisma.notification.createMany({
     data: notifications.map((n) => ({
       userId: user.id,

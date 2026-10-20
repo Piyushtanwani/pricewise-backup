@@ -1,0 +1,57 @@
+{
+  "timestamp": "2026-10-18T12:24:58.542839Z",
+  "sample_size": 56,
+  "results": {
+    "linear_trend": {
+      "7d": {
+        "coverage_pct": 91.07,
+        "mean_width_inr": 7079.92,
+        "calibrated_80_supported": true
+      },
+      "14d": {
+        "coverage_pct": 91.07,
+        "mean_width_inr": 10012.52,
+        "calibrated_80_supported": true
+      },
+      "30d": {
+        "coverage_pct": 75.0,
+        "mean_width_inr": 14656.83,
+        "calibrated_80_supported": true
+      }
+    },
+    "xgboost": {
+      "7d": {
+        "coverage_pct": 73.21,
+        "mean_width_inr": 4165.05,
+        "calibrated_80_supported": false
+      },
+      "14d": {
+        "coverage_pct": 75.0,
+        "mean_width_inr": 5890.27,
+        "calibrated_80_supported": true
+      },
+      "30d": {
+        "coverage_pct": 76.79,
+        "mean_width_inr": 8622.47,
+        "calibrated_80_supported": true
+      }
+    },
+    "prophet": {
+      "7d": {
+        "coverage_pct": 73.21,
+        "mean_width_inr": 4683.41,
+        "calibrated_80_supported": false
+      },
+      "14d": {
+        "coverage_pct": 64.29,
+        "mean_width_inr": 5348.76,
+        "calibrated_80_supported": false
+      },
+      "30d": {
+        "coverage_pct": 50.0,
+        "mean_width_inr": 7802.86,
+        "calibrated_80_supported": false
+      }
+    }
+  }
+}

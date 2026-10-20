@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { Prisma } from '../generated/prisma';
+import { Prisma, StockStatus } from '../generated/prisma';
 import prisma from '../utils/prisma';
 import { badRequest, notFound } from '../utils/http';
 import { queryInt, queryList, queryNumber, queryString } from '../utils/validate';
 import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } from '../services/priceAnalytics';
-import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard } from '../services/productService';
+import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard, StorePriceRow } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
+import { env } from '../config/env';
 import { resolveDirectStoreUrl } from '../services/storeRedirectService';
 import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
 
@@ -174,37 +175,57 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
 export const getProductLiveStores = async (req: Request, res: Response): Promise<void> => {
   const productId = String(req.params.id);
   const product = await findProductOr404(productId);
+
+  // 1. Primary ground truth: verified database listings
+  const dbStores = storePriceRows(product).filter((s) => {
+    const match = matchAllowedStore(s.store, product.brand, product.name);
+    return match !== null;
+  });
+
+  // 2. Auxiliary live prices from SerpApi (with strict title and price tolerance checks)
   const livePrices = await getLiveSerpStorePrices(product.name, product.brand, product.bestPrice);
 
-  let stores = livePrices;
+  // 3. Merge: Database verified store listings always take precedence for known stores
+  const storeMap = new Map<string, StorePriceRow>();
 
-  // If SerpApi did not return allowed stores, only show allowed stores from DB listings
-  if (stores.length === 0) {
-    stores = storePriceRows(product).filter((s) => {
-      const match = matchAllowedStore(s.store, product.brand, product.name);
-      return match !== null;
-    });
+  for (const s of dbStores) {
+    storeMap.set(s.store.toLowerCase(), s);
   }
 
-  // If DB listing already has a direct retailer URL for Amazon or Flipkart, use that exact link
-  stores = stores.map((s) => {
-    const dbListing = product.stores.find(
-      (dbS) =>
-        dbS.store.name.toLowerCase().includes(s.store.toLowerCase()) ||
-        s.store.toLowerCase().includes(dbS.store.name.toLowerCase()),
-    );
-    if (
-      dbListing &&
-      dbListing.productUrl &&
-      (dbListing.productUrl.includes('amazon.in') || dbListing.productUrl.includes('flipkart.com'))
-    ) {
-      return {
-        ...s,
-        url: dbListing.productUrl,
+  // Augment with non-duplicate live store offers that passed verification
+  for (const s of livePrices) {
+    const key = s.store.toLowerCase();
+    if (!storeMap.has(key)) {
+      const row: StorePriceRow = {
+        storeId: s.storeId,
+        store: s.store,
+        storeSlug: s.storeSlug,
+        logoUrl: s.logoUrl ?? null,
+        price: s.price,
+        mrp: s.mrp ?? null,
+        shipping: s.shipping || 'Free',
+        shippingCost: 0,
+        availability: s.availability || 'In Stock',
+        stockStatus: StockStatus.IN_STOCK,
+        diff: s.diff,
+        url: s.url,
+        lastCheckedAt: s.lastCheckedAt ?? new Date().toISOString(),
       };
+      storeMap.set(key, row);
     }
-    return s;
-  });
+  }
+
+  let stores = Array.from(storeMap.values());
+  stores.sort((a, b) => a.price - b.price);
+
+  // Recompute relative diffs from the best available price
+  if (stores.length > 0) {
+    const lowest = stores[0].price;
+    stores = stores.map((s) => ({
+      ...s,
+      diff: Math.max(0, s.price - lowest),
+    }));
+  }
 
   res.json({
     stores,
@@ -225,6 +246,40 @@ export const getAlternatives = async (req: Request, res: Response): Promise<void
   const limit = queryInt(req.query.limit, 4, { min: 1, max: 12 });
   const price = product.bestPrice ?? 0;
 
+  // 1. Content-based ML Recommender via FastAPI
+  if (env.mlServiceUrl) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2500);
+      const mlRes = await fetch(`${env.mlServiceUrl}/recommend/alternatives`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: product.id, limit }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (mlRes.ok) {
+        const payload = (await mlRes.json()) as { recommendations?: { product_id: string }[] };
+        if (payload.recommendations && payload.recommendations.length > 0) {
+          const recIds = payload.recommendations.map((r) => r.product_id);
+          const dbProducts = await prisma.product.findMany({
+            where: { id: { in: recIds } },
+            include: productInclude,
+          });
+          const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+          const ordered = recIds.map((id) => productMap.get(id)).filter((p): p is (typeof dbProducts)[0] => Boolean(p));
+          if (ordered.length > 0) {
+            res.json({ items: await presentCards(ordered) });
+            return;
+          }
+        }
+      }
+    } catch {
+      // Fall through to deterministic heuristic fallback
+    }
+  }
+
+  // 2. Deterministic SQL Heuristic Fallback
   const inBand = await prisma.product.findMany({
     where: {
       id: { not: product.id },
@@ -261,27 +316,8 @@ export const getAlternatives = async (req: Request, res: Response): Promise<void
 };
 
 export const compareProducts = async (req: Request, res: Response): Promise<void> => {
-  let ids = [...new Set(queryList(req.query.ids))];
+  const ids = [...new Set(queryList(req.query.ids))];
   if (ids.length === 0) throw badRequest('Provide at least 1 product id, e.g. ?ids=a,b');
-
-  // If only 1 product ID is provided, automatically fetch 1 or 2 similar competitor phones in a similar price range
-  if (ids.length === 1) {
-    const mainProduct = await prisma.product.findUnique({ where: { id: ids[0] } });
-    if (mainProduct) {
-      const minP = Math.round((mainProduct.bestPrice || 25000) * 0.7);
-      const maxP = Math.round((mainProduct.bestPrice || 25000) * 1.35);
-      const competitors = await prisma.product.findMany({
-        where: {
-          id: { not: mainProduct.id },
-          brand: { not: mainProduct.brand },
-          bestPrice: { gte: minP, lte: maxP },
-        },
-        take: 2,
-        orderBy: { reviewCount: 'desc' },
-      });
-      ids = [mainProduct.id, ...competitors.map((c) => c.id)];
-    }
-  }
 
   const found = await prisma.product.findMany({ where: { id: { in: ids } }, include: productInclude });
   if (found.length === 0) {

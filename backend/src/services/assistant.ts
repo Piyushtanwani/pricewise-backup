@@ -8,6 +8,8 @@ import { titleTokens } from './matching';
 import { computeTrend, computeVerdict, predictLinear, sliceByDays, percentChange, withCurrentPrice } from './priceAnalytics';
 import { ProductCard, ProductWithStores, loadDailySeries, productInclude, toProductCard } from './productService';
 
+import { env } from '../config/env';
+
 export type Intent = 'buy_now' | 'alternatives' | 'compare' | 'recommend';
 
 export interface AssistantReply {
@@ -16,6 +18,7 @@ export interface AssistantReply {
   products: ProductCard[];
   insights: { label: string; value: string }[];
   parsed: { intent: Intent; budget: number | null; category: string | null };
+  source?: string;
 }
 
 const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
@@ -106,7 +109,7 @@ const trendText = (trend: string, change30: number) =>
       ? `Up ${change30.toFixed(0)}% over the last 30 days`
       : 'Stable over the last 30 days';
 
-export const answer = async (message: string, context: { productIds?: string[] } = {}): Promise<AssistantReply> => {
+const localAnswer = async (message: string, context: { productIds?: string[] } = {}): Promise<AssistantReply> => {
   const categories = (await prisma.product.findMany({ select: { category: true }, distinct: ['category'] })).map((c) => c.category);
   const budget = parseBudget(message);
   const category = detectCategory(message, categories);
@@ -265,3 +268,29 @@ export const answer = async (message: string, context: { productIds?: string[] }
   };
 };
 
+export const answer = async (message: string, context: { productIds?: string[] } = {}): Promise<AssistantReply> => {
+  if (env.mlServiceUrl) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4500);
+      const res = await fetch(`${env.mlServiceUrl}/assistant/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, product_ids: context.productIds || [] }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok) {
+        const data = (await res.json()) as AssistantReply;
+        if (data && data.content && Array.isArray(data.products)) {
+          return data;
+        }
+      }
+    } catch {
+      // Fallback seamlessly to local deterministic engine if ML service is unreachable or times out
+    }
+  }
+
+  const localRes = await localAnswer(message, context);
+  return { ...localRes, source: 'rule-based-fallback' };
+};
