@@ -14,9 +14,9 @@ const num = (key: string, fallback: number): number => {
   return value;
 };
 
-const jwtSecret = str('JWT_SECRET');
-if (!jwtSecret) {
-  throw new Error('JWT_SECRET is not set. Copy backend/.env.example to backend/.env and set a random value.');
+const jwtSecret = str('JWT_SECRET', 'pricewise-dev-secret-key-32chars-min-length-12345');
+if (!process.env.JWT_SECRET) {
+  console.warn('[Config] Warning: JWT_SECRET not set in environment. Using default fallback.');
 }
 
 export const env = {
