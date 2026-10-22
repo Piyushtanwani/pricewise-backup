@@ -79,6 +79,8 @@ export const scrapeCroma = async (directUrl: string): Promise<Partial<ScrapedSto
 export const scrapeAmazon = async (
   directUrl: string,
   basePrice?: number | null,
+  productName?: string,
+  targetSpecs?: TargetSpecs,
 ): Promise<Partial<ScrapedStoreOffer> | null> => {
   try {
     const controller = new AbortController();
@@ -106,21 +108,36 @@ export const scrapeAmazon = async (
     // 2. Out of Stock container checks
     const hasOutOfStockDiv =
       html.includes('id="outOfStock"') ||
-      html.includes('class="outOfStock"') ||
-      html.includes('Currently unavailable.') ||
-      html.includes('We don\'t know when or if this item will be back in stock');
+      html.includes('class="outOfStock"');
 
     const availMatch = html.match(/id="availability"[^>]*>([\s\S]*?)<\/div>/i);
-    const availText = availMatch ? availMatch[1].replace(/<[^>]+>/g, ' ').toLowerCase() : '';
+    const availText = availMatch ? availMatch[1].replace(/<[^>]+>/g, ' ').toLowerCase().replace(/\s+/g, ' ').trim() : '';
+
+    const availSaysOutOfStock =
+      availText.includes('currently unavailable') ||
+      availText.includes('temporarily out of stock') ||
+      availText.includes('we don\'t know when or if this item will be back in stock');
 
     let isOutOfStock = false;
-    if (!hasAddToCart && !hasBuyNow) {
-      if (hasOutOfStockDiv || availText.includes('currently unavailable') || availText.length === 0) {
+    if (hasOutOfStockDiv || availSaysOutOfStock) {
+      isOutOfStock = true;
+    } else if (!hasAddToCart && !hasBuyNow) {
+      isOutOfStock = true;
+    }
+
+    // 3. Extract Amazon Product Title and verify variant
+    const pTitleMatch = html.match(/id="productTitle"[^>]*>([^<]+)<\/span>/i);
+    const pTitle = pTitleMatch ? pTitleMatch[1].trim() : '';
+
+    if (pTitle && productName) {
+      const match = matchProductVariant(pTitle, productName, targetSpecs);
+      if (!match.matches) {
+        // Amazon page does NOT have the requested variant (e.g. 16GB instead of 12GB)
         isOutOfStock = true;
       }
     }
 
-    // 3. Main Product Core Price ONLY (Do NOT match carousel accessories or phone cases)
+    // 4. Main Product Core Price ONLY (Do NOT match carousel accessories or phone cases)
     const corePriceSection =
       html.match(/id="corePriceDisplay_desktop_feature_div"[\s\S]*?<\/div>\s*<\/div>/i) ||
       html.match(/id="corePrice_desktop"[\s\S]*?<\/div>/i) ||
@@ -263,10 +280,18 @@ export function matchProductVariant(
     }
   }
 
-  // 3. STRICT STORAGE MATCHING:
-  // Candidate titles typically specify storage: "(... 256 GB)", "(... 512 GB)", "(... 128 GB)", "(... 1 TB)"
+  // 3. STRICT STORAGE & RAM MATCHING:
+  // Check combo pattern: e.g. "16GB+512GB", "12GB/256GB", "16 GB + 512 GB"
+  const comboMatch = candidateTitle.match(/([0-9]+)\s*GB\s*[\+\/]\s*([0-9]+)\s*(?:GB|TB)/i);
+
   const titleStorageMatch = candidateTitle.match(/([0-9]+)\s*(?:GB|TB)\b/gi);
-  const titleStorages = (titleStorageMatch || []).map((s) => parseStorageNumber(s)).filter(Boolean);
+  const titleStorages = (titleStorageMatch || []).map((s) => parseStorageNumber(s)).filter(Boolean) as number[];
+  if (comboMatch) {
+    const comboStorage = parseStorageNumber(comboMatch[2]);
+    if (comboStorage && !titleStorages.includes(comboStorage)) {
+      titleStorages.push(comboStorage);
+    }
+  }
 
   if (targetStorageNum && titleStorages.length > 0) {
     // If candidate mentions a storage that conflicts with targetStorage
@@ -277,10 +302,14 @@ export function matchProductVariant(
   }
 
   // 4. STRICT RAM MATCHING:
-  // If candidate title explicitly specifies RAM: "(16 GB RAM)" or "(12 GB RAM)"
-  const titleRamMatch = candidateTitle.match(/([0-9]+)\s*GB\s*RAM\b/i);
-  if (targetRamNum && titleRamMatch) {
-    const titleRamNum = Number(titleRamMatch[1]);
+  // Supports "16GB+512GB", "12GB/256GB", "(16 GB RAM)", "16GB RAM", "RAM: 16GB"
+  const titleRamMatch =
+    candidateTitle.match(/([0-9]+)\s*GB\s*RAM\b/i) ||
+    candidateTitle.match(/RAM\s*:\s*([0-9]+)\s*GB/i);
+
+  const titleRamNum = comboMatch ? Number(comboMatch[1]) : titleRamMatch ? Number(titleRamMatch[1]) : null;
+
+  if (targetRamNum && titleRamNum) {
     if (titleRamNum !== targetRamNum) {
       return { matches: false, score: -1 }; // Reject mismatched RAM (e.g. 16GB when target is 12GB)
     }
@@ -458,7 +487,7 @@ export const scrapeLiveStoreListing = async (
     }
 
     if (sLower.includes('amazon') || urlLower.includes('amazon.in')) {
-      const scraped = await scrapeAmazon(directUrl, basePrice);
+      const scraped = await scrapeAmazon(directUrl, basePrice, productName, targetSpecs);
       if (scraped) return { ...scraped, directUrl };
     }
 
