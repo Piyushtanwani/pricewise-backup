@@ -20,7 +20,13 @@ import type {
   NotificationsResponse,
 } from '../types/user';
 
-const API_BASE = '/api';
+const normalizeApiBase = (url?: string): string => {
+  if (!url || !url.trim()) return '/api';
+  const trimmed = url.trim().replace(/\/+$/, '');
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+};
+
+const API_BASE = normalizeApiBase(import.meta.env.VITE_API_URL || (import.meta.env as any).API_URL);
 
 export const apiClient = axios.create({
   baseURL: API_BASE,

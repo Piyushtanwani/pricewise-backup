@@ -14,10 +14,37 @@ export const createApp = () => {
 
   app.disable('x-powered-by');
   app.use(securityHeaders);
-  app.use(cors({ origin: env.corsOrigins, credentials: true }));
+
+  const isAllowedOrigin = (origin?: string): boolean => {
+    if (!origin) return true;
+    if (env.corsOrigins.includes('*') || env.corsOrigins.includes(origin)) return true;
+    if (origin.endsWith('.vercel.app')) return true;
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) return true;
+    return false;
+  };
+
+  const corsOptions: cors.CorsOptions = {
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`[CORS] Blocked request from origin: ${origin}`);
+        callback(null, false);
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  };
+
+  app.use(cors(corsOptions));
   app.use(express.json({ limit: '100kb' }));
 
-  // Basic health check endpoint
+  // Root and health check endpoints
+  app.get('/', (_req, res) => {
+    res.json({ status: 'ok', message: 'PriceWise Core Backend API is live' });
+  });
+
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', message: 'PriceWise Core Backend is running' });
   });
