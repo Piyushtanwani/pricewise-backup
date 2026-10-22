@@ -9,5 +9,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "prisma/**/*", "scripts/**/*", "tests/**/*"]
+  "include": ["src/**/*", "api/**/*", "prisma/**/*", "scripts/**/*", "tests/**/*"]
 }
