@@ -4,6 +4,8 @@ import { readPrefs } from './notificationPrefs';
 import { sendPriceDropAlertEmail, isValidHttpUrl } from './emailService';
 import { isPriceFresh, isSyntheticProduct } from './dataProvenance';
 
+
+
 const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
 
 export interface EvaluatePriceChangeOptions {

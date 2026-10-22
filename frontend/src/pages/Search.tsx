@@ -373,10 +373,7 @@ export default function Search() {
       "Apple",
       "Samsung",
       "OnePlus",
-      "Vivo",
-      "Realme",
-      "Motorola",
-      "OPPO",
+      "Xiaomi",
     ]
   const storeFilters =
     meta?.stores?.map((s) => s.name) || [
@@ -406,7 +403,7 @@ export default function Search() {
               <input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search smartphone name, brand (Samsung, Apple, OnePlus, Vivo, Realme, Motorola, OPPO)..."
+                placeholder="Search smartphone name, brand (Apple, Samsung, OnePlus, Xiaomi)..."
                 className="flex-1 text-sm text-slate-700 placeholder:text-slate-400 outline-none bg-transparent"
               />
               {searchInput && (

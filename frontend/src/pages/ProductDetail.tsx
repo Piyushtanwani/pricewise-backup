@@ -289,6 +289,18 @@ export default function ProductDetail() {
         const rawQ = finalUrl.replace(/^https?:\/\/(?:www\.)?vijaysales\.com\/search\//i, "")
         finalUrl = `https://www.vijaysales.com/search?q=${rawQ}`
       }
+      // Auto-correct Croma discontinued URLs to prevent landing on search?q=null
+      if (finalUrl.includes("croma.com")) {
+        const cleanQ = encodeURIComponent((product.name || "smartphone").replace(/\(.*?\)/g, "").trim())
+        if (
+          storeRow?.stockStatus === "OUT_OF_STOCK" ||
+          storeRow?.availability === "Out of Stock" ||
+          finalUrl.includes("null") ||
+          finalUrl.includes("{search_term_string}")
+        ) {
+          return `https://www.croma.com/searchB?q=${cleanQ}`
+        }
+      }
       if (isDirectProductUrl(finalUrl)) {
         return finalUrl
       }

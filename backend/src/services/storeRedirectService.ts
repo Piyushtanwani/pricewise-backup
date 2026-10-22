@@ -26,7 +26,7 @@ export const resolveDirectStoreUrl = async (
     rawUrl.includes('vijaysales.com') ||
     rawUrl.includes('reliancedigital.in')
   ) {
-    return cleanDestinationUrl(rawUrl);
+    return cleanDestinationUrl(rawUrl, productName);
   }
 
   // Check cache
@@ -116,7 +116,7 @@ export const resolveDirectStoreUrl = async (
 /**
  * Clean up affiliate wrappers and extract true destination URL
  */
-export const cleanDestinationUrl = (url: string): string => {
+export const cleanDestinationUrl = (url: string, productName?: string): string => {
   // If wrapped in linkredirect / dl= query parameter
   if (url.includes('dl=')) {
     try {
@@ -133,6 +133,22 @@ export const cleanDestinationUrl = (url: string): string => {
   }
   if (url.includes('dl.flipkart.com/dl/')) {
     return url.replace(/^https?:\/\/dl\.flipkart\.com\/dl\//, 'https://www.flipkart.com/');
+  }
+
+  // Handle placeholder / invalid Flipkart item URLs (avoids Flipkart E002 error)
+  if (url.includes('flipkart.com') && url.includes('/p/itm_')) {
+    const slugMatch = url.match(/flipkart\.com\/([^/]+)\/p\/itm_/i);
+    const query = slugMatch ? slugMatch[1].replace(/-/g, ' ') : (productName || 'smartphone');
+    return `https://www.flipkart.com/search?q=${encodeURIComponent(query)}`;
+  }
+
+  // Handle broken / discontinued Croma search queries (e.g. q=null, text=null, {search_term_string})
+  if (
+    url.includes('croma.com') &&
+    (url.includes('q=null') || url.includes('text=null') || url.includes('{search_term_string}') || url.includes('/p/null'))
+  ) {
+    const clean = (productName || 'smartphone').replace(/\(.*?\)/g, '').trim();
+    return `https://www.croma.com/searchB?q=${encodeURIComponent(clean)}`;
   }
 
   // Fix Vijay Sales search URLs falling back to refrigerator filters
