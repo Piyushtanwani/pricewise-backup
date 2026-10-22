@@ -17,6 +17,15 @@ async function main() {
   console.log(`Total ProductStore Listings: ${listingCount}`);
   console.log(`Total PriceHistory Entries: ${historyCount}`);
 
+  const brandCounts = await prisma.product.groupBy({
+    by: ['brand'],
+    _count: { id: true },
+  });
+  console.log('\n--- PRODUCTS BY BRAND ---');
+  for (const b of brandCounts) {
+    console.log(`• ${b.brand}: ${b._count.id} products`);
+  }
+
   const products = await prisma.product.findMany({
     take: 5,
     include: {
@@ -27,13 +36,21 @@ async function main() {
     orderBy: { createdAt: 'desc' },
   });
 
-  console.log('\n--- SAMPLE RECENT PRODUCTS ---');
-  for (const p of products) {
-    console.log(`• ${p.name} (${p.brand})`);
-    console.log(`  Price: ₹${p.bestPrice?.toLocaleString('en-IN')} | Rating: ${p.rating}★`);
-    console.log(`  Store: ${p.bestStore?.name || 'Smartprix'}`);
-    console.log(`  Specs: ${p.specs.slice(0, 3).join(' | ')}`);
-    console.log(`  TechSpecs Keys: ${Object.keys((p.techSpecs as any) || {}).join(', ')}`);
+  console.log('\n--- ALL XIAOMI / REDMI PRODUCTS IN DB ---');
+  const xiaomiProds = await prisma.product.findMany({
+    where: {
+      OR: [
+        { brand: { equals: 'Xiaomi', mode: 'insensitive' } },
+        { brand: { equals: 'Redmi', mode: 'insensitive' } },
+        { name: { contains: 'Redmi', mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true, name: true, brand: true, bestPrice: true },
+    orderBy: { name: 'asc' },
+  });
+  console.log(`Found ${xiaomiProds.length} Xiaomi/Redmi products:`);
+  for (const p of xiaomiProds) {
+    console.log(`• [${p.brand}] ${p.name} - ₹${p.bestPrice}`);
   }
 
   await prisma.$disconnect();

@@ -4,6 +4,7 @@ dotenv.config();
 import prisma from '../src/utils/prisma';
 import { smartprixClient } from '../src/services/smartprix/smartprixClient';
 import { applyEnrichmentToProduct } from '../src/services/productEnricherService';
+import { refreshProductAggregates } from '../src/services/productService';
 
 interface SmartprixRawProduct {
   id: string;
@@ -120,6 +121,7 @@ async function ingestMobilesForBrand(brandName: string, brandSlug: string, maxRe
           productRecord = await prisma.product.update({
             where: { id: existingProduct.id },
             data: {
+              brand: brandName,
               bestPrice: price,
               mrp,
               discountPercent,
@@ -200,6 +202,12 @@ async function ingestMobilesForBrand(brandName: string, brandSlug: string, maxRe
           } catch (enrichErr: any) {
             console.warn(`    ↳ Enrichment warning for ${item.name}:`, enrichErr.message);
           }
+        }
+
+        try {
+          await refreshProductAggregates(productRecord.id);
+        } catch {
+          // ignore
         }
 
         savedCount++;

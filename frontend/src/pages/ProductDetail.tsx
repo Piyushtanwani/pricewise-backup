@@ -466,19 +466,19 @@ export default function ProductDetail() {
                       return (
                         <a
                           key={s.storeId || s.store || idx}
-                          href={isOut ? undefined : getDirectBuyUrl(s)}
-                          target={isOut ? undefined : "_blank"}
-                          rel={isOut ? undefined : "noopener noreferrer"}
-                          className={`flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all text-xs group ${
-                            isOut
-                              ? "bg-slate-50 border-slate-200 text-slate-400 opacity-80 cursor-not-allowed"
-                              : idx === 0 && !isOut
-                              ? "bg-emerald-50/80 border-emerald-300 text-emerald-950 font-semibold shadow-2xs"
+                          href={getDirectBuyUrl(s)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all text-xs group cursor-pointer ${
+                            idx === 0 && !isOut
+                              ? "bg-emerald-50/80 border-emerald-300 text-emerald-950 font-semibold shadow-2xs hover:bg-emerald-100/80"
+                              : isOut
+                              ? "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                               : "bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-slate-50"
                           }`}
                         >
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className={`font-bold ${isOut ? "text-slate-500 line-through" : "text-slate-900"}`}>{s.store}</span>
+                            <span className="font-bold text-slate-900">{s.store}</span>
                             {isOut ? (
                               <span className="bg-red-100 text-red-700 text-[9px] px-1.5 py-0.2 rounded font-bold">
                                 Out of Stock
@@ -496,7 +496,7 @@ export default function ProductDetail() {
                                 +{fmt(s.diff)}
                               </span>
                             ) : null}
-                            {!isOut && (isDirectProductUrl(s.url) ? (
+                            {isDirectProductUrl(s.url) ? (
                               <span className="bg-sky-100 text-sky-800 text-[9px] px-1 py-0.2 rounded font-semibold" title="Direct verified store product page">
                                 Direct Page
                               </span>
@@ -504,11 +504,11 @@ export default function ProductDetail() {
                               <span className="bg-slate-100 text-slate-600 text-[9px] px-1 py-0.2 rounded" title="Store keyword search">
                                 Search
                               </span>
-                            ))}
+                            )}
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className={`text-sm font-bold font-mono ${isOut ? "text-slate-400 line-through" : "text-slate-900"}`}>{fmt(s.price)}</span>
-                            {!isOut && <ExternalLink size={12} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />}
+                            <span className="text-sm font-bold font-mono text-slate-900">{fmt(s.price)}</span>
+                            <ExternalLink size={12} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
                           </div>
                         </a>
                       )
@@ -522,23 +522,21 @@ export default function ProductDetail() {
                 </div>
               </div>
 
-              {isAllOutOfStock ? (
-                <button
-                  onClick={() => openTrackModal(product)}
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2 shadow-md shadow-amber-600/20 cursor-pointer"
-                >
-                  <Bell size={15} /> Currently Out of Stock Everywhere — Track for Restock Alerts
-                </button>
-              ) : (
-                <a
-                  href={getDirectBuyUrl(bestAvailableStore)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2 shadow-md shadow-indigo-600/20"
-                >
-                  View Best Deal at {currentBestStore} {isDirectProductUrl(bestAvailableStore?.url) ? "(Direct Listing)" : ""} <ExternalLink size={15} />
-                </a>
-              )}
+              <a
+                href={getDirectBuyUrl(bestAvailableStore)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-full font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2 shadow-md cursor-pointer ${
+                  isAllOutOfStock
+                    ? "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20"
+                    : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20"
+                }`}
+              >
+                {isAllOutOfStock
+                  ? `Check Store Availability at ${currentBestStore}`
+                  : `View Best Deal at ${currentBestStore} ${isDirectProductUrl(bestAvailableStore?.url) ? "(Direct Listing)" : ""}`}
+                <ExternalLink size={15} />
+              </a>
 
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -697,23 +695,18 @@ export default function ProductDetail() {
                           )}
                         </td>
                         <td className="py-3 text-right">
-                          {isOut ? (
-                            <span
-                              className="bg-slate-100 text-slate-400 text-xs font-medium px-3.5 py-1.5 rounded-lg inline-flex items-center gap-1 border border-slate-200 cursor-not-allowed select-none"
-                              title="Product is currently out of stock on this retailer"
-                            >
-                              Out of Stock
-                            </span>
-                          ) : (
-                            <a
-                              href={getDirectBuyUrl(store)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="bg-indigo-600 text-white text-xs font-medium px-3.5 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center gap-1 shadow-sm"
-                            >
-                              Buy <ExternalLink size={12} />
-                            </a>
-                          )}
+                          <a
+                            href={getDirectBuyUrl(store)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`text-xs font-medium px-3.5 py-1.5 rounded-lg transition-colors inline-flex items-center gap-1 shadow-sm cursor-pointer ${
+                              isOut
+                                ? "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300"
+                                : "bg-indigo-600 text-white hover:bg-indigo-700"
+                            }`}
+                          >
+                            {isOut ? "Check Store" : "Buy"} <ExternalLink size={12} />
+                          </a>
                         </td>
                       </tr>
                     )

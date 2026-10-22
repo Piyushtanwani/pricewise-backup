@@ -27,7 +27,7 @@ const sortOptions = [
   "Best Deal",
 ]
 
-const KNOWN_BRANDS = ["apple", "iphone", "samsung", "oneplus", "vivo", "realme", "motorola", "oppo"]
+const KNOWN_BRANDS = ["apple", "iphone", "samsung", "oneplus", "vivo", "realme", "motorola", "oppo", "redmi", "xiaomi", "google", "pixel"]
 
 interface SearchSidebarProps {
   brandFilters: string[]
