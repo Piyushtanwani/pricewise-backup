@@ -76,7 +76,10 @@ export const scrapeCroma = async (directUrl: string): Promise<Partial<ScrapedSto
 /**
  * Live Scraper for Amazon Product Pages
  */
-export const scrapeAmazon = async (directUrl: string): Promise<Partial<ScrapedStoreOffer> | null> => {
+export const scrapeAmazon = async (
+  directUrl: string,
+  basePrice?: number | null,
+): Promise<Partial<ScrapedStoreOffer> | null> => {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 6000);
@@ -100,37 +103,45 @@ export const scrapeAmazon = async (directUrl: string): Promise<Partial<ScrapedSt
     const hasAddToCart = html.includes('id="add-to-cart-button"') || html.includes('name="submit.add-to-cart"');
     const hasBuyNow = html.includes('id="buy-now-button"') || html.includes('name="submit.buy-now"');
 
-    // 2. Scoped #availability container (avoids matching JS dictionary strings on the page)
+    // 2. Out of Stock container checks
+    const hasOutOfStockDiv =
+      html.includes('id="outOfStock"') ||
+      html.includes('class="outOfStock"') ||
+      html.includes('Currently unavailable.') ||
+      html.includes('We don\'t know when or if this item will be back in stock');
+
     const availMatch = html.match(/id="availability"[^>]*>([\s\S]*?)<\/div>/i);
     const availText = availMatch ? availMatch[1].replace(/<[^>]+>/g, ' ').toLowerCase() : '';
 
-    const isExplicitlyUnavailable =
-      availText.includes('currently unavailable') ||
-      availText.includes('we don\'t know when or if this item will be back in stock');
-
-    const isLimited = availText.includes('only ') && availText.includes('left in stock');
-
-    let stockStatus: StockStatus = StockStatus.IN_STOCK;
-    let availability = 'In Stock';
-
-    if (!hasAddToCart && !hasBuyNow && isExplicitlyUnavailable) {
-      stockStatus = StockStatus.OUT_OF_STOCK;
-      availability = 'Out of Stock';
-    } else if (isLimited) {
-      stockStatus = StockStatus.LIMITED;
-      availability = 'Limited Stock';
-    } else if (hasAddToCart || hasBuyNow || availText.includes('in stock')) {
-      stockStatus = StockStatus.IN_STOCK;
-      availability = 'In Stock';
+    let isOutOfStock = false;
+    if (!hasAddToCart && !hasBuyNow) {
+      if (hasOutOfStockDiv || availText.includes('currently unavailable') || availText.length === 0) {
+        isOutOfStock = true;
+      }
     }
 
-    // 3. Price extraction
-    const priceWhole = html.match(/class="a-price-whole">([0-9,]+)/i);
-    const offscreen = html.match(/class="a-offscreen">₹?([0-9,]+)/i);
-    const rawPriceStr = priceWhole ? priceWhole[1] : (offscreen ? offscreen[1] : null);
-    const price = rawPriceStr ? Math.round(Number(rawPriceStr.replace(/,/g, ''))) : null;
+    // 3. Main Product Core Price ONLY (Do NOT match carousel accessories or phone cases)
+    const corePriceSection =
+      html.match(/id="corePriceDisplay_desktop_feature_div"[\s\S]*?<\/div>\s*<\/div>/i) ||
+      html.match(/id="corePrice_desktop"[\s\S]*?<\/div>/i) ||
+      html.match(/id="apex_desktop"[\s\S]*?<\/div>/i) ||
+      html.match(/id="desktop_buybox"[\s\S]*?<\/div>/i);
 
-    if (stockStatus === StockStatus.OUT_OF_STOCK) {
+    const priceScope = corePriceSection ? corePriceSection[0] : '';
+    const priceWhole =
+      priceScope.match(/class="a-price-whole">([0-9,]+)/i) ||
+      html.match(/id="priceblock_ourprice"[^>]*>₹?([0-9,]+)/i) ||
+      html.match(/id="priceblock_dealprice"[^>]*>₹?([0-9,]+)/i);
+
+    let price = priceWhole ? Math.round(Number(priceWhole[1].replace(/,/g, ''))) : null;
+
+    // Reject phone covers, accessories, or erroneous sub-prices (< 35% of phone price)
+    const minThreshold = Math.max(3000, (basePrice || 15000) * 0.35);
+    if (price && price < minThreshold) {
+      price = null;
+    }
+
+    if (isOutOfStock) {
       return {
         price: price || 0,
         stockStatus: StockStatus.OUT_OF_STOCK,
@@ -141,8 +152,8 @@ export const scrapeAmazon = async (directUrl: string): Promise<Partial<ScrapedSt
     if (price && price > 0) {
       return {
         price,
-        stockStatus,
-        availability,
+        stockStatus: StockStatus.IN_STOCK,
+        availability: 'In Stock',
       };
     }
 
@@ -199,6 +210,7 @@ export const scrapeLiveStoreListing = async (
   rawUrl: string,
   storeName: string,
   productName: string,
+  basePrice?: number | null,
 ): Promise<Partial<ScrapedStoreOffer> | null> => {
   try {
     const directUrl = await resolveDirectStoreUrl(rawUrl, storeName, productName);
@@ -211,7 +223,7 @@ export const scrapeLiveStoreListing = async (
     }
 
     if (sLower.includes('amazon') || urlLower.includes('amazon.in')) {
-      const scraped = await scrapeAmazon(directUrl);
+      const scraped = await scrapeAmazon(directUrl, basePrice);
       if (scraped) return { ...scraped, directUrl };
     }
 

@@ -262,7 +262,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   // scrape the verified store URLs (Croma, Amazon, Flipkart) directly in real-time!
   const scrapedStores: StorePriceRow[] = await Promise.all(
     dbStores.map(async (s) => {
-      const scraped = await scrapeLiveStoreListing(s.url, s.store, product.name);
+      const scraped = await scrapeLiveStoreListing(s.url, s.store, product.name, product.bestPrice);
       if (!scraped) return s;
 
       return {
