@@ -289,6 +289,16 @@ export default function ProductDetail() {
         const rawQ = finalUrl.replace(/^https?:\/\/(?:www\.)?vijaysales\.com\/search\//i, "")
         finalUrl = `https://www.vijaysales.com/search?q=${rawQ}`
       }
+      // Auto-correct Croma discontinued URLs to prevent landing on search?q=null
+      if (finalUrl.includes("croma.com")) {
+        const cleanQ = encodeURIComponent((product.name || "smartphone").replace(/\(.*?\)/g, "").trim())
+        if (
+                    finalUrl.includes("null") ||
+          finalUrl.includes("{search_term_string}")
+        ) {
+          return `https://www.croma.com/searchB?q=${cleanQ}`
+        }
+      }
       if (isDirectProductUrl(finalUrl)) {
         return finalUrl
       }
@@ -454,12 +464,12 @@ export default function ProductDetail() {
                       return (
                         <a
                           key={s.storeId || s.store || idx}
-                          href={isOut ? undefined : getDirectBuyUrl(s)}
-                          target={isOut ? undefined : "_blank"}
-                          rel={isOut ? undefined : "noopener noreferrer"}
+                          href={getDirectBuyUrl(s)}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className={`flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all text-xs group ${
                             isOut
-                              ? "bg-slate-50 border-slate-200 text-slate-400 opacity-80 cursor-not-allowed"
+                              ? "bg-slate-50 border-slate-200 text-slate-500 opacity-80 hover:border-slate-300 hover:bg-slate-100/70 cursor-pointer"
                               : idx === 0 && !isOut
                               ? "bg-emerald-50/80 border-emerald-300 text-emerald-950 font-semibold shadow-2xs"
                               : "bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-slate-50"
@@ -686,12 +696,15 @@ export default function ProductDetail() {
                         </td>
                         <td className="py-3 text-right">
                           {isOut ? (
-                            <span
-                              className="bg-slate-100 text-slate-400 text-xs font-medium px-3.5 py-1.5 rounded-lg inline-flex items-center gap-1 border border-slate-200 cursor-not-allowed select-none"
-                              title="Product is currently out of stock on this retailer"
+                            <a
+                              href={getDirectBuyUrl(store)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs font-medium px-3.5 py-1.5 rounded-lg border border-slate-300 transition-colors inline-flex items-center gap-1"
+                              title="Product is currently out of stock — click to check retailer or waitlist"
                             >
-                              Out of Stock
-                            </span>
+                              Check Store <ExternalLink size={12} />
+                            </a>
                           ) : (
                             <a
                               href={getDirectBuyUrl(store)}

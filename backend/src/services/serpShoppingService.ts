@@ -1,5 +1,10 @@
 import { env } from '../config/env';
 import { titleSimilarity, MATCH_THRESHOLD } from './matching';
+import { parsePrice, evaluateStockStatus, normalizeStoreOffer } from '../utils/priceNormalizer';
+import { livePriceCache } from '../utils/cache';
+import { cleanDestinationUrl } from './storeRedirectService';
+
+export { normalizeStoreOffer };
 
 export interface SerpStoreRate {
   storeId: string;
@@ -17,11 +22,19 @@ export interface SerpStoreRate {
 }
 
 /**
- * Extracts stock availability from SerpApi Google Shopping item attributes
+ * Extracts stock availability from SerpApi Google Shopping item attributes,
+ * safely evaluating string and boolean availability flags.
  */
 export const parseStockStatus = (
   item: any,
 ): { availability: string; stockStatus: 'IN_STOCK' | 'LIMITED' | 'OUT_OF_STOCK' } => {
+  if (item?.in_stock !== undefined) {
+    const evaluated = evaluateStockStatus(item.in_stock);
+    if (!evaluated.inStock) {
+      return { availability: 'Out of Stock', stockStatus: 'OUT_OF_STOCK' };
+    }
+  }
+
   const text = [
     item?.availability,
     item?.delivery,
@@ -30,30 +43,13 @@ export const parseStockStatus = (
     Array.isArray(item?.extensions) ? item.extensions.join(' ') : '',
   ]
     .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
+    .join(' ');
 
-  if (
-    text.includes('out of stock') ||
-    text.includes('currently unavailable') ||
-    text.includes('sold out') ||
-    text.includes('unavailable') ||
-    text.includes('out_of_stock') ||
-    item?.in_stock === false
-  ) {
-    return { availability: 'Out of Stock', stockStatus: 'OUT_OF_STOCK' };
-  }
-
-  if (
-    text.includes('limited') ||
-    text.includes('few left') ||
-    (text.includes('only ') && text.includes('left')) ||
-    text.includes('order soon')
-  ) {
-    return { availability: 'Limited Stock', stockStatus: 'LIMITED' };
-  }
-
-  return { availability: 'In Stock', stockStatus: 'IN_STOCK' };
+  const evaluated = evaluateStockStatus(text, true);
+  return {
+    availability: evaluated.availability,
+    stockStatus: evaluated.stockStatus,
+  };
 };
 
 /**
@@ -67,24 +63,16 @@ export const resolveOfferUrl = (rawLink: string | undefined, fallbackUrl: string
   try {
     const parsed = new URL(trimmed);
     if (parsed.hostname.includes('google.')) {
-      const target = parsed.searchParams.get('url') || parsed.searchParams.get('q');
+      const target = parsed.searchParams.get('url') || parsed.searchParams.get('q') || parsed.searchParams.get('adurl');
       if (target && (target.startsWith('http://') || target.startsWith('https://'))) {
-        return target;
+        return cleanDestinationUrl(target);
       }
     }
   } catch {
     // Ignore URL parse errors and return trimmed
   }
-  return trimmed;
+  return cleanDestinationUrl(trimmed);
 };
-
-interface CacheEntry {
-  data: SerpStoreRate[];
-  expiresAt: number;
-}
-
-const memoryCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 30 * 1000; // 30 seconds debounce cache
 
 const ACCESSORY_KEYWORDS = [
   'case',
@@ -255,15 +243,15 @@ export const getLiveSerpStorePrices = async (
     .replace(/\b4g\b/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
-  const cacheKey = `${cleanQuery.toLowerCase()}::${(brandName || '').toLowerCase()}`;
+  const cacheKey = `serp_live::${cleanQuery.toLowerCase()}::${(brandName || '').toLowerCase()}`;
 
   if (!forceRefresh) {
-    const cached = memoryCache.get(cacheKey);
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.data;
+    const cached = await livePriceCache.get<SerpStoreRate[]>(cacheKey);
+    if (cached && Array.isArray(cached) && cached.length > 0) {
+      return cached;
     }
   } else {
-    memoryCache.delete(cacheKey);
+    await livePriceCache.del(cacheKey);
   }
 
   try {
@@ -310,11 +298,9 @@ export const getLiveSerpStorePrices = async (
     }[] = [];
 
     for (const item of shoppingResults) {
-      let rawPrice = Number(item.extracted_price ?? item.price?.replace(/[^0-9.]/g, ''));
-      if (!rawPrice || isNaN(rawPrice)) continue;
-
-      const price = (item.price && item.price.includes('$')) ? Math.round(rawPrice * 86) : Math.round(rawPrice);
-      if (price < minThreshold) continue;
+      // Robust normalized price parsing
+      const price = parsePrice(item.extracted_price ?? item.price, { minThreshold });
+      if (!price || price < minThreshold) continue;
 
       // Price tolerance check against catalog base price (prevent mismatched luxury items or accessories)
       if (typeof basePrice === 'number' && basePrice > 0) {
@@ -392,10 +378,7 @@ export const getLiveSerpStorePrices = async (
       lastCheckedAt: new Date().toISOString(),
     }));
 
-    memoryCache.set(cacheKey, {
-      data: formatted,
-      expiresAt: Date.now() + CACHE_TTL_MS,
-    });
+    await livePriceCache.set(cacheKey, formatted, 30); // 30s TTL for real-time responsiveness
 
     return formatted;
   } catch (err: any) {

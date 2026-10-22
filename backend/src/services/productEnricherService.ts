@@ -3,6 +3,7 @@ import path from 'path';
 import prisma from '../utils/prisma';
 import { refreshProductAggregates } from './productService';
 import { StockStatus } from '../generated/prisma';
+import { parsePrice, evaluateStockStatus } from '../utils/priceNormalizer';
 
 export interface EnrichedStore {
   name: string;
@@ -90,19 +91,20 @@ export const applyEnrichmentToProduct = async (
         },
       },
       update: {
-        currentPrice: Math.round(st.price),
-        mrp: st.mrp ? Math.round(st.mrp) : undefined,
+        currentPrice: parsePrice(st.price),
+        mrp: st.mrp ? parsePrice(st.mrp) : undefined,
         productUrl: st.productUrl,
+        stockStatus: evaluateStockStatus(st.stockStatus).stockStatus,
         lastCheckedAt: new Date(),
       },
       create: {
         productId,
         storeId: store.id,
-        currentPrice: Math.round(st.price),
-        mrp: st.mrp ? Math.round(st.mrp) : undefined,
+        currentPrice: parsePrice(st.price),
+        mrp: st.mrp ? parsePrice(st.mrp) : undefined,
         productUrl: st.productUrl,
         currency: 'INR',
-        stockStatus: StockStatus.IN_STOCK,
+        stockStatus: evaluateStockStatus(st.stockStatus).stockStatus,
         lastCheckedAt: new Date(),
       },
     });

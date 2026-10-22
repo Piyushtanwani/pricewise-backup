@@ -1,6 +1,7 @@
 import prisma from '../utils/prisma';
 import { HttpError } from '../utils/http';
-import { TtlCache } from '../utils/cache';
+import { TtlCache, livePriceCache } from '../utils/cache';
+import { parsePrice, evaluateStockStatus } from '../utils/priceNormalizer';
 import { evaluatePriceChange } from './alertEngine';
 import { MATCH_THRESHOLD, titleSimilarity } from './matching';
 import { refreshProductAggregates } from './productService';
@@ -43,12 +44,15 @@ const applyAggregatesAndAlerts = async (productIds: Iterable<string>): Promise<n
     if (bestPrice !== null) notifications += await evaluatePriceChange(productId, previousBest, bestPrice);
   }
   clearMarketIntelligenceCache();
+  await livePriceCache.invalidatePattern('serp_live::*');
   return notifications;
 };
 
 const recordOffer = async (listingId: string, offer: StoreOffer, current: { mrp: number | null; shippingCost: number }) => {
   const now = new Date();
-  if (offer.price === null) {
+  const cleanPrice = parsePrice(offer.price);
+  const stock = evaluateStockStatus(offer.inStock);
+  if (cleanPrice <= 0 || !stock.inStock) {
     await prisma.productStore.update({
       where: { id: listingId },
       data: { stockStatus: 'OUT_OF_STOCK', lastCheckedAt: now },
@@ -58,14 +62,14 @@ const recordOffer = async (listingId: string, offer: StoreOffer, current: { mrp:
   await prisma.productStore.update({
     where: { id: listingId },
     data: {
-      currentPrice: offer.price,
-      mrp: offer.mrp ?? current.mrp,
+      currentPrice: cleanPrice,
+      mrp: offer.mrp ? parsePrice(offer.mrp) : current.mrp,
       currency: offer.currency,
-      stockStatus: offer.inStock ? 'IN_STOCK' : 'OUT_OF_STOCK',
+      stockStatus: stock.stockStatus,
       shippingCost: offer.shippingCost ?? current.shippingCost,
       productUrl: offer.productUrl,
       lastCheckedAt: now,
-      priceHistory: { create: { price: offer.price, currency: offer.currency, timestamp: now } },
+      priceHistory: { create: { price: cleanPrice, currency: offer.currency, timestamp: now } },
     },
   });
 };
@@ -153,7 +157,7 @@ export interface LiveSearchResult {
   error?: string;
 }
 
-const liveCache = new TtlCache<StoreOffer[]>(10 * 60 * 1000);
+const liveCache = new TtlCache<StoreOffer[]>(30 * 1000); // 30s debounce for real-time live price comparison
 
 /** Queries the store APIs directly without persisting anything (results cached for 10 minutes). */
 export const searchStores = async (query: string, limit: number, providerIds?: string[]): Promise<LiveSearchResult[]> => {
@@ -259,8 +263,8 @@ export const importFromStores = async (
           storeId: store.id,
           externalId: offer.externalId,
           productUrl: offer.productUrl,
-          currentPrice: offer.price,
-          mrp: offer.mrp,
+          currentPrice: parsePrice(offer.price),
+          mrp: offer.mrp ? parsePrice(offer.mrp) : null,
         },
       });
       await recordOffer(listing.id, offer, listing);

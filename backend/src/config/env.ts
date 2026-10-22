@@ -30,6 +30,7 @@ export const env = {
   jwtSecret,
   jwtExpiresIn: str('JWT_EXPIRES_IN', '1d'),
   adminApiKey: str('ADMIN_API_KEY'),
+  redisUrl: str('REDIS_URL', ''),
 
   mlServiceUrl: str('ML_SERVICE_URL').replace(/\/+$/, ''),
 

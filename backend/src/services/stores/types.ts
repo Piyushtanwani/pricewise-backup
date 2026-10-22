@@ -1,3 +1,5 @@
+import { parsePrice } from '../../utils/priceNormalizer';
+
 export type ProviderId = 'amazon' | 'flipkart';
 
 /** A single store listing normalised from a provider response. */
@@ -41,12 +43,8 @@ export class ProviderError extends Error {
   }
 }
 
-/** Accepts numbers or numeric strings such as "₹1,29,999.00"; returns null for anything else. */
+/** Accepts numbers or numeric strings such as "₹1,29,999.00"; returns clean number or null for anything else. */
 export const toPrice = (value: unknown): number | null => {
-  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : null;
-  if (typeof value === 'string') {
-    const parsed = Number(value.replace(/[^0-9.]/g, ''));
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-  }
-  return null;
+  const parsed = parsePrice(value);
+  return parsed > 0 ? parsed : null;
 };
