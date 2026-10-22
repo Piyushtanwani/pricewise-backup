@@ -1,61 +1,13 @@
 {
-  "generated_at": "2026-10-18T11:43:34.888326Z",
+  "generated_at": "2026-10-22T20:26:47.027510Z",
   "model_version": "v2.1.0-hybrid-prophet-xgboost",
   "ttl_hours": 24,
   "by_product": {
-    "268d1167-c457-4df1-84ce-ff581baa72e3": {
-      "product_id": "268d1167-c457-4df1-84ce-ff581baa72e3",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:34.941575Z",
-      "observation_count": 1098,
-      "unique_dates": 366,
-      "predicted_price": 78930.28,
-      "predicted_7d": 78745.2,
-      "predicted_14d": 78726.01,
-      "predicted_30d": 78930.28,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 79990.0,
-          "predicted": 79990.0,
-          "upper": 79990.0,
-          "lower": 79990.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 78745.2,
-          "upper": 79927.54,
-          "lower": 77499.95
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 78726.01,
-          "upper": 79964.14,
-          "lower": 77456.16
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 78930.28,
-          "upper": 80304.25,
-          "lower": 77708.26
-        }
-      ],
-      "recommendation": "MONITOR",
-      "explanation": "Price is stable and close to its 90-day typical average of \u20b985,389. Set a target alert if you are aiming for a specific price drop.",
-      "decision_horizon": null
-    },
     "c9269e82-cf20-4690-a41f-a09545aa76c6": {
       "product_id": "c9269e82-cf20-4690-a41f-a09545aa76c6",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:40.718246Z",
+      "forecast_timestamp": "2026-10-22T20:26:47.051711+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 45690.0,
@@ -103,7 +55,7 @@
       "product_id": "c823adf8-af02-4094-808e-68fa2361b258",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:40.720257Z",
+      "forecast_timestamp": "2026-10-22T20:26:47.055846+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 0.0,
@@ -125,15 +77,15 @@
           "date": "7 Days",
           "price": null,
           "predicted": 46342.9,
-          "upper": 48620.28,
-          "lower": 44169.4
+          "upper": 48498.39,
+          "lower": 44051.91
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 5816.51,
-          "upper": 8197.49,
-          "lower": 3695.25
+          "upper": 8054.86,
+          "lower": 3488.34
         },
         {
           "date": "30 Days",
@@ -151,7 +103,7 @@
       "product_id": "acf8ea59-c957-4531-bac5-d7930edbca78",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:41.130627Z",
+      "forecast_timestamp": "2026-10-22T20:26:52.201649+00:00",
       "observation_count": 164,
       "unique_dates": 164,
       "predicted_price": 71904.43,
@@ -173,22 +125,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 70577.09,
-          "upper": 72521.42,
-          "lower": 68527.2
+          "upper": 72632.91,
+          "lower": 68590.38
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 70951.69,
-          "upper": 72921.36,
-          "lower": 68837.06
+          "upper": 72884.69,
+          "lower": 68992.35
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 71904.43,
-          "upper": 73929.25,
-          "lower": 69910.8
+          "upper": 74105.93,
+          "lower": 69907.46
         }
       ],
       "recommendation": "BUY",
@@ -199,7 +151,7 @@
       "product_id": "fde4933f-9157-431e-bb99-04912f356fe5",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:41.479852Z",
+      "forecast_timestamp": "2026-10-22T20:26:52.544987+00:00",
       "observation_count": 16,
       "unique_dates": 16,
       "predicted_price": 71704.12,
@@ -221,22 +173,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 70304.56,
-          "upper": 70466.55,
-          "lower": 70142.39
+          "upper": 70427.25,
+          "lower": 70176.26
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 70709.13,
-          "upper": 71205.58,
-          "lower": 70201.7
+          "upper": 71180.57,
+          "lower": 70225.32
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 71704.12,
-          "upper": 73375.91,
-          "lower": 70021.65
+          "upper": 73205.58,
+          "lower": 70179.49
         }
       ],
       "recommendation": "BUY",
@@ -247,7 +199,7 @@
       "product_id": "d20df69f-d1a1-496d-8fb7-c4c50c0c3a46",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:56.092804Z",
+      "forecast_timestamp": "2026-10-22T20:27:10.591600+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 71385.06,
@@ -269,22 +221,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 85785.45,
-          "upper": 90902.4,
-          "lower": 81150.51
+          "upper": 90924.3,
+          "lower": 80760.22
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 91532.29,
-          "upper": 96518.8,
-          "lower": 86807.23
+          "upper": 96631.37,
+          "lower": 86534.09
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 71385.06,
-          "upper": 76843.7,
-          "lower": 66251.29
+          "upper": 76494.82,
+          "lower": 66190.51
         }
       ],
       "recommendation": "BUY",
@@ -295,7 +247,7 @@
       "product_id": "17b4749c-8f3b-40a7-b6dd-02be195d80ce",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:56.480152Z",
+      "forecast_timestamp": "2026-10-22T20:27:11.337784+00:00",
       "observation_count": 148,
       "unique_dates": 148,
       "predicted_price": 79989.74,
@@ -317,22 +269,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 79175.66,
-          "upper": 80453.97,
-          "lower": 78039.02
+          "upper": 80394.91,
+          "lower": 78013.25
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 79410.52,
-          "upper": 80859.01,
-          "lower": 78016.41
+          "upper": 80879.21,
+          "lower": 77906.32
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 79989.74,
-          "upper": 83008.39,
-          "lower": 76995.51
+          "upper": 82881.63,
+          "lower": 76881.1
         }
       ],
       "recommendation": "MONITOR",
@@ -343,55 +295,55 @@
       "product_id": "070f3b5d-804a-4389-80c3-b21a1947aad2",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:56.829805Z",
+      "forecast_timestamp": "2026-10-22T20:27:12.189329+00:00",
       "observation_count": 60,
       "unique_dates": 60,
       "predicted_price": 135678.9,
       "predicted_7d": 134611.11,
       "predicted_14d": 134931.76,
       "predicted_30d": 135678.9,
-      "trend": "RISING",
+      "trend": "STABLE",
       "confidence": "High",
       "potential_saving": 0.0,
       "points": [
         {
           "date": "Current",
-          "price": 127490.0,
-          "predicted": 127490.0,
-          "upper": 127490.0,
-          "lower": 127490.0
+          "price": 134900.0,
+          "predicted": 134900.0,
+          "upper": 134900.0,
+          "lower": 134900.0
         },
         {
           "date": "7 Days",
           "price": null,
           "predicted": 134611.11,
-          "upper": 137990.05,
-          "lower": 131353.14
+          "upper": 137887.92,
+          "lower": 130952.99
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 134931.76,
-          "upper": 138502.85,
-          "lower": 131334.3
+          "upper": 138501.37,
+          "lower": 131224.32
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 135678.9,
-          "upper": 140074.45,
-          "lower": 131153.03
+          "upper": 139767.98,
+          "lower": 131299.35
         }
       ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9127,490, this item is within 2% of its lowest recorded price (\u20b9127,490) across tracked retailers.",
-      "decision_horizon": "Immediate"
+      "recommendation": "MONITOR",
+      "explanation": "Price is stable and close to its 90-day typical average of \u20b9129,960. Set a target alert if you are aiming for a specific price drop.",
+      "decision_horizon": null
     },
     "e732686d-45a4-4da4-84d9-e9f39a2708ed": {
       "product_id": "e732686d-45a4-4da4-84d9-e9f39a2708ed",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:57.497377Z",
+      "forecast_timestamp": "2026-10-22T20:27:13.436327+00:00",
       "observation_count": 149,
       "unique_dates": 149,
       "predicted_price": 59928.05,
@@ -413,22 +365,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 59030.12,
-          "upper": 59731.31,
-          "lower": 58384.44
+          "upper": 59689.19,
+          "lower": 58345.19
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 59307.0,
-          "upper": 60118.66,
-          "lower": 58493.28
+          "upper": 60147.41,
+          "lower": 58495.6
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 59928.05,
-          "upper": 61655.93,
-          "lower": 58200.25
+          "upper": 61771.52,
+          "lower": 58201.59
         }
       ],
       "recommendation": "WAIT",
@@ -439,7 +391,7 @@
       "product_id": "79820bb5-b9a7-4da6-adee-b709551eaa20",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:57.947781Z",
+      "forecast_timestamp": "2026-10-22T20:27:14.429681+00:00",
       "observation_count": 181,
       "unique_dates": 181,
       "predicted_price": 305035.88,
@@ -461,22 +413,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 145006.88,
-          "upper": 148727.41,
-          "lower": 141366.15
+          "upper": 148863.04,
+          "lower": 141331.09
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 256231.02,
-          "upper": 259825.8,
-          "lower": 252616.93
+          "upper": 259985.9,
+          "lower": 252607.69
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 305035.88,
-          "upper": 308806.32,
-          "lower": 301164.36
+          "upper": 309154.01,
+          "lower": 301418.82
         }
       ],
       "recommendation": "BUY",
@@ -487,64 +439,64 @@
       "product_id": "af32fe62-288c-4653-9545-eebc76a998ee",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:58.404350Z",
-      "observation_count": 185,
-      "unique_dates": 184,
-      "predicted_price": 140642.66,
-      "predicted_7d": 134303.66,
-      "predicted_14d": 144677.36,
-      "predicted_30d": 140642.66,
-      "trend": "RISING",
+      "forecast_timestamp": "2026-10-22T20:27:15.577257+00:00",
+      "observation_count": 276,
+      "unique_dates": 189,
+      "predicted_price": 128058.98,
+      "predicted_7d": 140320.13,
+      "predicted_14d": 147281.69,
+      "predicted_30d": 128058.98,
+      "trend": "STABLE",
       "confidence": "High",
       "potential_saving": 0.0,
       "points": [
         {
           "date": "Current",
-          "price": 130490.0,
-          "predicted": 130490.0,
-          "upper": 130490.0,
-          "lower": 130490.0
+          "price": 129990.0,
+          "predicted": 129990.0,
+          "upper": 129990.0,
+          "lower": 129990.0
         },
         {
           "date": "7 Days",
           "price": null,
-          "predicted": 134303.66,
-          "upper": 138914.62,
-          "lower": 129907.81
+          "predicted": 140320.13,
+          "upper": 144451.76,
+          "lower": 135939.05
         },
         {
           "date": "14 Days",
           "price": null,
-          "predicted": 144677.36,
-          "upper": 148884.72,
-          "lower": 140212.55
+          "predicted": 147281.69,
+          "upper": 151613.53,
+          "lower": 143419.57
         },
         {
           "date": "30 Days",
           "price": null,
-          "predicted": 140642.66,
-          "upper": 145133.02,
-          "lower": 136139.32
+          "predicted": 128058.98,
+          "upper": 132402.4,
+          "lower": 123745.0
         }
       ],
-      "recommendation": "MONITOR",
-      "explanation": "Price is stable and close to its 90-day typical average of \u20b9128,917. Set a target alert if you are aiming for a specific price drop.",
-      "decision_horizon": null
+      "recommendation": "BUY",
+      "explanation": "Good opportunity to buy now. At \u20b9129,990, the item is below its 90-day average (\u20b9130,092) and price models indicate an upcoming upward adjustment toward \u20b9140,320.",
+      "decision_horizon": "Immediate"
     },
     "1fe52ca5-ef0e-42e3-a5a2-9510bf257434": {
       "product_id": "1fe52ca5-ef0e-42e3-a5a2-9510bf257434",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:58.787955Z",
-      "observation_count": 176,
-      "unique_dates": 176,
-      "predicted_price": 142289.33,
-      "predicted_7d": 142080.85,
-      "predicted_14d": 141972.17,
-      "predicted_30d": 142289.33,
-      "trend": "STABLE",
+      "forecast_timestamp": "2026-10-22T20:27:16.585440+00:00",
+      "observation_count": 267,
+      "unique_dates": 189,
+      "predicted_price": 93324.38,
+      "predicted_7d": 135056.92,
+      "predicted_14d": 121609.36,
+      "predicted_30d": 93324.38,
+      "trend": "DROPPING",
       "confidence": "High",
-      "potential_saving": 0.0,
+      "potential_saving": 46665.62,
       "points": [
         {
           "date": "Current",
@@ -556,34 +508,34 @@
         {
           "date": "7 Days",
           "price": null,
-          "predicted": 142080.85,
-          "upper": 147573.4,
-          "lower": 136070.95
+          "predicted": 135056.92,
+          "upper": 139380.55,
+          "lower": 130885.77
         },
         {
           "date": "14 Days",
           "price": null,
-          "predicted": 141972.17,
-          "upper": 147842.41,
-          "lower": 136254.34
+          "predicted": 121609.36,
+          "upper": 125522.59,
+          "lower": 117359.7
         },
         {
           "date": "30 Days",
           "price": null,
-          "predicted": 142289.33,
-          "upper": 148040.99,
-          "lower": 136415.5
+          "predicted": 93324.38,
+          "upper": 97553.45,
+          "lower": 88931.45
         }
       ],
-      "recommendation": "MONITOR",
-      "explanation": "Price is stable and close to its 90-day typical average of \u20b9143,350. Set a target alert if you are aiming for a specific price drop.",
-      "decision_horizon": null
+      "recommendation": "WAIT",
+      "explanation": "Wait for better value. Price is forecasted to drop by ~33% to \u20b993,324 over the next 30 days (potential saving: \u20b946,665).",
+      "decision_horizon": "30 Days"
     },
     "c5c85c78-b5c7-4bfe-bc7e-4dc8f4a1e156": {
       "product_id": "c5c85c78-b5c7-4bfe-bc7e-4dc8f4a1e156",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:59.110462Z",
+      "forecast_timestamp": "2026-10-22T20:27:17.631016+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 89999.0,
@@ -631,7 +583,7 @@
       "product_id": "094f1e96-f4a0-452b-b70e-25989d649644",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:59.124358Z",
+      "forecast_timestamp": "2026-10-22T20:27:17.639043+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 164900.0,
@@ -679,7 +631,7 @@
       "product_id": "5632ab1f-d6da-4de0-82d4-3f96541b40b9",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:59.127092Z",
+      "forecast_timestamp": "2026-10-22T20:27:17.645265+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 179900.0,
@@ -727,7 +679,7 @@
       "product_id": "fafa2b66-cd70-499d-a919-172bf4dbc7ec",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:59.127092Z",
+      "forecast_timestamp": "2026-10-22T20:27:17.659373+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 254900.0,
@@ -775,7 +727,7 @@
       "product_id": "3bf11e39-0497-4ad8-9f24-1cfea885ec23",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:59.127092Z",
+      "forecast_timestamp": "2026-10-22T20:27:17.669312+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 204900.0,
@@ -823,7 +775,7 @@
       "product_id": "f3f588ce-257b-43d7-9621-48e763f37edd",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:59.127092Z",
+      "forecast_timestamp": "2026-10-22T20:27:17.682621+00:00",
       "observation_count": 179,
       "unique_dates": 179,
       "predicted_price": 135429.34,
@@ -845,22 +797,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 124857.66,
-          "upper": 132230.15,
-          "lower": 118082.9
+          "upper": 131710.27,
+          "lower": 117571.66
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 128139.24,
-          "upper": 135382.69,
-          "lower": 121173.95
+          "upper": 135208.75,
+          "lower": 121339.62
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 135429.34,
-          "upper": 142929.14,
-          "lower": 128238.71
+          "upper": 142431.15,
+          "lower": 128063.75
         }
       ],
       "recommendation": "BUY",
@@ -871,7 +823,7 @@
       "product_id": "d960662e-29d5-4eb0-a8ad-5871ae2071c1",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:59.499567Z",
+      "forecast_timestamp": "2026-10-22T20:27:18.498966+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 299900.0,
@@ -919,7 +871,7 @@
       "product_id": "049a4b15-c110-429c-94f3-7b6169f36958",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:59.504846Z",
+      "forecast_timestamp": "2026-10-22T20:27:18.507797+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 374900.0,
@@ -967,7 +919,7 @@
       "product_id": "b38bf541-6097-4854-adbc-19c869282f2a",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:43:59.509758Z",
+      "forecast_timestamp": "2026-10-22T20:27:18.517922+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 449900.0,
@@ -1011,299 +963,11 @@
       "explanation": "Insufficient historical observations (< 14 records) to reliably forecast future price changes. We recommend monitoring this item as more daily prices are recorded.",
       "decision_horizon": null
     },
-    "4511126f-7640-4f4b-94ac-ac38ece0b3f8": {
-      "product_id": "4511126f-7640-4f4b-94ac-ac38ece0b3f8",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:43:59.520556Z",
-      "observation_count": 1464,
-      "unique_dates": 366,
-      "predicted_price": 124686.89,
-      "predicted_7d": 124693.49,
-      "predicted_14d": 124790.72,
-      "predicted_30d": 124686.89,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 124999.0,
-          "predicted": 124999.0,
-          "upper": 124999.0,
-          "lower": 124999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 124693.49,
-          "upper": 125861.07,
-          "lower": 123586.4
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 124790.72,
-          "upper": 125844.83,
-          "lower": 123736.25
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 124686.89,
-          "upper": 125750.63,
-          "lower": 123617.65
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9124,999, this item is within 2% of its lowest recorded price (\u20b9124,049) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
-    "f1a7d974-a91f-4f86-8217-3ae3842300c5": {
-      "product_id": "f1a7d974-a91f-4f86-8217-3ae3842300c5",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:00.281230Z",
-      "observation_count": 1830,
-      "unique_dates": 366,
-      "predicted_price": 134587.67,
-      "predicted_7d": 134201.59,
-      "predicted_14d": 134117.67,
-      "predicted_30d": 134587.67,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 134900.0,
-          "predicted": 134900.0,
-          "upper": 134900.0,
-          "lower": 134900.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 134201.59,
-          "upper": 135169.45,
-          "lower": 133078.41
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 134117.67,
-          "upper": 135265.7,
-          "lower": 133098.47
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 134587.67,
-          "upper": 135809.69,
-          "lower": 133423.84
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9134,900, this item is within 2% of its lowest recorded price (\u20b9133,209) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
-    "221d9eb2-44ed-48c3-b8c7-5ea7e0b0b9d5": {
-      "product_id": "221d9eb2-44ed-48c3-b8c7-5ea7e0b0b9d5",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:00.812391Z",
-      "observation_count": 1098,
-      "unique_dates": 366,
-      "predicted_price": 98861.64,
-      "predicted_7d": 99036.04,
-      "predicted_14d": 98918.53,
-      "predicted_30d": 98861.64,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 99900.0,
-          "predicted": 99900.0,
-          "upper": 99900.0,
-          "lower": 99900.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 99036.04,
-          "upper": 100040.44,
-          "lower": 97950.04
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 98918.53,
-          "upper": 99905.4,
-          "lower": 97904.27
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 98861.64,
-          "upper": 99956.45,
-          "lower": 97825.8
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b999,900, this item is within 2% of its lowest recorded price (\u20b998,339) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
-    "ef57ef25-9ba7-4767-8c55-1e51e6eb92fe": {
-      "product_id": "ef57ef25-9ba7-4767-8c55-1e51e6eb92fe",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:01.335411Z",
-      "observation_count": 732,
-      "unique_dates": 366,
-      "predicted_price": 20928.11,
-      "predicted_7d": 20962.86,
-      "predicted_14d": 20925.9,
-      "predicted_30d": 20928.11,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 20999.0,
-          "predicted": 20999.0,
-          "upper": 20999.0,
-          "lower": 20999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 20962.86,
-          "upper": 21216.96,
-          "lower": 20689.41
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 20925.9,
-          "upper": 21196.28,
-          "lower": 20670.19
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 20928.11,
-          "upper": 21196.61,
-          "lower": 20666.15
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b920,999, this item is within 2% of its lowest recorded price (\u20b920,629) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
-    "48f42ba0-b56f-49c4-bdfa-1cf69fff2bb8": {
-      "product_id": "48f42ba0-b56f-49c4-bdfa-1cf69fff2bb8",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:01.816643Z",
-      "observation_count": 732,
-      "unique_dates": 366,
-      "predicted_price": 16815.92,
-      "predicted_7d": 16851.71,
-      "predicted_14d": 16834.38,
-      "predicted_30d": 16815.92,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 16999.0,
-          "predicted": 16999.0,
-          "upper": 16999.0,
-          "lower": 16999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 16851.71,
-          "upper": 17085.35,
-          "lower": 16642.26
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 16834.38,
-          "upper": 17039.42,
-          "lower": 16615.49
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 16815.92,
-          "upper": 17014.41,
-          "lower": 16607.73
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b916,999, this item is within 2% of its lowest recorded price (\u20b916,699) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
-    "348b5c10-c51f-4146-b982-8fb229d136ca": {
-      "product_id": "348b5c10-c51f-4146-b982-8fb229d136ca",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:02.312226Z",
-      "observation_count": 1098,
-      "unique_dates": 366,
-      "predicted_price": 36140.99,
-      "predicted_7d": 36045.34,
-      "predicted_14d": 36084.27,
-      "predicted_30d": 36140.99,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 35999.0,
-          "predicted": 35999.0,
-          "upper": 35999.0,
-          "lower": 35999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 36045.34,
-          "upper": 36475.19,
-          "lower": 35661.92
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 36084.27,
-          "upper": 36484.6,
-          "lower": 35723.28
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 36140.99,
-          "upper": 36555.42,
-          "lower": 35775.97
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b935,999, this item is within 2% of its lowest recorded price (\u20b935,499) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
     "af55fc27-1b14-4a3b-9547-a5b41434873b": {
       "product_id": "af55fc27-1b14-4a3b-9547-a5b41434873b",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:02.775617Z",
+      "forecast_timestamp": "2026-10-22T20:27:18.532431+00:00",
       "observation_count": 179,
       "unique_dates": 179,
       "predicted_price": 60510.14,
@@ -1325,22 +989,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 59804.73,
-          "upper": 62906.86,
-          "lower": 56754.3
+          "upper": 62831.07,
+          "lower": 56879.5
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 59874.93,
-          "upper": 62688.33,
-          "lower": 56850.28
+          "upper": 62887.01,
+          "lower": 56896.37
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 60510.14,
-          "upper": 63375.3,
-          "lower": 57612.05
+          "upper": 63351.99,
+          "lower": 57432.62
         }
       ],
       "recommendation": "MONITOR",
@@ -1351,7 +1015,7 @@
       "product_id": "3cb7895d-b8d3-416e-8e19-871dd57bf3ac",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:03.132810Z",
+      "forecast_timestamp": "2026-10-22T20:27:19.417880+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 63530.49,
@@ -1373,22 +1037,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 63500.33,
-          "upper": 65723.01,
-          "lower": 61378.47
+          "upper": 65665.24,
+          "lower": 61493.1
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 73505.17,
-          "upper": 75754.97,
-          "lower": 71347.44
+          "upper": 75750.97,
+          "lower": 71442.37
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 63530.49,
-          "upper": 65592.58,
-          "lower": 61301.34
+          "upper": 65636.51,
+          "lower": 61432.35
         }
       ],
       "recommendation": "BUY",
@@ -1399,7 +1063,7 @@
       "product_id": "732b4ac9-7ef4-407c-a2ed-21ac22b90530",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:03.676684Z",
+      "forecast_timestamp": "2026-10-22T20:27:20.299953+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 86691.6,
@@ -1421,22 +1085,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 87232.62,
-          "upper": 91468.38,
-          "lower": 82876.68
+          "upper": 91738.2,
+          "lower": 82759.85
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 87374.82,
-          "upper": 91777.25,
-          "lower": 83172.42
+          "upper": 91733.4,
+          "lower": 82602.14
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 86691.6,
-          "upper": 91463.21,
-          "lower": 82079.91
+          "upper": 91195.6,
+          "lower": 82094.1
         }
       ],
       "recommendation": "MONITOR",
@@ -1447,7 +1111,7 @@
       "product_id": "7e608282-c6f3-459a-ac83-ce2cc844ea16",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:04.269018Z",
+      "forecast_timestamp": "2026-10-22T20:27:21.071446+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 95344.47,
@@ -1469,22 +1133,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 94119.72,
-          "upper": 98832.62,
-          "lower": 89322.13
+          "upper": 99032.84,
+          "lower": 88959.78
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 94348.41,
-          "upper": 98932.18,
-          "lower": 89266.33
+          "upper": 99546.49,
+          "lower": 89726.85
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 95344.47,
-          "upper": 101076.19,
-          "lower": 90026.26
+          "upper": 100317.97,
+          "lower": 89894.2
         }
       ],
       "recommendation": "BUY",
@@ -1495,7 +1159,7 @@
       "product_id": "595b6ebf-7c35-4b16-a9e4-190b0471b72e",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:04.872214Z",
+      "forecast_timestamp": "2026-10-22T20:27:21.941945+00:00",
       "observation_count": 117,
       "unique_dates": 117,
       "predicted_price": 64877.97,
@@ -1517,22 +1181,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 65591.99,
-          "upper": 66825.79,
-          "lower": 64249.45
+          "upper": 66805.43,
+          "lower": 64345.84
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 65358.22,
-          "upper": 66820.51,
-          "lower": 63849.95
+          "upper": 66834.61,
+          "lower": 63683.18
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 64877.97,
-          "upper": 68260.3,
-          "lower": 61700.81
+          "upper": 68411.09,
+          "lower": 61656.61
         }
       ],
       "recommendation": "MONITOR",
@@ -1543,7 +1207,7 @@
       "product_id": "b13cc0e8-13f9-494e-9ce6-db7e0842a47a",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:05.223017Z",
+      "forecast_timestamp": "2026-10-22T20:27:22.735758+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 57045.47,
@@ -1565,22 +1229,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 58241.18,
-          "upper": 60160.3,
-          "lower": 56170.56
+          "upper": 60208.75,
+          "lower": 56332.56
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 57960.36,
-          "upper": 59949.14,
-          "lower": 56089.07
+          "upper": 60017.13,
+          "lower": 55913.06
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 57045.47,
-          "upper": 59795.2,
-          "lower": 54662.31
+          "upper": 59660.51,
+          "lower": 54378.22
         }
       ],
       "recommendation": "MONITOR",
@@ -1591,7 +1255,7 @@
       "product_id": "749bc051-06c1-4a28-8ae0-45501b0ce40a",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:44:05.597206Z",
+      "forecast_timestamp": "2026-10-22T20:27:23.457840+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 99990.0,
@@ -1639,7 +1303,7 @@
       "product_id": "1baca923-d62e-4e51-a1fa-94537a5c7962",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:44:05.599216Z",
+      "forecast_timestamp": "2026-10-22T20:27:23.473865+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 69999.0,
@@ -1687,7 +1351,7 @@
       "product_id": "24b6dc85-24eb-4f94-a949-fa3315c354bd",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:05.603241Z",
+      "forecast_timestamp": "2026-10-22T20:27:23.482749+00:00",
       "observation_count": 98,
       "unique_dates": 98,
       "predicted_price": 23570.94,
@@ -1709,22 +1373,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 24292.15,
-          "upper": 25094.56,
-          "lower": 23537.59
+          "upper": 25066.82,
+          "lower": 23562.55
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 24140.41,
-          "upper": 24943.5,
-          "lower": 23303.27
+          "upper": 25033.38,
+          "lower": 23379.37
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 23570.94,
-          "upper": 24636.92,
-          "lower": 22480.1
+          "upper": 24779.22,
+          "lower": 22540.45
         }
       ],
       "recommendation": "MONITOR",
@@ -1735,7 +1399,7 @@
       "product_id": "194abad0-5140-4fa6-bae7-8e5cee9f0422",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:06.622995Z",
+      "forecast_timestamp": "2026-10-22T20:27:24.932331+00:00",
       "observation_count": 98,
       "unique_dates": 98,
       "predicted_price": 24958.3,
@@ -1757,22 +1421,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 25804.07,
-          "upper": 26334.25,
-          "lower": 25245.1
+          "upper": 26307.93,
+          "lower": 25244.84
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 25548.3,
-          "upper": 26224.8,
-          "lower": 24836.64
+          "upper": 26212.86,
+          "lower": 24913.78
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 24958.3,
-          "upper": 26449.48,
-          "lower": 23547.35
+          "upper": 26334.58,
+          "lower": 23595.11
         }
       ],
       "recommendation": "MONITOR",
@@ -1783,7 +1447,7 @@
       "product_id": "7aa3df44-b9ac-4dfa-9cc0-b188f86a40af",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:07.950107Z",
+      "forecast_timestamp": "2026-10-22T20:27:26.836581+00:00",
       "observation_count": 18,
       "unique_dates": 18,
       "predicted_price": 13737.72,
@@ -1805,22 +1469,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 15448.32,
-          "upper": 15731.3,
-          "lower": 15201.43
+          "upper": 15695.58,
+          "lower": 15198.76
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 14915.15,
-          "upper": 15301.71,
-          "lower": 14548.27
+          "upper": 15276.15,
+          "lower": 14553.89
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 13737.72,
-          "upper": 14728.87,
-          "lower": 12842.58
+          "upper": 14662.04,
+          "lower": 12825.99
         }
       ],
       "recommendation": "WAIT",
@@ -1831,7 +1495,7 @@
       "product_id": "ef3cd5a2-1122-4710-8ad8-a0752737a7cd",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:44:08.436912Z",
+      "forecast_timestamp": "2026-10-22T20:27:27.703487+00:00",
       "observation_count": 3,
       "unique_dates": 3,
       "predicted_price": 0.0,
@@ -1879,7 +1543,7 @@
       "product_id": "950506d2-0a99-48c4-9566-e9bf9ca02978",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:08.445062Z",
+      "forecast_timestamp": "2026-10-22T20:27:27.708183+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 37910.85,
@@ -1901,22 +1565,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 39993.81,
-          "upper": 42412.68,
-          "lower": 37505.4
+          "upper": 42507.81,
+          "lower": 37581.33
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 41843.34,
-          "upper": 44159.74,
-          "lower": 39336.3
+          "upper": 44300.61,
+          "lower": 39236.99
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 37910.85,
-          "upper": 40406.14,
-          "lower": 35399.55
+          "upper": 40389.87,
+          "lower": 35320.31
         }
       ],
       "recommendation": "MONITOR",
@@ -1927,7 +1591,7 @@
       "product_id": "82743309-47fc-4f80-8ce2-ff1e4f72702a",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:08.832341Z",
+      "forecast_timestamp": "2026-10-22T20:27:28.662328+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 45927.59,
@@ -1949,22 +1613,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 46404.21,
-          "upper": 47565.99,
-          "lower": 45336.92
+          "upper": 47543.71,
+          "lower": 45166.97
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 46297.17,
-          "upper": 47587.95,
-          "lower": 45156.63
+          "upper": 47497.29,
+          "lower": 45033.09
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 45927.59,
-          "upper": 47915.5,
-          "lower": 44071.82
+          "upper": 48052.69,
+          "lower": 43889.63
         }
       ],
       "recommendation": "MONITOR",
@@ -1975,7 +1639,7 @@
       "product_id": "f4262dcf-9e1d-4d48-afe7-0d53938a10a2",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:09.217247Z",
+      "forecast_timestamp": "2026-10-22T20:27:29.391607+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 53180.27,
@@ -1997,22 +1661,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 53031.78,
-          "upper": 55212.77,
-          "lower": 50977.97
+          "upper": 55150.32,
+          "lower": 50783.26
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 53074.58,
-          "upper": 55347.6,
-          "lower": 50838.35
+          "upper": 55230.34,
+          "lower": 50912.29
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 53180.27,
-          "upper": 55504.32,
-          "lower": 50730.83
+          "upper": 55567.29,
+          "lower": 50872.61
         }
       ],
       "recommendation": "MONITOR",
@@ -2023,7 +1687,7 @@
       "product_id": "a78007af-099f-46f0-9836-9d1069ad0309",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:09.652415Z",
+      "forecast_timestamp": "2026-10-22T20:27:30.062153+00:00",
       "observation_count": 162,
       "unique_dates": 162,
       "predicted_price": 34110.27,
@@ -2045,22 +1709,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 35767.39,
-          "upper": 37156.67,
-          "lower": 34325.7
+          "upper": 37179.1,
+          "lower": 34328.25
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 35340.46,
-          "upper": 36911.81,
-          "lower": 33930.09
+          "upper": 36976.88,
+          "lower": 33823.15
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 34110.27,
-          "upper": 35924.52,
-          "lower": 32154.49
+          "upper": 35949.39,
+          "lower": 32143.38
         }
       ],
       "recommendation": "WAIT",
@@ -2071,7 +1735,7 @@
       "product_id": "80672e4e-fe85-4513-a130-a6c4b70dce35",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:10.058326Z",
+      "forecast_timestamp": "2026-10-22T20:27:30.898018+00:00",
       "observation_count": 155,
       "unique_dates": 155,
       "predicted_price": 40661.76,
@@ -2093,22 +1757,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 41039.61,
-          "upper": 42487.96,
-          "lower": 39626.08
+          "upper": 42431.46,
+          "lower": 39660.18
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 40907.72,
-          "upper": 42392.61,
-          "lower": 39310.09
+          "upper": 42372.13,
+          "lower": 39349.18
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 40661.76,
-          "upper": 42524.81,
-          "lower": 38853.89
+          "upper": 42493.12,
+          "lower": 38630.78
         }
       ],
       "recommendation": "BUY",
@@ -2119,7 +1783,7 @@
       "product_id": "a5999c69-f58c-4bd1-a066-6d608541257f",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:10.473522Z",
+      "forecast_timestamp": "2026-10-22T20:27:31.753396+00:00",
       "observation_count": 152,
       "unique_dates": 152,
       "predicted_price": 30580.54,
@@ -2141,22 +1805,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 29813.93,
-          "upper": 31396.3,
-          "lower": 28361.17
+          "upper": 31401.74,
+          "lower": 28310.35
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 30115.66,
-          "upper": 31597.97,
-          "lower": 28703.57
+          "upper": 31601.17,
+          "lower": 28595.71
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 30580.54,
-          "upper": 32134.47,
-          "lower": 28977.22
+          "upper": 32211.2,
+          "lower": 29098.12
         }
       ],
       "recommendation": "MONITOR",
@@ -2167,7 +1831,7 @@
       "product_id": "e38def9e-59d9-4e52-94d7-fdfbee69d016",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:10.868856Z",
+      "forecast_timestamp": "2026-10-22T20:27:32.398707+00:00",
       "observation_count": 158,
       "unique_dates": 158,
       "predicted_price": 31809.96,
@@ -2189,81 +1853,33 @@
           "date": "7 Days",
           "price": null,
           "predicted": 33053.14,
-          "upper": 34276.75,
-          "lower": 31941.43
+          "upper": 34216.5,
+          "lower": 31906.02
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 32666.51,
-          "upper": 33909.19,
-          "lower": 31396.35
+          "upper": 33890.44,
+          "lower": 31406.8
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 31809.96,
-          "upper": 34086.21,
-          "lower": 29612.69
+          "upper": 33893.02,
+          "lower": 29625.52
         }
       ],
       "recommendation": "MONITOR",
       "explanation": "Price is stable and close to its 90-day typical average of \u20b933,105. Set a target alert if you are aiming for a specific price drop.",
       "decision_horizon": null
     },
-    "35a92d18-ac9a-4412-869c-4d3b875dd380": {
-      "product_id": "35a92d18-ac9a-4412-869c-4d3b875dd380",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:11.233023Z",
-      "observation_count": 732,
-      "unique_dates": 366,
-      "predicted_price": 23310.04,
-      "predicted_7d": 23178.58,
-      "predicted_14d": 23243.69,
-      "predicted_30d": 23310.04,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 22999.0,
-          "predicted": 22999.0,
-          "upper": 22999.0,
-          "lower": 22999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 23178.58,
-          "upper": 23439.33,
-          "lower": 22920.34
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 23243.69,
-          "upper": 23486.83,
-          "lower": 22990.35
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 23310.04,
-          "upper": 23549.84,
-          "lower": 23063.43
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b922,999, this item is within 2% of its lowest recorded price (\u20b922,619) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
     "0ea99113-b45e-46e9-99d2-dc3abf512162": {
       "product_id": "0ea99113-b45e-46e9-99d2-dc3abf512162",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:44:11.732749Z",
+      "forecast_timestamp": "2026-10-22T20:27:33.132011+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 29999.0,
@@ -2307,59 +1923,11 @@
       "explanation": "Insufficient historical observations (< 14 records) to reliably forecast future price changes. We recommend monitoring this item as more daily prices are recorded.",
       "decision_horizon": null
     },
-    "cddc2850-fa03-4c81-b46d-44d2073b7afb": {
-      "product_id": "cddc2850-fa03-4c81-b46d-44d2073b7afb",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:11.732749Z",
-      "observation_count": 1098,
-      "unique_dates": 366,
-      "predicted_price": 89298.11,
-      "predicted_7d": 89512.65,
-      "predicted_14d": 89365.22,
-      "predicted_30d": 89298.11,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 89999.0,
-          "predicted": 89999.0,
-          "upper": 89999.0,
-          "lower": 89999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 89512.65,
-          "upper": 90470.4,
-          "lower": 88521.0
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 89365.22,
-          "upper": 90356.41,
-          "lower": 88377.95
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 89298.11,
-          "upper": 90242.07,
-          "lower": 88315.07
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b989,999, this item is within 2% of its lowest recorded price (\u20b988,929) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
     "6d0491ad-6985-45ca-8ba8-5da7691d66c3": {
       "product_id": "6d0491ad-6985-45ca-8ba8-5da7691d66c3",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:12.252137Z",
+      "forecast_timestamp": "2026-10-22T20:27:33.136083+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 45735.09,
@@ -2372,42 +1940,42 @@
       "points": [
         {
           "date": "Current",
-          "price": 12796.0,
-          "predicted": 12796.0,
-          "upper": 12796.0,
-          "lower": 12796.0
+          "price": 15999.0,
+          "predicted": 15999.0,
+          "upper": 15999.0,
+          "lower": 15999.0
         },
         {
           "date": "7 Days",
           "price": null,
           "predicted": 29647.45,
-          "upper": 30258.2,
-          "lower": 28995.73
+          "upper": 30253.7,
+          "lower": 29090.46
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 43098.99,
-          "upper": 43706.6,
-          "lower": 42455.64
+          "upper": 43674.04,
+          "lower": 42542.55
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 45735.09,
-          "upper": 46321.17,
-          "lower": 45122.83
+          "upper": 46299.04,
+          "lower": 45159.82
         }
       ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b912,796, this item is within 2% of its lowest recorded price (\u20b915,200) across tracked retailers.",
-      "decision_horizon": "Immediate"
+      "recommendation": "MONITOR",
+      "explanation": "Price is stable and close to its 90-day typical average of \u20b915,763. Set a target alert if you are aiming for a specific price drop.",
+      "decision_horizon": null
     },
     "82a5e214-c484-4370-a6a3-9c29e835bb2b": {
       "product_id": "82a5e214-c484-4370-a6a3-9c29e835bb2b",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:12.744305Z",
+      "forecast_timestamp": "2026-10-22T20:27:33.903385+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 19167.39,
@@ -2429,22 +1997,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 19440.96,
-          "upper": 20398.76,
-          "lower": 18504.9
+          "upper": 20298.49,
+          "lower": 18496.28
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 15880.0,
-          "upper": 16760.05,
-          "lower": 15012.9
+          "upper": 16847.59,
+          "lower": 14964.5
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 19167.39,
-          "upper": 20078.83,
-          "lower": 18219.45
+          "upper": 20091.74,
+          "lower": 18329.5
         }
       ],
       "recommendation": "WAIT",
@@ -2455,7 +2023,7 @@
       "product_id": "fc9dd050-bd04-4d34-92fb-75719a206860",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:13.095773Z",
+      "forecast_timestamp": "2026-10-22T20:27:34.735608+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 24563.92,
@@ -2477,22 +2045,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 27919.04,
-          "upper": 29847.33,
-          "lower": 26110.49
+          "upper": 29927.78,
+          "lower": 25984.32
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 29455.69,
-          "upper": 31403.69,
-          "lower": 27517.89
+          "upper": 31278.23,
+          "lower": 27487.96
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 24563.92,
-          "upper": 26353.74,
-          "lower": 22843.72
+          "upper": 26450.87,
+          "lower": 22664.97
         }
       ],
       "recommendation": "WAIT",
@@ -2503,7 +2071,7 @@
       "product_id": "74c7ed5f-db83-4e75-a873-e55dc9b97d16",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:13.510342Z",
+      "forecast_timestamp": "2026-10-22T20:27:35.508251+00:00",
       "observation_count": 184,
       "unique_dates": 184,
       "predicted_price": 27770.68,
@@ -2525,22 +2093,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 36346.53,
-          "upper": 38469.62,
-          "lower": 34288.68
+          "upper": 38607.7,
+          "lower": 34361.26
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 38467.25,
-          "upper": 40411.34,
-          "lower": 36244.59
+          "upper": 40484.46,
+          "lower": 36240.9
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 27770.68,
-          "upper": 29958.69,
-          "lower": 25715.03
+          "upper": 29930.83,
+          "lower": 25605.96
         }
       ],
       "recommendation": "WAIT",
@@ -2551,7 +2119,7 @@
       "product_id": "fc20f5e3-ca29-4981-8043-cb6a6be498a8",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:13.931744Z",
+      "forecast_timestamp": "2026-10-22T20:27:36.383099+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 37425.23,
@@ -2573,22 +2141,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 37367.28,
-          "upper": 39516.07,
-          "lower": 35257.94
+          "upper": 39446.97,
+          "lower": 35226.94
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 45534.7,
-          "upper": 47750.82,
-          "lower": 43469.72
+          "upper": 47522.8,
+          "lower": 43484.53
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 37425.23,
-          "upper": 39495.59,
-          "lower": 35361.71
+          "upper": 39678.59,
+          "lower": 35316.79
         }
       ],
       "recommendation": "BUY",
@@ -2599,7 +2167,7 @@
       "product_id": "f66fa514-974f-45b9-b317-ce0f7590e255",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:14.347725Z",
+      "forecast_timestamp": "2026-10-22T20:27:37.355137+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 36569.93,
@@ -2621,22 +2189,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 40189.11,
-          "upper": 42157.21,
-          "lower": 38292.43
+          "upper": 41915.93,
+          "lower": 38443.38
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 44140.31,
-          "upper": 45943.05,
-          "lower": 42267.95
+          "upper": 46158.24,
+          "lower": 42268.76
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 36569.93,
-          "upper": 38398.08,
-          "lower": 34722.36
+          "upper": 38562.01,
+          "lower": 34574.11
         }
       ],
       "recommendation": "BUY",
@@ -2647,7 +2215,7 @@
       "product_id": "956348e6-943a-467e-9ff3-6a9d8fba5176",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:14.811786Z",
+      "forecast_timestamp": "2026-10-22T20:27:38.300938+00:00",
       "observation_count": 31,
       "unique_dates": 31,
       "predicted_price": 12499.0,
@@ -2669,22 +2237,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 12499.0,
-          "upper": 12505.24,
-          "lower": 12493.92
+          "upper": 12505.89,
+          "lower": 12491.84
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 12499.0,
-          "upper": 12517.46,
-          "lower": 12482.06
+          "upper": 12517.21,
+          "lower": 12480.39
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 12499.0,
-          "upper": 12562.65,
-          "lower": 12439.92
+          "upper": 12558.83,
+          "lower": 12440.33
         }
       ],
       "recommendation": "BUY",
@@ -2695,7 +2263,7 @@
       "product_id": "d2d9f2c2-1e09-4caf-a220-40232d941c2c",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:16.974922Z",
+      "forecast_timestamp": "2026-10-22T20:27:41.528203+00:00",
       "observation_count": 14,
       "unique_dates": 14,
       "predicted_price": 13999.07,
@@ -2717,22 +2285,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 13999.05,
-          "upper": 14433.89,
-          "lower": 13579.27
+          "upper": 14405.98,
+          "lower": 13557.85
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 13999.05,
-          "upper": 14438.16,
-          "lower": 13571.63
+          "upper": 14473.44,
+          "lower": 13552.62
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 13999.07,
-          "upper": 14434.41,
-          "lower": 13565.2
+          "upper": 14419.59,
+          "lower": 13551.23
         }
       ],
       "recommendation": "BUY",
@@ -2743,7 +2311,7 @@
       "product_id": "15e41aef-31e7-4a43-ab4f-6138a407914a",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:44:17.356698Z",
+      "forecast_timestamp": "2026-10-22T20:27:42.239381+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 15499.0,
@@ -2791,7 +2359,7 @@
       "product_id": "12c16c74-656f-4b04-9340-cc23dfd3b468",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:17.356698Z",
+      "forecast_timestamp": "2026-10-22T20:27:42.250078+00:00",
       "observation_count": 77,
       "unique_dates": 76,
       "predicted_price": 24526.55,
@@ -2813,22 +2381,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 25256.16,
-          "upper": 26986.7,
-          "lower": 23577.49
+          "upper": 26889.41,
+          "lower": 23590.83
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 25074.12,
-          "upper": 26788.82,
-          "lower": 23349.54
+          "upper": 26818.74,
+          "lower": 23378.2
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 24526.55,
-          "upper": 26506.11,
-          "lower": 22472.88
+          "upper": 26539.71,
+          "lower": 22560.16
         }
       ],
       "recommendation": "MONITOR",
@@ -2839,7 +2407,7 @@
       "product_id": "e3b53336-0ae7-4013-985f-be8cbbaa55af",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:18.264915Z",
+      "forecast_timestamp": "2026-10-22T20:27:43.766389+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 9144.37,
@@ -2861,22 +2429,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 17201.59,
-          "upper": 17689.73,
-          "lower": 16714.78
+          "upper": 17711.92,
+          "lower": 16706.75
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 14127.64,
-          "upper": 14612.92,
-          "lower": 13648.79
+          "upper": 14631.15,
+          "lower": 13647.53
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 9144.37,
-          "upper": 9695.9,
-          "lower": 8659.86
+          "upper": 9643.92,
+          "lower": 8629.29
         }
       ],
       "recommendation": "WAIT",
@@ -2887,7 +2455,7 @@
       "product_id": "2728955f-3ee6-49cf-954e-5b8da27df54e",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:18.762495Z",
+      "forecast_timestamp": "2026-10-22T20:27:44.713641+00:00",
       "observation_count": 100,
       "unique_dates": 100,
       "predicted_price": 27576.55,
@@ -2909,22 +2477,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 27164.42,
-          "upper": 29369.08,
-          "lower": 24944.85
+          "upper": 29396.72,
+          "lower": 24739.85
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 27209.67,
-          "upper": 29419.86,
-          "lower": 25119.54
+          "upper": 29286.84,
+          "lower": 25079.4
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 27576.55,
-          "upper": 29798.92,
-          "lower": 25459.83
+          "upper": 29635.87,
+          "lower": 25434.14
         }
       ],
       "recommendation": "MONITOR",
@@ -2935,7 +2503,7 @@
       "product_id": "e7a89591-ea12-434f-8a78-f2b048fdbf27",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:19.219701Z",
+      "forecast_timestamp": "2026-10-22T20:27:45.532510+00:00",
       "observation_count": 184,
       "unique_dates": 184,
       "predicted_price": 37320.96,
@@ -2957,22 +2525,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 37447.17,
-          "upper": 39004.1,
-          "lower": 35941.88
+          "upper": 38928.21,
+          "lower": 36005.82
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 34188.13,
-          "upper": 35697.69,
-          "lower": 32728.49
+          "upper": 35618.58,
+          "lower": 32608.38
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 37320.96,
-          "upper": 38809.07,
-          "lower": 35857.88
+          "upper": 38759.37,
+          "lower": 35792.48
         }
       ],
       "recommendation": "WAIT",
@@ -2983,7 +2551,7 @@
       "product_id": "f0ffde83-16a1-4767-9a8e-74597dfe23b6",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:19.614991Z",
+      "forecast_timestamp": "2026-10-22T20:27:46.409751+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 0.0,
@@ -3005,15 +2573,15 @@
           "date": "7 Days",
           "price": null,
           "predicted": 48735.68,
-          "upper": 52074.95,
-          "lower": 45399.62
+          "upper": 52157.11,
+          "lower": 45391.3
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 16594.23,
-          "upper": 20255.26,
-          "lower": 13355.27
+          "upper": 20046.37,
+          "lower": 13159.47
         },
         {
           "date": "30 Days",
@@ -3031,7 +2599,7 @@
       "product_id": "ed83b4a4-8923-4f68-a85b-abe497b92e2f",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:20.056807Z",
+      "forecast_timestamp": "2026-10-22T20:27:47.337533+00:00",
       "observation_count": 184,
       "unique_dates": 184,
       "predicted_price": 56028.64,
@@ -3053,22 +2621,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 41839.28,
-          "upper": 44470.13,
-          "lower": 39340.6
+          "upper": 44512.02,
+          "lower": 39359.77
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 46196.13,
-          "upper": 48689.37,
-          "lower": 43713.01
+          "upper": 48640.18,
+          "lower": 43476.61
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 56028.64,
-          "upper": 58473.54,
-          "lower": 53559.67
+          "upper": 58723.44,
+          "lower": 53357.74
         }
       ],
       "recommendation": "WAIT",
@@ -3079,7 +2647,7 @@
       "product_id": "d9373cc6-b3db-4dfc-a185-67e77bfe4805",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:20.486541Z",
+      "forecast_timestamp": "2026-10-22T20:27:48.194721+00:00",
       "observation_count": 184,
       "unique_dates": 184,
       "predicted_price": 70100.87,
@@ -3101,22 +2669,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 49192.99,
-          "upper": 53513.77,
-          "lower": 45180.74
+          "upper": 53118.53,
+          "lower": 44983.77
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 59423.38,
-          "upper": 63322.16,
-          "lower": 55241.13
+          "upper": 63554.58,
+          "lower": 55512.54
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 70100.87,
-          "upper": 74169.87,
-          "lower": 65812.12
+          "upper": 74204.55,
+          "lower": 66284.35
         }
       ],
       "recommendation": "MONITOR",
@@ -3127,7 +2695,7 @@
       "product_id": "196e689f-c7af-41e8-9c4e-5093e473ce81",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:20.872691Z",
+      "forecast_timestamp": "2026-10-22T20:27:49.013696+00:00",
       "observation_count": 177,
       "unique_dates": 177,
       "predicted_price": 103572.99,
@@ -3149,22 +2717,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 100782.99,
-          "upper": 106224.53,
-          "lower": 95292.04
+          "upper": 106610.16,
+          "lower": 95324.08
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 101554.12,
-          "upper": 107422.68,
-          "lower": 95990.04
+          "upper": 107065.49,
+          "lower": 95640.38
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 103572.99,
-          "upper": 109311.84,
-          "lower": 97738.57
+          "upper": 109277.16,
+          "lower": 97527.43
         }
       ],
       "recommendation": "MONITOR",
@@ -3175,7 +2743,7 @@
       "product_id": "911a1275-b78d-4109-ba94-4c3fd974a3da",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:21.227206Z",
+      "forecast_timestamp": "2026-10-22T20:27:49.740675+00:00",
       "observation_count": 183,
       "unique_dates": 183,
       "predicted_price": 92632.01,
@@ -3197,22 +2765,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 91939.47,
-          "upper": 97895.15,
-          "lower": 85670.36
+          "upper": 98033.17,
+          "lower": 85627.2
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 97034.24,
-          "upper": 102925.64,
-          "lower": 91532.65
+          "upper": 102938.31,
+          "lower": 91454.22
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 92632.01,
-          "upper": 98269.78,
-          "lower": 86860.13
+          "upper": 98371.87,
+          "lower": 86582.06
         }
       ],
       "recommendation": "WAIT",
@@ -3223,7 +2791,7 @@
       "product_id": "35b761a0-23e0-4406-80c6-212d3dfe882c",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:44:21.620904Z",
+      "forecast_timestamp": "2026-10-22T20:27:50.458587+00:00",
       "observation_count": 7,
       "unique_dates": 7,
       "predicted_price": 65499.0,
@@ -3271,7 +2839,7 @@
       "product_id": "94c28da0-8e30-4754-9e6d-d8c42a9c2d00",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:21.634180Z",
+      "forecast_timestamp": "2026-10-22T20:27:50.471270+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 135676.87,
@@ -3293,129 +2861,33 @@
           "date": "7 Days",
           "price": null,
           "predicted": 137233.19,
-          "upper": 145450.47,
-          "lower": 129112.52
+          "upper": 145658.8,
+          "lower": 129056.91
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 138097.83,
-          "upper": 146051.06,
-          "lower": 129277.5
+          "upper": 146471.9,
+          "lower": 129676.46
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 135676.87,
-          "upper": 144115.94,
-          "lower": 128407.63
+          "upper": 143851.26,
+          "lower": 127436.39
         }
       ],
       "recommendation": "BUY",
       "explanation": "Good opportunity to buy now. At \u20b9125,999, the item is below its 90-day average (\u20b9129,016) and price models indicate an upcoming upward adjustment toward \u20b9137,233.",
       "decision_horizon": "Immediate"
     },
-    "1875c715-b872-4939-9a89-dc537abd539a": {
-      "product_id": "1875c715-b872-4939-9a89-dc537abd539a",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:22.003444Z",
-      "observation_count": 1098,
-      "unique_dates": 366,
-      "predicted_price": 34718.13,
-      "predicted_7d": 34664.72,
-      "predicted_14d": 34619.68,
-      "predicted_30d": 34718.13,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 34999.0,
-          "predicted": 34999.0,
-          "upper": 34999.0,
-          "lower": 34999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 34664.72,
-          "upper": 35016.46,
-          "lower": 34339.57
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 34619.68,
-          "upper": 34986.67,
-          "lower": 34261.93
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 34718.13,
-          "upper": 35045.72,
-          "lower": 34373.55
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b934,999, this item is within 2% of its lowest recorded price (\u20b934,409) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
-    "2d0a29d9-6f0f-4024-bfda-d195b5fed705": {
-      "product_id": "2d0a29d9-6f0f-4024-bfda-d195b5fed705",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:22.519497Z",
-      "observation_count": 1464,
-      "unique_dates": 366,
-      "predicted_price": 30261.36,
-      "predicted_7d": 30184.47,
-      "predicted_14d": 30230.52,
-      "predicted_30d": 30261.36,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 29999.0,
-          "predicted": 29999.0,
-          "upper": 29999.0,
-          "lower": 29999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 30184.47,
-          "upper": 30498.15,
-          "lower": 29847.56
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 30230.52,
-          "upper": 30550.33,
-          "lower": 29873.84
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 30261.36,
-          "upper": 30581.2,
-          "lower": 29937.25
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b929,999, this item is within 2% of its lowest recorded price (\u20b929,489) across tracked retailers.",
-      "decision_horizon": "Immediate"
-    },
     "15aeb08b-3746-45c1-8327-2b6f3e8a1d26": {
       "product_id": "15aeb08b-3746-45c1-8327-2b6f3e8a1d26",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:23.020209Z",
+      "forecast_timestamp": "2026-10-22T20:27:51.444045+00:00",
       "observation_count": 177,
       "unique_dates": 177,
       "predicted_price": 78836.74,
@@ -3437,22 +2909,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 81851.16,
-          "upper": 86556.83,
-          "lower": 76883.29
+          "upper": 86745.64,
+          "lower": 76984.6
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 80748.52,
-          "upper": 85506.49,
-          "lower": 76456.09
+          "upper": 85404.33,
+          "lower": 76031.35
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 78836.74,
-          "upper": 83286.64,
-          "lower": 74127.38
+          "upper": 83470.52,
+          "lower": 74441.87
         }
       ],
       "recommendation": "BUY",
@@ -3463,7 +2935,7 @@
       "product_id": "0db54315-e9d4-4bec-bcb4-6687c9571f6e",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:44:23.378102Z",
+      "forecast_timestamp": "2026-10-22T20:27:52.233363+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 99999.0,
@@ -3511,7 +2983,7 @@
       "product_id": "4a494574-5a0e-4b4d-bca7-bae54e7afda0",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:23.382260Z",
+      "forecast_timestamp": "2026-10-22T20:27:52.243008+00:00",
       "observation_count": 182,
       "unique_dates": 182,
       "predicted_price": 14879.23,
@@ -3533,22 +3005,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 13552.39,
-          "upper": 14898.29,
-          "lower": 12236.8
+          "upper": 14809.95,
+          "lower": 12238.17
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 12018.22,
-          "upper": 13411.12,
-          "lower": 10675.63
+          "upper": 13347.12,
+          "lower": 10719.6
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 14879.23,
-          "upper": 16333.07,
-          "lower": 13559.28
+          "upper": 16255.31,
+          "lower": 13493.39
         }
       ],
       "recommendation": "BUY",
@@ -3559,7 +3031,7 @@
       "product_id": "af6bf254-ead6-48c5-937e-7134d9c0efcf",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:23.744686Z",
+      "forecast_timestamp": "2026-10-22T20:27:52.922808+00:00",
       "observation_count": 181,
       "unique_dates": 181,
       "predicted_price": 12762.51,
@@ -3581,22 +3053,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 17985.36,
-          "upper": 18734.74,
-          "lower": 17284.66
+          "upper": 18668.26,
+          "lower": 17292.75
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 18459.28,
-          "upper": 19204.77,
-          "lower": 17803.36
+          "upper": 19171.45,
+          "lower": 17742.47
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 12762.51,
-          "upper": 13515.79,
-          "lower": 12030.99
+          "upper": 13437.54,
+          "lower": 12081.08
         }
       ],
       "recommendation": "MONITOR",
@@ -3607,7 +3079,7 @@
       "product_id": "71dd33ab-faa1-4454-a6ea-ffdd891658f7",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:24.157194Z",
+      "forecast_timestamp": "2026-10-22T20:27:53.684836+00:00",
       "observation_count": 177,
       "unique_dates": 177,
       "predicted_price": 22370.6,
@@ -3629,22 +3101,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 21958.51,
-          "upper": 23388.81,
-          "lower": 20423.54
+          "upper": 23474.14,
+          "lower": 20564.46
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 22054.46,
-          "upper": 23519.93,
-          "lower": 20693.19
+          "upper": 23522.98,
+          "lower": 20630.43
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 22370.6,
-          "upper": 23755.44,
-          "lower": 20899.23
+          "upper": 23931.2,
+          "lower": 20859.37
         }
       ],
       "recommendation": "BUY",
@@ -3655,7 +3127,7 @@
       "product_id": "49ab2c07-4971-44c5-a2e0-54530b3d64ba",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:24.664052Z",
+      "forecast_timestamp": "2026-10-22T20:27:54.336633+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 16822.71,
@@ -3677,22 +3149,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 17031.11,
-          "upper": 17783.18,
-          "lower": 16238.65
+          "upper": 17755.35,
+          "lower": 16256.43
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 16938.77,
-          "upper": 17755.31,
-          "lower": 16139.93
+          "upper": 17743.78,
+          "lower": 16176.39
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 16822.71,
-          "upper": 17647.39,
-          "lower": 15982.51
+          "upper": 17704.1,
+          "lower": 15941.97
         }
       ],
       "recommendation": "BUY",
@@ -3703,7 +3175,7 @@
       "product_id": "7d915c2d-4d54-4d85-9c70-4ba7b66e3571",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:25.060878Z",
+      "forecast_timestamp": "2026-10-22T20:27:55.035769+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 18539.83,
@@ -3725,22 +3197,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 18878.02,
-          "upper": 19885.44,
-          "lower": 17737.51
+          "upper": 19897.6,
+          "lower": 17780.74
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 18728.25,
-          "upper": 19796.08,
-          "lower": 17593.62
+          "upper": 19887.39,
+          "lower": 17585.74
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 18539.83,
-          "upper": 19768.11,
-          "lower": 17290.5
+          "upper": 19778.25,
+          "lower": 17268.02
         }
       ],
       "recommendation": "BUY",
@@ -3751,7 +3223,7 @@
       "product_id": "4b76d9f8-a6de-4c8f-a654-103080bd70fe",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:25.518824Z",
+      "forecast_timestamp": "2026-10-22T20:27:55.809136+00:00",
       "observation_count": 29,
       "unique_dates": 29,
       "predicted_price": 24085.2,
@@ -3773,22 +3245,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 24028.77,
-          "upper": 24181.77,
-          "lower": 23880.57
+          "upper": 24160.83,
+          "lower": 23887.19
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 24040.31,
-          "upper": 24398.48,
-          "lower": 23691.01
+          "upper": 24371.47,
+          "lower": 23694.12
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 24085.2,
-          "upper": 25168.25,
-          "lower": 23070.68
+          "upper": 25156.99,
+          "lower": 23064.7
         }
       ],
       "recommendation": "BUY",
@@ -3799,7 +3271,7 @@
       "product_id": "8f786211-9040-4065-b387-5f7c625ff820",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:44:26.136091Z",
+      "forecast_timestamp": "2026-10-22T20:27:56.487492+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 20999.0,
@@ -3847,7 +3319,7 @@
       "product_id": "de5c9892-4919-4de8-b283-e43e0532d972",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:26.142133Z",
+      "forecast_timestamp": "2026-10-22T20:27:56.489504+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 15935.14,
@@ -3869,22 +3341,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 15526.43,
-          "upper": 16542.01,
-          "lower": 14504.25
+          "upper": 16538.12,
+          "lower": 14526.36
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 15644.83,
-          "upper": 16636.46,
-          "lower": 14711.26
+          "upper": 16567.42,
+          "lower": 14629.13
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 15935.14,
-          "upper": 17030.81,
-          "lower": 14951.91
+          "upper": 16917.14,
+          "lower": 14946.01
         }
       ],
       "recommendation": "BUY",
@@ -3895,7 +3367,7 @@
       "product_id": "8eae2be1-c31d-4e9f-b1f1-18b9c336ea69",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:26.515493Z",
+      "forecast_timestamp": "2026-10-22T20:27:57.092195+00:00",
       "observation_count": 56,
       "unique_dates": 56,
       "predicted_price": 16385.01,
@@ -3917,22 +3389,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 16389.34,
-          "upper": 16677.43,
-          "lower": 16093.05
+          "upper": 16672.48,
+          "lower": 16110.4
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 16391.06,
-          "upper": 16689.01,
-          "lower": 16105.02
+          "upper": 16660.41,
+          "lower": 16106.01
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 16385.01,
-          "upper": 16673.86,
-          "lower": 16075.54
+          "upper": 16644.98,
+          "lower": 16106.77
         }
       ],
       "recommendation": "BUY",
@@ -3943,7 +3415,7 @@
       "product_id": "6ced0b58-278c-4602-bb2f-a3c0b8826cbd",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:27.211068Z",
+      "forecast_timestamp": "2026-10-22T20:27:58.144933+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 30222.31,
@@ -3965,22 +3437,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 30537.16,
-          "upper": 31030.15,
-          "lower": 30050.56
+          "upper": 31041.19,
+          "lower": 30080.49
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 31240.14,
-          "upper": 31734.53,
-          "lower": 30724.34
+          "upper": 31745.16,
+          "lower": 30729.32
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 30222.31,
-          "upper": 30710.02,
-          "lower": 29730.09
+          "upper": 30708.37,
+          "lower": 29712.46
         }
       ],
       "recommendation": "MONITOR",
@@ -3991,7 +3463,7 @@
       "product_id": "3fba5bc6-3c4b-4527-8f6e-b45562da3020",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:27.615945Z",
+      "forecast_timestamp": "2026-10-22T20:27:58.919438+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 24178.06,
@@ -4013,22 +3485,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 21877.39,
-          "upper": 22462.8,
-          "lower": 21279.46
+          "upper": 22493.88,
+          "lower": 21265.28
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 20445.52,
-          "upper": 21061.15,
-          "lower": 19805.37
+          "upper": 21074.19,
+          "lower": 19817.72
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 24178.06,
-          "upper": 24790.41,
-          "lower": 23541.0
+          "upper": 24739.63,
+          "lower": 23563.04
         }
       ],
       "recommendation": "WAIT",
@@ -4039,7 +3511,7 @@
       "product_id": "3d702bb6-0e0f-46ac-9cce-f0572272f3ca",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:27.980763Z",
+      "forecast_timestamp": "2026-10-22T20:27:59.627723+00:00",
       "observation_count": 124,
       "unique_dates": 124,
       "predicted_price": 31869.0,
@@ -4061,22 +3533,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 31980.78,
-          "upper": 32667.72,
-          "lower": 31296.09
+          "upper": 32664.53,
+          "lower": 31314.52
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 31979.52,
-          "upper": 32728.53,
-          "lower": 31313.03
+          "upper": 32680.31,
+          "lower": 31292.49
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 31869.0,
-          "upper": 32611.54,
-          "lower": 31098.56
+          "upper": 32670.64,
+          "lower": 31133.34
         }
       ],
       "recommendation": "MONITOR",
@@ -4087,7 +3559,7 @@
       "product_id": "21063038-7d26-46b1-aff1-06bf20044262",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:28.318691Z",
+      "forecast_timestamp": "2026-10-22T20:28:00.228946+00:00",
       "observation_count": 183,
       "unique_dates": 183,
       "predicted_price": 40286.21,
@@ -4109,22 +3581,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 37697.28,
-          "upper": 39090.72,
-          "lower": 36312.47
+          "upper": 39104.01,
+          "lower": 36389.56
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 37153.91,
-          "upper": 38455.87,
-          "lower": 35787.56
+          "upper": 38492.87,
+          "lower": 35765.39
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 40286.21,
-          "upper": 41690.48,
-          "lower": 38977.02
+          "upper": 41611.82,
+          "lower": 38989.76
         }
       ],
       "recommendation": "MONITOR",
@@ -4135,7 +3607,7 @@
       "product_id": "9cb7a389-b0a9-40a4-803e-e2877aeba00f",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:28.720179Z",
+      "forecast_timestamp": "2026-10-22T20:28:00.958500+00:00",
       "observation_count": 183,
       "unique_dates": 183,
       "predicted_price": 27874.52,
@@ -4157,22 +3629,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 26760.48,
-          "upper": 27429.17,
-          "lower": 26129.83
+          "upper": 27387.19,
+          "lower": 26099.44
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 28777.03,
-          "upper": 29420.24,
-          "lower": 28112.16
+          "upper": 29429.22,
+          "lower": 28087.66
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 27874.52,
-          "upper": 28538.43,
-          "lower": 27224.03
+          "upper": 28506.91,
+          "lower": 27189.31
         }
       ],
       "recommendation": "MONITOR",
@@ -4183,7 +3655,7 @@
       "product_id": "d68fe5a4-db26-4cba-aa11-c57c8c29c7c3",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:29.189062Z",
+      "forecast_timestamp": "2026-10-22T20:28:01.708923+00:00",
       "observation_count": 52,
       "unique_dates": 52,
       "predicted_price": 27619.41,
@@ -4205,22 +3677,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 27792.15,
-          "upper": 27943.97,
-          "lower": 27644.98
+          "upper": 27941.43,
+          "lower": 27632.37
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 27747.44,
-          "upper": 27891.86,
-          "lower": 27596.26
+          "upper": 27906.56,
+          "lower": 27584.41
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 27619.41,
-          "upper": 27772.95,
-          "lower": 27457.4
+          "upper": 27770.64,
+          "lower": 27474.84
         }
       ],
       "recommendation": "MONITOR",
@@ -4231,7 +3703,7 @@
       "product_id": "aa9c92f0-67e9-4ebc-b703-3a032e3fbad4",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:29.896947Z",
+      "forecast_timestamp": "2026-10-22T20:28:03.008879+00:00",
       "observation_count": 22,
       "unique_dates": 22,
       "predicted_price": 36996.0,
@@ -4253,22 +3725,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 36997.5,
-          "upper": 37377.14,
-          "lower": 36656.77
+          "upper": 37340.13,
+          "lower": 36650.71
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 36997.0,
-          "upper": 38020.55,
-          "lower": 36085.42
+          "upper": 37973.97,
+          "lower": 36038.33
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 36996.0,
-          "upper": 40190.87,
-          "lower": 33981.62
+          "upper": 39972.81,
+          "lower": 33908.68
         }
       ],
       "recommendation": "BUY",
@@ -4279,7 +3751,7 @@
       "product_id": "9cfafad7-102d-4ed6-8de5-aa842a003f91",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:37.530394Z",
+      "forecast_timestamp": "2026-10-22T20:28:22.524049+00:00",
       "observation_count": 16,
       "unique_dates": 16,
       "predicted_price": 49991.66,
@@ -4301,22 +3773,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 49996.78,
-          "upper": 50015.2,
-          "lower": 49977.75
+          "upper": 50013.21,
+          "lower": 49978.29
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 49995.55,
-          "upper": 50044.38,
-          "lower": 49943.04
+          "upper": 50043.57,
+          "lower": 49942.61
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 49991.66,
-          "upper": 50147.36,
-          "lower": 49822.0
+          "upper": 50146.63,
+          "lower": 49834.88
         }
       ],
       "recommendation": "BUY",
@@ -4327,7 +3799,7 @@
       "product_id": "1aa2e72b-66c7-49e6-9946-db80698acb89",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-prophet",
-      "forecast_timestamp": "2026-10-18T11:44:51.751780Z",
+      "forecast_timestamp": "2026-10-22T20:29:02.338310+00:00",
       "observation_count": 113,
       "unique_dates": 113,
       "predicted_price": 41526.28,
@@ -4349,22 +3821,22 @@
           "date": "7 Days",
           "price": null,
           "predicted": 41596.42,
-          "upper": 42859.53,
-          "lower": 40239.99
+          "upper": 42815.08,
+          "lower": 40276.58
         },
         {
           "date": "14 Days",
           "price": null,
           "predicted": 41534.23,
-          "upper": 42799.66,
-          "lower": 40284.69
+          "upper": 42821.76,
+          "lower": 40183.78
         },
         {
           "date": "30 Days",
           "price": null,
           "predicted": 41526.28,
-          "upper": 43246.65,
-          "lower": 39927.56
+          "upper": 43237.9,
+          "lower": 40009.73
         }
       ],
       "recommendation": "MONITOR",
@@ -4373,1644 +3845,125 @@
     }
   },
   "by_product_store": {
-    "1d384365-2f3f-49b0-a416-b7aef8397401": {
-      "product_id": "1d384365-2f3f-49b0-a416-b7aef8397401",
+    "1e15ade5-527e-41eb-b067-23173e1ac70c": {
+      "product_id": "1e15ade5-527e-41eb-b067-23173e1ac70c",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:52.104139Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 30363.91,
-      "predicted_7d": 30431.78,
-      "predicted_14d": 30431.78,
-      "predicted_30d": 30363.91,
-      "trend": "STABLE",
+      "forecast_timestamp": "2026-10-22T20:29:03.028851+00:00",
+      "observation_count": 91,
+      "unique_dates": 91,
+      "predicted_price": 140252.91,
+      "predicted_7d": 140252.91,
+      "predicted_14d": 139694.98,
+      "predicted_30d": 140252.91,
+      "trend": "DROPPING",
       "confidence": "High",
-      "potential_saving": 0.0,
+      "potential_saving": 9647.09,
       "points": [
         {
           "date": "Current",
-          "price": 29999.0,
-          "predicted": 29999.0,
-          "upper": 29999.0,
-          "lower": 29999.0
+          "price": 149900.0,
+          "predicted": 149900.0,
+          "upper": 149900.0,
+          "lower": 149900.0
         },
         {
           "date": "7 Days",
           "price": null,
-          "predicted": 30431.78,
-          "upper": 31607.74,
-          "lower": 29255.82
+          "predicted": 140252.91,
+          "upper": 145740.52,
+          "lower": 134765.3
         },
         {
           "date": "14 Days",
           "price": null,
-          "predicted": 30431.78,
-          "upper": 32094.84,
-          "lower": 28768.72
+          "predicted": 139694.98,
+          "upper": 147455.63,
+          "lower": 131934.33
         },
         {
           "date": "30 Days",
           "price": null,
-          "predicted": 30363.91,
-          "upper": 32798.38,
-          "lower": 27929.44
+          "predicted": 140252.91,
+          "upper": 151613.34,
+          "lower": 128892.48
         }
       ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b929,999, this item is within 2% of its lowest recorded price (\u20b929,489) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "0e91a147-1ba1-4aa3-bf94-435f69b81441": {
-      "product_id": "0e91a147-1ba1-4aa3-bf94-435f69b81441",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:54.011367Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 30837.96,
-      "predicted_7d": 30929.87,
-      "predicted_14d": 30929.87,
-      "predicted_30d": 30837.96,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 30499.0,
-          "predicted": 30499.0,
-          "upper": 30499.0,
-          "lower": 30499.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 30929.87,
-          "upper": 32125.43,
-          "lower": 29734.31
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 30929.87,
-          "upper": 32620.65,
-          "lower": 29239.09
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 30837.96,
-          "upper": 33313.01,
-          "lower": 28362.91
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b930,499, this item is within 2% of its lowest recorded price (\u20b930,039) across tracked retailers.",
+      "recommendation": "WAIT",
+      "explanation": "Wait for better value. Price is forecasted to drop by ~6% to \u20b9140,252 over the next 7 days (potential saving: \u20b99,647).",
       "store_name": "Flipkart",
       "store_slug": "flipkart"
     },
-    "5382f9ad-9946-4717-976c-c3a3ec1ac6df": {
-      "product_id": "5382f9ad-9946-4717-976c-c3a3ec1ac6df",
+    "bb5b29fb-a75e-4453-b117-993caf448800": {
+      "product_id": "bb5b29fb-a75e-4453-b117-993caf448800",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:54.153279Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 32382.82,
-      "predicted_7d": 32388.55,
-      "predicted_14d": 32388.55,
-      "predicted_30d": 32382.82,
+      "forecast_timestamp": "2026-10-22T20:29:31.825615+00:00",
+      "observation_count": 91,
+      "unique_dates": 91,
+      "predicted_price": 130234.11,
+      "predicted_7d": 130234.11,
+      "predicted_14d": 129716.04,
+      "predicted_30d": 130234.11,
       "trend": "STABLE",
       "confidence": "High",
       "potential_saving": 0.0,
       "points": [
         {
           "date": "Current",
-          "price": 31990.0,
-          "predicted": 31990.0,
-          "upper": 31990.0,
-          "lower": 31990.0
+          "price": 129990.0,
+          "predicted": 129990.0,
+          "upper": 129990.0,
+          "lower": 129990.0
         },
         {
           "date": "7 Days",
           "price": null,
-          "predicted": 32388.55,
-          "upper": 33642.56,
-          "lower": 31134.54
+          "predicted": 130234.11,
+          "upper": 135329.72,
+          "lower": 125138.5
         },
         {
           "date": "14 Days",
           "price": null,
-          "predicted": 32388.55,
-          "upper": 34161.99,
-          "lower": 30615.11
+          "predicted": 129716.04,
+          "upper": 136922.32,
+          "lower": 122509.76
         },
         {
           "date": "30 Days",
           "price": null,
-          "predicted": 32382.82,
-          "upper": 34978.86,
-          "lower": 29786.78
+          "predicted": 130234.11,
+          "upper": 140783.02,
+          "lower": 119685.2
         }
       ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b931,990, this item is within 2% of its lowest recorded price (\u20b931,659) across tracked retailers.",
-      "store_name": "Croma",
-      "store_slug": "croma"
-    },
-    "3e1c1bf8-31c4-404d-9802-9b24b8489b44": {
-      "product_id": "3e1c1bf8-31c4-404d-9802-9b24b8489b44",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:54.297264Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 142009.88,
-      "predicted_7d": 140997.8,
-      "predicted_14d": 141881.58,
-      "predicted_30d": 142009.88,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 139900.0,
-          "predicted": 139900.0,
-          "upper": 139900.0,
-          "lower": 139900.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 140997.8,
-          "upper": 146481.88,
-          "lower": 135513.72
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 141881.58,
-          "upper": 149637.24,
-          "lower": 134125.92
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 142009.88,
-          "upper": 153363.0,
-          "lower": 130656.76
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9139,900, this item is within 2% of its lowest recorded price (\u20b9138,089) across tracked retailers.",
-      "store_name": "Samsung",
-      "store_slug": "samsung"
-    },
-    "250d1db4-92cd-49bf-94fd-1e70f4898ba8": {
-      "product_id": "250d1db4-92cd-49bf-94fd-1e70f4898ba8",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:54.450565Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 101076.84,
-      "predicted_7d": 101076.84,
-      "predicted_14d": 101076.84,
-      "predicted_30d": 101076.84,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 99900.0,
-          "predicted": 99900.0,
-          "upper": 99900.0,
-          "lower": 99900.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 101076.84,
-          "upper": 104992.92,
-          "lower": 97160.76
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 101076.84,
-          "upper": 106615.01,
-          "lower": 95538.67
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 101076.84,
-          "upper": 109183.9,
-          "lower": 92969.78
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b999,900, this item is within 2% of its lowest recorded price (\u20b998,339) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "e4677a0d-c69c-48bf-92d6-f8ed9a7b68da": {
-      "product_id": "e4677a0d-c69c-48bf-92d6-f8ed9a7b68da",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:54.600810Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 102866.32,
-      "predicted_7d": 102554.5,
-      "predicted_14d": 103120.32,
-      "predicted_30d": 102866.32,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 100990.0,
-          "predicted": 100990.0,
-          "upper": 100990.0,
-          "lower": 100990.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 102554.5,
-          "upper": 106513.31,
-          "lower": 98595.69
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 103120.32,
-          "upper": 108718.92,
-          "lower": 97521.72
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 102866.32,
-          "upper": 111061.83,
-          "lower": 94670.81
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9100,990, this item is within 2% of its lowest recorded price (\u20b999,399) across tracked retailers.",
+      "recommendation": "MONITOR",
+      "explanation": "Price is stable and close to its 90-day typical average of \u20b9132,864. Set a target alert if you are aiming for a specific price drop.",
       "store_name": "Flipkart",
       "store_slug": "flipkart"
-    },
-    "c661501e-6737-469a-856d-3f1048c0e24e": {
-      "product_id": "c661501e-6737-469a-856d-3f1048c0e24e",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:54.745331Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 104757.48,
-      "predicted_7d": 104599.36,
-      "predicted_14d": 104699.83,
-      "predicted_30d": 104757.48,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 102900.0,
-          "predicted": 102900.0,
-          "upper": 102900.0,
-          "lower": 102900.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 104599.36,
-          "upper": 108633.04,
-          "lower": 100565.68
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 104699.83,
-          "upper": 110404.31,
-          "lower": 98995.35
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 104757.48,
-          "upper": 113107.99,
-          "lower": 96406.97
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9102,900, this item is within 2% of its lowest recorded price (\u20b9101,339) across tracked retailers.",
-      "store_name": "Croma",
-      "store_slug": "croma"
-    },
-    "b33065ee-3e23-4025-9aa5-a44ed1bdb734": {
-      "product_id": "b33065ee-3e23-4025-9aa5-a44ed1bdb734",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:54.891880Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 127245.18,
-      "predicted_7d": 127654.49,
-      "predicted_14d": 127245.18,
-      "predicted_30d": 127245.18,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 124999.0,
-          "predicted": 124999.0,
-          "upper": 124999.0,
-          "lower": 124999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 127654.49,
-          "upper": 132554.45,
-          "lower": 122754.53
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 127245.18,
-          "upper": 134174.77,
-          "lower": 120315.59
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 127245.18,
-          "upper": 137389.06,
-          "lower": 117101.3
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9124,999, this item is within 2% of its lowest recorded price (\u20b9124,049) across tracked retailers.",
-      "store_name": "Samsung",
-      "store_slug": "samsung"
-    },
-    "9b84a183-4ed5-473a-b3da-d251c9217202": {
-      "product_id": "9b84a183-4ed5-473a-b3da-d251c9217202",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:55.039201Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 127606.3,
-      "predicted_7d": 127743.33,
-      "predicted_14d": 127711.86,
-      "predicted_30d": 127606.3,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 125999.0,
-          "predicted": 125999.0,
-          "upper": 125999.0,
-          "lower": 125999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 127743.33,
-          "upper": 132682.49,
-          "lower": 122804.17
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 127711.86,
-          "upper": 134696.89,
-          "lower": 120726.83
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 127606.3,
-          "upper": 137831.33,
-          "lower": 117381.27
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9125,999, this item is within 2% of its lowest recorded price (\u20b9124,619) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "88536b56-b538-492b-b07a-0083197b23fd": {
-      "product_id": "88536b56-b538-492b-b07a-0083197b23fd",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:55.191419Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 128082.09,
-      "predicted_7d": 127766.66,
-      "predicted_14d": 128039.15,
-      "predicted_30d": 128082.09,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 126499.0,
-          "predicted": 126499.0,
-          "upper": 126499.0,
-          "lower": 126499.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 127766.66,
-          "upper": 132725.42,
-          "lower": 122807.9
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 128039.15,
-          "upper": 135051.9,
-          "lower": 121026.4
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 128082.09,
-          "upper": 138347.7,
-          "lower": 117816.48
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9126,499, this item is within 2% of its lowest recorded price (\u20b9125,089) across tracked retailers.",
-      "store_name": "Flipkart",
-      "store_slug": "flipkart"
-    },
-    "e991df18-8fb2-4af9-9f4e-cd9b4e48c14f": {
-      "product_id": "e991df18-8fb2-4af9-9f4e-cd9b4e48c14f",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:55.333338Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 130661.46,
-      "predicted_7d": 129652.48,
-      "predicted_14d": 130259.91,
-      "predicted_30d": 130661.46,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 127990.0,
-          "predicted": 127990.0,
-          "upper": 127990.0,
-          "lower": 127990.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 129652.48,
-          "upper": 134669.69,
-          "lower": 124635.27
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 130259.91,
-          "upper": 137355.31,
-          "lower": 123164.51
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 130661.46,
-          "upper": 141048.07,
-          "lower": 120274.85
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9127,990, this item is within 2% of its lowest recorded price (\u20b9126,529) across tracked retailers.",
-      "store_name": "Croma",
-      "store_slug": "croma"
-    },
-    "a7e95c62-3d99-4b61-9c8d-42a2ead78fd5": {
-      "product_id": "a7e95c62-3d99-4b61-9c8d-42a2ead78fd5",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:55.487985Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 88626.98,
-      "predicted_7d": 88227.16,
-      "predicted_14d": 88626.98,
-      "predicted_30d": 88626.98,
-      "trend": "RISING",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 79990.0,
-          "predicted": 79990.0,
-          "upper": 79990.0,
-          "lower": 79990.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 88227.16,
-          "upper": 91362.77,
-          "lower": 85091.55
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 88626.98,
-          "upper": 93061.4,
-          "lower": 84192.56
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 88626.98,
-          "upper": 95118.31,
-          "lower": 82135.65
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Good opportunity to buy now. At \u20b979,990, the item is below its 90-day average (\u20b9101,098) and price models indicate an upcoming upward adjustment toward \u20b988,227.",
-      "store_name": "Croma",
-      "store_slug": "croma"
-    },
-    "98956ff0-1ce5-4141-ad04-9f396bdbd511": {
-      "product_id": "98956ff0-1ce5-4141-ad04-9f396bdbd511",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:55.642988Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 91286.12,
-      "predicted_7d": 88445.31,
-      "predicted_14d": 90320.33,
-      "predicted_30d": 91286.12,
-      "trend": "RISING",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 81990.0,
-          "predicted": 81990.0,
-          "upper": 81990.0,
-          "lower": 81990.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 88445.31,
-          "upper": 91659.32,
-          "lower": 85231.3
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 90320.33,
-          "upper": 94865.62,
-          "lower": 85775.04
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 91286.12,
-          "upper": 97939.75,
-          "lower": 84632.49
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b981,990, this item is within 2% of its lowest recorded price (\u20b980,799) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "ef5722d2-ced1-48f2-b9f0-7ea11d577e28": {
-      "product_id": "ef5722d2-ced1-48f2-b9f0-7ea11d577e28",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:55.788703Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 94098.56,
-      "predicted_7d": 92849.04,
-      "predicted_14d": 93314.27,
-      "predicted_30d": 94098.56,
-      "trend": "RISING",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 89999.0,
-          "predicted": 89999.0,
-          "upper": 89999.0,
-          "lower": 89999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 92849.04,
-          "upper": 96377.0,
-          "lower": 89321.08
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 93314.27,
-          "upper": 98303.56,
-          "lower": 88324.98
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 94098.56,
-          "upper": 101402.13,
-          "lower": 86794.99
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b989,999, this item is within 2% of its lowest recorded price (\u20b988,929) across tracked retailers.",
-      "store_name": "Flipkart",
-      "store_slug": "flipkart"
-    },
-    "adee78d4-19b8-4dc0-82b4-2b646078393a": {
-      "product_id": "adee78d4-19b8-4dc0-82b4-2b646078393a",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:55.941556Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 94488.16,
-      "predicted_7d": 94401.73,
-      "predicted_14d": 94530.0,
-      "predicted_30d": 94488.16,
-      "trend": "RISING",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 91499.0,
-          "predicted": 91499.0,
-          "upper": 91499.0,
-          "lower": 91499.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 94401.73,
-          "upper": 97988.49,
-          "lower": 90814.97
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 94530.0,
-          "upper": 99602.45,
-          "lower": 89457.55
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 94488.16,
-          "upper": 101913.46,
-          "lower": 87062.86
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b991,499, this item is within 2% of its lowest recorded price (\u20b990,729) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "24458797-1c38-4889-8c0d-689e70060af5": {
-      "product_id": "24458797-1c38-4889-8c0d-689e70060af5",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:56.089809Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 95164.05,
-      "predicted_7d": 94803.07,
-      "predicted_14d": 95462.03,
-      "predicted_30d": 95164.05,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 92999.0,
-          "predicted": 92999.0,
-          "upper": 92999.0,
-          "lower": 92999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 94803.07,
-          "upper": 98448.63,
-          "lower": 91157.51
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 95462.03,
-          "upper": 100617.63,
-          "lower": 90306.43
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 95164.05,
-          "upper": 102711.08,
-          "lower": 87617.02
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b992,999, this item is within 2% of its lowest recorded price (\u20b991,819) across tracked retailers.",
-      "store_name": "Croma",
-      "store_slug": "croma"
-    },
-    "f5b483cf-7c39-48f1-9468-31ee37b9279e": {
-      "product_id": "f5b483cf-7c39-48f1-9468-31ee37b9279e",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:56.245517Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 36347.5,
-      "predicted_7d": 36410.85,
-      "predicted_14d": 36390.96,
-      "predicted_30d": 36347.5,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 35999.0,
-          "predicted": 35999.0,
-          "upper": 35999.0,
-          "lower": 35999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 36410.85,
-          "upper": 37822.01,
-          "lower": 34999.69
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 36390.96,
-          "upper": 38386.64,
-          "lower": 34395.28
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 36347.5,
-          "upper": 39268.88,
-          "lower": 33426.12
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b935,999, this item is within 2% of its lowest recorded price (\u20b935,499) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "71159a4e-8175-459d-bc02-1dd54865de32": {
-      "product_id": "71159a4e-8175-459d-bc02-1dd54865de32",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:56.392275Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 37385.16,
-      "predicted_7d": 37408.33,
-      "predicted_14d": 37400.77,
-      "predicted_30d": 37385.16,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 36999.0,
-          "predicted": 36999.0,
-          "upper": 36999.0,
-          "lower": 36999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 37408.33,
-          "upper": 38858.69,
-          "lower": 35957.97
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 37400.77,
-          "upper": 39451.89,
-          "lower": 35349.65
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 37385.16,
-          "upper": 40387.69,
-          "lower": 34382.63
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b936,999, this item is within 2% of its lowest recorded price (\u20b936,419) across tracked retailers.",
-      "store_name": "Flipkart",
-      "store_slug": "flipkart"
-    },
-    "588ca5ac-d9fe-4c92-9b03-9e6ae4005c2d": {
-      "product_id": "588ca5ac-d9fe-4c92-9b03-9e6ae4005c2d",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:56.539796Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 38135.41,
-      "predicted_7d": 38089.21,
-      "predicted_14d": 38172.98,
-      "predicted_30d": 38135.41,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 37999.0,
-          "predicted": 37999.0,
-          "upper": 37999.0,
-          "lower": 37999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 38089.21,
-          "upper": 39578.77,
-          "lower": 36599.65
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 38172.98,
-          "upper": 40279.54,
-          "lower": 36066.42
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 38135.41,
-          "upper": 41219.09,
-          "lower": 35051.73
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b937,999, this item is within 2% of its lowest recorded price (\u20b937,429) across tracked retailers.",
-      "store_name": "Croma",
-      "store_slug": "croma"
-    },
-    "407768ab-f2d7-4bc9-89ed-3834570c6c5a": {
-      "product_id": "407768ab-f2d7-4bc9-89ed-3834570c6c5a",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:56.690643Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 21446.42,
-      "predicted_7d": 21446.42,
-      "predicted_14d": 21471.98,
-      "predicted_30d": 21446.42,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 20999.0,
-          "predicted": 20999.0,
-          "upper": 20999.0,
-          "lower": 20999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 21446.42,
-          "upper": 22269.58,
-          "lower": 20623.26
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 21471.98,
-          "upper": 22636.11,
-          "lower": 20307.85
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 21446.42,
-          "upper": 23150.52,
-          "lower": 19742.32
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b920,999, this item is within 2% of its lowest recorded price (\u20b920,629) across tracked retailers.",
-      "store_name": "Flipkart",
-      "store_slug": "flipkart"
-    },
-    "22a3d0c4-332b-4b38-ae62-7412743f5eaa": {
-      "product_id": "22a3d0c4-332b-4b38-ae62-7412743f5eaa",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:56.835654Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 22821.7,
-      "predicted_7d": 22773.15,
-      "predicted_14d": 22773.15,
-      "predicted_30d": 22821.7,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 22499.0,
-          "predicted": 22499.0,
-          "upper": 22499.0,
-          "lower": 22499.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 22773.15,
-          "upper": 23655.11,
-          "lower": 21891.19
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 22773.15,
-          "upper": 24020.43,
-          "lower": 21525.87
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 22821.7,
-          "upper": 24647.53,
-          "lower": 20995.87
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b922,499, this item is within 2% of its lowest recorded price (\u20b922,169) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "d581a8f7-f004-4a55-aa5e-c0859cd6c113": {
-      "product_id": "d581a8f7-f004-4a55-aa5e-c0859cd6c113",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:56.988947Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 17355.25,
-      "predicted_7d": 17355.25,
-      "predicted_14d": 17355.25,
-      "predicted_30d": 17355.25,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 16999.0,
-          "predicted": 16999.0,
-          "upper": 16999.0,
-          "lower": 16999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 17355.25,
-          "upper": 18021.61,
-          "lower": 16688.89
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 17355.25,
-          "upper": 18297.63,
-          "lower": 16412.87
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 17355.25,
-          "upper": 18734.75,
-          "lower": 15975.75
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b916,999, this item is within 2% of its lowest recorded price (\u20b916,699) across tracked retailers.",
-      "store_name": "Flipkart",
-      "store_slug": "flipkart"
-    },
-    "bbe5f2c1-1be5-4763-a26a-6ae1af354500": {
-      "product_id": "bbe5f2c1-1be5-4763-a26a-6ae1af354500",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:57.137255Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 136492.0,
-      "predicted_7d": 136231.25,
-      "predicted_14d": 136926.22,
-      "predicted_30d": 136492.0,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 135900.0,
-          "predicted": 135900.0,
-          "upper": 135900.0,
-          "lower": 135900.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 136231.25,
-          "upper": 141558.53,
-          "lower": 130903.97
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 136926.22,
-          "upper": 144460.13,
-          "lower": 129392.31
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 136492.0,
-          "upper": 147520.52,
-          "lower": 125463.48
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9135,900, this item is within 2% of its lowest recorded price (\u20b9133,859) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "911ca114-fe1f-48ee-b51c-b2ab5d6a8f94": {
-      "product_id": "911ca114-fe1f-48ee-b51c-b2ab5d6a8f94",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:57.286976Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 137313.94,
-      "predicted_7d": 137972.84,
-      "predicted_14d": 138134.89,
-      "predicted_30d": 137313.94,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 136990.0,
-          "predicted": 136990.0,
-          "upper": 136990.0,
-          "lower": 136990.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 137972.84,
-          "upper": 143342.85,
-          "lower": 132602.83
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 138134.89,
-          "upper": 145729.23,
-          "lower": 130540.55
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 137313.94,
-          "upper": 148430.91,
-          "lower": 126196.97
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9136,990, this item is within 2% of its lowest recorded price (\u20b9135,209) across tracked retailers.",
-      "store_name": "Croma",
-      "store_slug": "croma"
-    },
-    "8105cba5-c30a-4947-8c8e-afd3fcf47ae3": {
-      "product_id": "8105cba5-c30a-4947-8c8e-afd3fcf47ae3",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:57.442943Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 32877.99,
-      "predicted_7d": 32877.99,
-      "predicted_14d": 32877.99,
-      "predicted_30d": 32877.99,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 32500.0,
-          "predicted": 32500.0,
-          "upper": 32500.0,
-          "lower": 32500.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 32877.99,
-          "upper": 34151.99,
-          "lower": 31603.99
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 32877.99,
-          "upper": 34679.7,
-          "lower": 31076.28
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 32877.99,
-          "upper": 35515.42,
-          "lower": 30240.56
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b932,500, this item is within 2% of its lowest recorded price (\u20b932,259) across tracked retailers.",
-      "store_name": "Vijay Sales",
-      "store_slug": "vijay-sales"
-    },
-    "0083ae01-dc7d-4d53-b954-e92fbaf6204b": {
-      "product_id": "0083ae01-dc7d-4d53-b954-e92fbaf6204b",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:57.605436Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 89044.4,
-      "predicted_7d": 89044.4,
-      "predicted_14d": 89044.4,
-      "predicted_30d": 89044.4,
-      "trend": "RISING",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 82490.0,
-          "predicted": 82490.0,
-          "upper": 82490.0,
-          "lower": 82490.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 89044.4,
-          "upper": 92278.01,
-          "lower": 85810.79
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 89044.4,
-          "upper": 93617.41,
-          "lower": 84471.39
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 89044.4,
-          "upper": 95738.6,
-          "lower": 82350.2
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b982,490, this item is within 2% of its lowest recorded price (\u20b981,719) across tracked retailers.",
-      "store_name": "Vijay Sales",
-      "store_slug": "vijay-sales"
-    },
-    "5bb581d7-fac7-4ae4-a4e4-f3d8c7685abf": {
-      "product_id": "5bb581d7-fac7-4ae4-a4e4-f3d8c7685abf",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:57.771543Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 138255.11,
-      "predicted_7d": 138376.47,
-      "predicted_14d": 138680.45,
-      "predicted_30d": 138255.11,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 137490.0,
-          "predicted": 137490.0,
-          "upper": 137490.0,
-          "lower": 137490.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 138376.47,
-          "upper": 143766.08,
-          "lower": 132986.86
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 138680.45,
-          "upper": 146302.51,
-          "lower": 131058.39
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 138255.11,
-          "upper": 149412.66,
-          "lower": 127097.56
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9137,490, this item is within 2% of its lowest recorded price (\u20b9135,699) across tracked retailers.",
-      "store_name": "Vijay Sales",
-      "store_slug": "vijay-sales"
-    },
-    "8f5b5d3b-3888-48fd-8f0f-f80613795d2c": {
-      "product_id": "8f5b5d3b-3888-48fd-8f0f-f80613795d2c",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:57.926176Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 18320.37,
-      "predicted_7d": 18272.2,
-      "predicted_14d": 18307.5,
-      "predicted_30d": 18320.37,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 17999.0,
-          "predicted": 17999.0,
-          "upper": 17999.0,
-          "lower": 17999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 18272.2,
-          "upper": 18977.76,
-          "lower": 17566.64
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 18307.5,
-          "upper": 19305.31,
-          "lower": 17309.69
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 18320.37,
-          "upper": 19781.02,
-          "lower": 16859.72
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b917,999, this item is within 2% of its lowest recorded price (\u20b917,719) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "2172f9d3-94f2-4fd3-a953-ec49811ca7c1": {
-      "product_id": "2172f9d3-94f2-4fd3-a953-ec49811ca7c1",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:58.069559Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 23349.05,
-      "predicted_7d": 23349.05,
-      "predicted_14d": 23434.85,
-      "predicted_30d": 23349.05,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 22999.0,
-          "predicted": 22999.0,
-          "upper": 22999.0,
-          "lower": 22999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 23349.05,
-          "upper": 24250.61,
-          "lower": 22447.49
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 23434.85,
-          "upper": 24709.85,
-          "lower": 22159.85
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 23349.05,
-          "upper": 25215.46,
-          "lower": 21482.64
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b922,999, this item is within 2% of its lowest recorded price (\u20b922,619) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "8f7f7a5b-f3c4-447f-973d-e1eaaa757be1": {
-      "product_id": "8f7f7a5b-f3c4-447f-973d-e1eaaa757be1",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:58.220869Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 24698.04,
-      "predicted_7d": 24715.72,
-      "predicted_14d": 24715.72,
-      "predicted_30d": 24698.04,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 24499.0,
-          "predicted": 24499.0,
-          "upper": 24499.0,
-          "lower": 24499.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 24715.72,
-          "upper": 25676.08,
-          "lower": 23755.36
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 24715.72,
-          "upper": 26073.88,
-          "lower": 23357.56
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 24698.04,
-          "upper": 26686.18,
-          "lower": 22709.9
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b924,499, this item is within 2% of its lowest recorded price (\u20b924,099) across tracked retailers.",
-      "store_name": "Flipkart",
-      "store_slug": "flipkart"
-    },
-    "98dce675-a69b-4f1d-bd11-89b0cd0dc0d2": {
-      "product_id": "98dce675-a69b-4f1d-bd11-89b0cd0dc0d2",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:58.420983Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 35437.29,
-      "predicted_7d": 35452.02,
-      "predicted_14d": 35548.54,
-      "predicted_30d": 35437.29,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 34999.0,
-          "predicted": 34999.0,
-          "upper": 34999.0,
-          "lower": 34999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 35452.02,
-          "upper": 36823.98,
-          "lower": 34080.06
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 35548.54,
-          "upper": 37488.79,
-          "lower": 33608.29
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 35437.29,
-          "upper": 38277.52,
-          "lower": 32597.06
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b934,999, this item is within 2% of its lowest recorded price (\u20b934,409) across tracked retailers.",
-      "store_name": "Amazon",
-      "store_slug": "amazon"
-    },
-    "6f9a2981-121e-480d-bcf0-7af596d5df3d": {
-      "product_id": "6f9a2981-121e-480d-bcf0-7af596d5df3d",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:58.609401Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 35839.38,
-      "predicted_7d": 35839.38,
-      "predicted_14d": 35839.38,
-      "predicted_30d": 35839.38,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 35499.0,
-          "predicted": 35499.0,
-          "upper": 35499.0,
-          "lower": 35499.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 35839.38,
-          "upper": 37230.94,
-          "lower": 34447.82
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 35839.38,
-          "upper": 37807.34,
-          "lower": 33871.42
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 35839.38,
-          "upper": 38720.18,
-          "lower": 32958.58
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b935,499, this item is within 2% of its lowest recorded price (\u20b934,979) across tracked retailers.",
-      "store_name": "Flipkart",
-      "store_slug": "flipkart"
-    },
-    "0d850382-fbd5-46ad-be1e-20ba46d26ba8": {
-      "product_id": "0d850382-fbd5-46ad-be1e-20ba46d26ba8",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:58.794828Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 37371.88,
-      "predicted_7d": 37401.8,
-      "predicted_14d": 37401.8,
-      "predicted_30d": 37371.88,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 36999.0,
-          "predicted": 36999.0,
-          "upper": 36999.0,
-          "lower": 36999.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 37401.8,
-          "upper": 38852.16,
-          "lower": 35951.44
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 37401.8,
-          "upper": 39452.92,
-          "lower": 35350.68
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 37371.88,
-          "upper": 40374.41,
-          "lower": 34369.35
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b936,999, this item is within 2% of its lowest recorded price (\u20b936,479) across tracked retailers.",
-      "store_name": "Croma",
-      "store_slug": "croma"
     },
     "f69ca535-adab-4213-9eff-c71bdc0cd4a8": {
       "product_id": "f69ca535-adab-4213-9eff-c71bdc0cd4a8",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:58.948734Z",
+      "forecast_timestamp": "2026-10-22T20:29:32.216520+00:00",
       "observation_count": 177,
       "unique_dates": 177,
       "predicted_price": 93880.48,
       "predicted_7d": 93764.52,
       "predicted_14d": 93548.32,
       "predicted_30d": 93880.48,
-      "trend": "STABLE",
+      "trend": "RISING",
       "confidence": "High",
       "potential_saving": 0.0,
       "points": [
         {
           "date": "Current",
-          "price": 94999.0,
-          "predicted": 94999.0,
-          "upper": 94999.0,
-          "lower": 94999.0
+          "price": 42000.0,
+          "predicted": 42000.0,
+          "upper": 42000.0,
+          "lower": 42000.0
         },
         {
           "date": "7 Days",
@@ -6034,8 +3987,8 @@
           "lower": 85524.3
         }
       ],
-      "recommendation": "MONITOR",
-      "explanation": "Price is stable and close to its 90-day typical average of \u20b994,204. Set a target alert if you are aiming for a specific price drop.",
+      "recommendation": "BUY",
+      "explanation": "Excellent time to buy. At \u20b942,000, this item is within 2% of its lowest recorded price (\u20b984,999) across tracked retailers.",
       "store_name": "Amazon",
       "store_slug": "amazon"
     },
@@ -6043,7 +3996,7 @@
       "product_id": "e8905310-c1f7-4cdd-85db-0e06ef61be12",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:59.097692Z",
+      "forecast_timestamp": "2026-10-22T20:29:32.589417+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 27987.44,
@@ -6092,7 +4045,7 @@
       "product_id": "f32a8bde-7975-4efc-8eaf-a627fe0dff15",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:59.244708Z",
+      "forecast_timestamp": "2026-10-22T20:29:33.006321+00:00",
       "observation_count": 184,
       "unique_dates": 184,
       "predicted_price": 46104.3,
@@ -6141,7 +4094,7 @@
       "product_id": "08a69cf5-9bc1-45de-b8a3-798d4b6a3929",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:59.391294Z",
+      "forecast_timestamp": "2026-10-22T20:29:33.393780+00:00",
       "observation_count": 14,
       "unique_dates": 14,
       "predicted_price": 14033.14,
@@ -6190,7 +4143,7 @@
       "product_id": "75fa76af-f654-4991-948d-7213a4e4b0a0",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:59.548175Z",
+      "forecast_timestamp": "2026-10-22T20:29:33.737726+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 65081.75,
@@ -6239,7 +4192,7 @@
       "product_id": "2449d44c-8169-4193-ae53-3ea59203a691",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:59.703862Z",
+      "forecast_timestamp": "2026-10-22T20:29:34.123541+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 32748.44,
@@ -6288,7 +4241,7 @@
       "product_id": "798e6c80-298d-49e9-83dd-32526e795eec",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:44:59.850840Z",
+      "forecast_timestamp": "2026-10-22T20:29:34.523681+00:00",
       "observation_count": 100,
       "unique_dates": 100,
       "predicted_price": 26995.02,
@@ -6337,7 +4290,7 @@
       "product_id": "b0aeaba1-fe57-4c92-a76e-a116f0e59579",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:00.000732Z",
+      "forecast_timestamp": "2026-10-22T20:29:34.755737+00:00",
       "observation_count": 77,
       "unique_dates": 76,
       "predicted_price": 26307.18,
@@ -6386,7 +4339,7 @@
       "product_id": "7a579749-13a3-478f-b143-5271fb33b31f",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:00.163087Z",
+      "forecast_timestamp": "2026-10-22T20:29:35.098900+00:00",
       "observation_count": 31,
       "unique_dates": 31,
       "predicted_price": 12498.27,
@@ -6435,7 +4388,7 @@
       "product_id": "8f20afd3-830a-4b78-ab48-9c2c0d655484",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:00.333059Z",
+      "forecast_timestamp": "2026-10-22T20:29:35.469991+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 127251.12,
@@ -6484,7 +4437,7 @@
       "product_id": "22be84b1-614d-44c6-830d-0e1d7f6d45e0",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:00.616409Z",
+      "forecast_timestamp": "2026-10-22T20:29:35.882603+00:00",
       "observation_count": 184,
       "unique_dates": 184,
       "predicted_price": 53052.06,
@@ -6533,7 +4486,7 @@
       "product_id": "6a966bb1-fbc3-4279-9d15-edee2f03ea86",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:00.960928Z",
+      "forecast_timestamp": "2026-10-22T20:29:36.268492+00:00",
       "observation_count": 7,
       "unique_dates": 7,
       "predicted_price": 65499.0,
@@ -6582,7 +4535,7 @@
       "product_id": "c3341b95-c2c1-47a4-9807-f4742432a0ea",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:00.967980Z",
+      "forecast_timestamp": "2026-10-22T20:29:36.278327+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 17976.65,
@@ -6631,7 +4584,7 @@
       "product_id": "85b8dc72-916e-487a-a2e9-7c0046f52525",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:01.447778Z",
+      "forecast_timestamp": "2026-10-22T20:29:36.629736+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 21325.45,
@@ -6680,7 +4633,7 @@
       "product_id": "13b6ef7e-82cd-45f0-bce3-01dd4218941e",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:01.686132Z",
+      "forecast_timestamp": "2026-10-22T20:29:37.117206+00:00",
       "observation_count": 184,
       "unique_dates": 184,
       "predicted_price": 31434.15,
@@ -6729,7 +4682,7 @@
       "product_id": "656c05ee-a5d9-4a57-b09d-de44026b06a4",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:01.906825Z",
+      "forecast_timestamp": "2026-10-22T20:29:37.485708+00:00",
       "observation_count": 184,
       "unique_dates": 184,
       "predicted_price": 39758.7,
@@ -6778,7 +4731,7 @@
       "product_id": "eac800d7-24d5-4026-a1d5-c5e6de1657ca",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:02.144276Z",
+      "forecast_timestamp": "2026-10-22T20:29:37.891134+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 15499.0,
@@ -6827,7 +4780,7 @@
       "product_id": "fad9913f-c3ac-4dd2-97cd-a05c37303776",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:02.149302Z",
+      "forecast_timestamp": "2026-10-22T20:29:37.901235+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 38004.03,
@@ -6876,7 +4829,7 @@
       "product_id": "2141e210-6c16-45c6-b10a-c545dec2a85c",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:02.328808Z",
+      "forecast_timestamp": "2026-10-22T20:29:38.286451+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 16064.83,
@@ -6925,7 +4878,7 @@
       "product_id": "e5a94432-bf39-44df-a08f-454814de555c",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:02.479942Z",
+      "forecast_timestamp": "2026-10-22T20:29:38.667255+00:00",
       "observation_count": 183,
       "unique_dates": 183,
       "predicted_price": 80111.2,
@@ -6974,7 +4927,7 @@
       "product_id": "31122057-a9c6-4446-a1c7-5dd117646dad",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:02.652591Z",
+      "forecast_timestamp": "2026-10-22T20:29:39.063520+00:00",
       "observation_count": 181,
       "unique_dates": 181,
       "predicted_price": 83290.67,
@@ -7023,7 +4976,7 @@
       "product_id": "a677aa77-40ad-457c-96ee-e763e30619c4",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:02.833740Z",
+      "forecast_timestamp": "2026-10-22T20:29:39.437803+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 67983.3,
@@ -7072,7 +5025,7 @@
       "product_id": "a9a82ec1-6088-4fa2-af2f-422709b336b6",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:03.022382Z",
+      "forecast_timestamp": "2026-10-22T20:29:39.847175+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 128520.82,
@@ -7121,7 +5074,7 @@
       "product_id": "ce19b70d-da7e-478c-979e-038097b3f3d8",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:03.212018Z",
+      "forecast_timestamp": "2026-10-22T20:29:40.220508+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 179900.0,
@@ -7170,7 +5123,7 @@
       "product_id": "c757b4b2-f7e8-401c-8f7a-ee3963c2926f",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:03.215638Z",
+      "forecast_timestamp": "2026-10-22T20:29:40.229200+00:00",
       "observation_count": 164,
       "unique_dates": 164,
       "predicted_price": 68899.07,
@@ -7219,7 +5172,7 @@
       "product_id": "661a2492-2056-42d1-9be3-89f83d193801",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:03.406428Z",
+      "forecast_timestamp": "2026-10-22T20:29:40.560520+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 449900.0,
@@ -7268,7 +5221,7 @@
       "product_id": "5dae3ac8-3c4d-4c57-a207-db31c724eb7d",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:03.410449Z",
+      "forecast_timestamp": "2026-10-22T20:29:40.567363+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 140568.5,
@@ -7317,7 +5270,7 @@
       "product_id": "ae18c3ba-3480-46cd-b025-e3e6bb0367ed",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:03.595221Z",
+      "forecast_timestamp": "2026-10-22T20:29:40.877092+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 164900.0,
@@ -7366,7 +5319,7 @@
       "product_id": "84867a2b-bf12-4e5a-8df8-d4ff08d55ac0",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:03.599603Z",
+      "forecast_timestamp": "2026-10-22T20:29:40.881902+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 45690.0,
@@ -7415,7 +5368,7 @@
       "product_id": "406d2704-9f6e-41ed-980d-cd4e86c50317",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:03.604947Z",
+      "forecast_timestamp": "2026-10-22T20:29:40.891736+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 64275.86,
@@ -7464,7 +5417,7 @@
       "product_id": "a4377d38-58c3-4643-a200-8e7403667122",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:03.812175Z",
+      "forecast_timestamp": "2026-10-22T20:29:41.240476+00:00",
       "observation_count": 60,
       "unique_dates": 60,
       "predicted_price": 128560.08,
@@ -7513,7 +5466,7 @@
       "product_id": "09fb55c7-0bcd-4140-8ea1-c76c05686e63",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:03.996799Z",
+      "forecast_timestamp": "2026-10-22T20:29:41.571934+00:00",
       "observation_count": 16,
       "unique_dates": 16,
       "predicted_price": 68411.79,
@@ -7562,7 +5515,7 @@
       "product_id": "e773461f-324a-44b7-aab1-e7eb138e749f",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:04.148773Z",
+      "forecast_timestamp": "2026-10-22T20:29:41.889842+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 299900.0,
@@ -7611,7 +5564,7 @@
       "product_id": "84eae974-acda-45c2-bd74-bf42a07c55cd",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:04.152509Z",
+      "forecast_timestamp": "2026-10-22T20:29:41.896869+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 89999.0,
@@ -7660,7 +5613,7 @@
       "product_id": "47dba8a8-6682-4b8a-b1dc-81ee50615669",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:04.158527Z",
+      "forecast_timestamp": "2026-10-22T20:29:41.904433+00:00",
       "observation_count": 178,
       "unique_dates": 178,
       "predicted_price": 106137.95,
@@ -7709,7 +5662,7 @@
       "product_id": "74d062f8-a76c-4d8c-8127-f338c735805c",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:04.304257Z",
+      "forecast_timestamp": "2026-10-22T20:29:42.169493+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 119900.0,
@@ -7758,7 +5711,7 @@
       "product_id": "1148ea55-ce0d-4bd3-b54a-dddbb2083734",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:04.308020Z",
+      "forecast_timestamp": "2026-10-22T20:29:42.179617+00:00",
       "observation_count": 148,
       "unique_dates": 148,
       "predicted_price": 75716.41,
@@ -7807,7 +5760,7 @@
       "product_id": "2b28a4d9-e207-43f0-a2e6-972f892384ed",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:04.463369Z",
+      "forecast_timestamp": "2026-10-22T20:29:42.550521+00:00",
       "observation_count": 149,
       "unique_dates": 149,
       "predicted_price": 57516.58,
@@ -7856,7 +5809,7 @@
       "product_id": "d73e36f3-d476-49ae-9f48-7360e2f20d9c",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:04.610037Z",
+      "forecast_timestamp": "2026-10-22T20:29:42.916460+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 254900.0,
@@ -7905,7 +5858,7 @@
       "product_id": "30d6d5eb-3106-479b-bc2e-5d86e7414cdd",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:04.614050Z",
+      "forecast_timestamp": "2026-10-22T20:29:42.920482+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 374900.0,
@@ -7954,7 +5907,7 @@
       "product_id": "3616bfc1-855d-4703-9f73-a66b811cff90",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:04.618122Z",
+      "forecast_timestamp": "2026-10-22T20:29:42.926427+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 204900.0,
@@ -8003,7 +5956,7 @@
       "product_id": "cb004c2e-82bd-4b5e-8e26-4b036d04216f",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:04.622617Z",
+      "forecast_timestamp": "2026-10-22T20:29:42.930453+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 44144.34,
@@ -8052,7 +6005,7 @@
       "product_id": "0644cc19-13da-4d4e-b406-6c7c42daecf4",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:04.773906Z",
+      "forecast_timestamp": "2026-10-22T20:29:43.209785+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 99990.0,
@@ -8101,7 +6054,7 @@
       "product_id": "a89192cd-53bb-438d-911a-57bf1fb63547",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:04.779676Z",
+      "forecast_timestamp": "2026-10-22T20:29:43.221441+00:00",
       "observation_count": 162,
       "unique_dates": 162,
       "predicted_price": 33836.46,
@@ -8150,7 +6103,7 @@
       "product_id": "e3aefdc1-a85e-4e2d-aca0-45ba6f9bd070",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:04.931962Z",
+      "forecast_timestamp": "2026-10-22T20:29:43.558443+00:00",
       "observation_count": 98,
       "unique_dates": 98,
       "predicted_price": 24146.61,
@@ -8199,7 +6152,7 @@
       "product_id": "82e1bdea-3d29-4125-8003-7a26648a9b5c",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:05.079181Z",
+      "forecast_timestamp": "2026-10-22T20:29:43.904096+00:00",
       "observation_count": 155,
       "unique_dates": 155,
       "predicted_price": 38533.45,
@@ -8248,7 +6201,7 @@
       "product_id": "271fd6f8-eba2-4f7c-9bff-c969e272f943",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:05.235948Z",
+      "forecast_timestamp": "2026-10-22T20:29:44.338852+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 54797.11,
@@ -8297,7 +6250,7 @@
       "product_id": "35116c13-ded2-47b7-b422-ff86152acd57",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:05.396500Z",
+      "forecast_timestamp": "2026-10-22T20:29:44.796746+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 55199.3,
@@ -8346,7 +6299,7 @@
       "product_id": "04c60fe2-da6c-4f7a-9d73-95147b52030a",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:05.547748Z",
+      "forecast_timestamp": "2026-10-22T20:29:45.124064+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 86774.39,
@@ -8395,7 +6348,7 @@
       "product_id": "3b2f125d-c72c-41e4-a9a4-5267d29bf3a1",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:05.697843Z",
+      "forecast_timestamp": "2026-10-22T20:29:45.498812+00:00",
       "observation_count": 98,
       "unique_dates": 98,
       "predicted_price": 25100.84,
@@ -8444,7 +6397,7 @@
       "product_id": "35a8f4f0-68c1-4357-8fbf-e354b67fb617",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:05.852609Z",
+      "forecast_timestamp": "2026-10-22T20:29:45.857297+00:00",
       "observation_count": 152,
       "unique_dates": 152,
       "predicted_price": 27452.0,
@@ -8493,7 +6446,7 @@
       "product_id": "4d932324-856f-4ff0-b418-50d9bea3d622",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:06.003076Z",
+      "forecast_timestamp": "2026-10-22T20:29:46.254900+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 29865.55,
@@ -8542,7 +6495,7 @@
       "product_id": "93d11977-a667-4622-9096-4fb214a6c9cf",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:06.158290Z",
+      "forecast_timestamp": "2026-10-22T20:29:46.655191+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 49819.41,
@@ -8591,7 +6544,7 @@
       "product_id": "cf53412f-7f5d-490c-8e28-54d2b510e73c",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:06.333048Z",
+      "forecast_timestamp": "2026-10-22T20:29:47.031240+00:00",
       "observation_count": 3,
       "unique_dates": 3,
       "predicted_price": 0.0,
@@ -8640,7 +6593,7 @@
       "product_id": "44ed389a-2171-4270-85aa-c75622e4a847",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:06.337148Z",
+      "forecast_timestamp": "2026-10-22T20:29:47.037814+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 69999.0,
@@ -8689,7 +6642,7 @@
       "product_id": "3040343a-6b96-4526-a8e8-3db6a7869e1e",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:06.342178Z",
+      "forecast_timestamp": "2026-10-22T20:29:47.046246+00:00",
       "observation_count": 18,
       "unique_dates": 18,
       "predicted_price": 16963.88,
@@ -8738,7 +6691,7 @@
       "product_id": "0dd8f318-cdf5-4e60-ac17-2b1379f005eb",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:06.512583Z",
+      "forecast_timestamp": "2026-10-22T20:29:47.388364+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 29999.0,
@@ -8787,7 +6740,7 @@
       "product_id": "302418bc-c9b3-4223-afab-6792b97bf01c",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:06.515983Z",
+      "forecast_timestamp": "2026-10-22T20:29:47.392142+00:00",
       "observation_count": 179,
       "unique_dates": 179,
       "predicted_price": 59807.11,
@@ -8836,7 +6789,7 @@
       "product_id": "053e5883-505c-4047-89c0-de94fa2e9d5f",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:06.678719Z",
+      "forecast_timestamp": "2026-10-22T20:29:47.693587+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 86553.18,
@@ -8885,7 +6838,7 @@
       "product_id": "225c228d-3f7e-4222-9ef8-6897fe527331",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:06.856239Z",
+      "forecast_timestamp": "2026-10-22T20:29:48.036888+00:00",
       "observation_count": 117,
       "unique_dates": 117,
       "predicted_price": 64138.16,
@@ -8934,7 +6887,7 @@
       "product_id": "a8192c02-9e15-411e-825a-fc23f3fd3cbc",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:07.025478Z",
+      "forecast_timestamp": "2026-10-22T20:29:48.657579+00:00",
       "observation_count": 158,
       "unique_dates": 158,
       "predicted_price": 32913.37,
@@ -8983,7 +6936,7 @@
       "product_id": "e5a3ca0e-88e7-4773-9e67-07db0955f64c",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:07.193868Z",
+      "forecast_timestamp": "2026-10-22T20:29:49.062860+00:00",
       "observation_count": 177,
       "unique_dates": 177,
       "predicted_price": 70774.18,
@@ -9032,7 +6985,7 @@
       "product_id": "9e891bfc-0384-4f4b-a90a-2d10bb3a546e",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:07.361179Z",
+      "forecast_timestamp": "2026-10-22T20:29:49.379757+00:00",
       "observation_count": 1,
       "unique_dates": 1,
       "predicted_price": 99999.0,
@@ -9081,7 +7034,7 @@
       "product_id": "1ac2fc68-9f3c-4ec9-bf7a-35347d5e2804",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:07.365928Z",
+      "forecast_timestamp": "2026-10-22T20:29:49.389480+00:00",
       "observation_count": 56,
       "unique_dates": 56,
       "predicted_price": 15388.91,
@@ -9130,7 +7083,7 @@
       "product_id": "e3966294-e744-4391-b6b4-24116d3f94bd",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:07.535139Z",
+      "forecast_timestamp": "2026-10-22T20:29:49.777129+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 16549.68,
@@ -9179,7 +7132,7 @@
       "product_id": "f90e42fb-5db5-41ec-9140-42f7a76b1f18",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:07.686043Z",
+      "forecast_timestamp": "2026-10-22T20:29:50.134412+00:00",
       "observation_count": 29,
       "unique_dates": 29,
       "predicted_price": 23996.89,
@@ -9228,7 +7181,7 @@
       "product_id": "19dc0982-8bff-44bf-8776-aee7754f136d",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:07.850999Z",
+      "forecast_timestamp": "2026-10-22T20:29:50.517489+00:00",
       "observation_count": 113,
       "unique_dates": 113,
       "predicted_price": 38910.88,
@@ -9277,7 +7230,7 @@
       "product_id": "9d1737c0-7692-45b1-87a0-8f6b6d84c754",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:08.003389Z",
+      "forecast_timestamp": "2026-10-22T20:29:50.953400+00:00",
       "observation_count": 183,
       "unique_dates": 183,
       "predicted_price": 25850.5,
@@ -9326,7 +7279,7 @@
       "product_id": "4db99807-577b-45ac-9780-e6ade7e0a489",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:08.153143Z",
+      "forecast_timestamp": "2026-10-22T20:29:51.379539+00:00",
       "observation_count": 16,
       "unique_dates": 16,
       "predicted_price": 49998.15,
@@ -9375,7 +7328,7 @@
       "product_id": "7c66e400-6183-4cc5-a3ec-589e30af5fef",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:08.345518Z",
+      "forecast_timestamp": "2026-10-22T20:29:51.794296+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 29581.3,
@@ -9424,7 +7377,7 @@
       "product_id": "012820ca-1384-458c-8b36-1bd185ca3ffc",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:08.517543Z",
+      "forecast_timestamp": "2026-10-22T20:29:52.165795+00:00",
       "observation_count": 124,
       "unique_dates": 124,
       "predicted_price": 31979.45,
@@ -9473,7 +7426,7 @@
       "product_id": "cf9555ae-7af9-4ae1-9766-e368ca6f414d",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:08.666473Z",
+      "forecast_timestamp": "2026-10-22T20:29:52.537937+00:00",
       "observation_count": 22,
       "unique_dates": 22,
       "predicted_price": 36998.25,
@@ -9522,7 +7475,7 @@
       "product_id": "a36d8daf-54ec-4fb9-97fe-dc20de1f88e1",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:08.832393Z",
+      "forecast_timestamp": "2026-10-22T20:29:52.904147+00:00",
       "observation_count": 181,
       "unique_dates": 181,
       "predicted_price": 15075.24,
@@ -9571,7 +7524,7 @@
       "product_id": "60effd08-de42-45d6-97c8-f9ec21ee10bd",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:09.007661Z",
+      "forecast_timestamp": "2026-10-22T20:29:53.233167+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 14142.53,
@@ -9620,7 +7573,7 @@
       "product_id": "d3bda908-fa8a-4084-a70c-5edbd396b10c",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:09.242482Z",
+      "forecast_timestamp": "2026-10-22T20:29:53.599732+00:00",
       "observation_count": 176,
       "unique_dates": 176,
       "predicted_price": 18673.6,
@@ -9669,7 +7622,7 @@
       "product_id": "867c5d15-0bff-4b83-9b67-e60b08b32191",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:09.469399Z",
+      "forecast_timestamp": "2026-10-22T20:29:53.966854+00:00",
       "observation_count": 52,
       "unique_dates": 52,
       "predicted_price": 27996.87,
@@ -9718,7 +7671,7 @@
       "product_id": "e63fcb4e-d9df-4c0d-ae2e-576411b856f6",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:09.677318Z",
+      "forecast_timestamp": "2026-10-22T20:29:54.330674+00:00",
       "observation_count": 183,
       "unique_dates": 183,
       "predicted_price": 39022.17,
@@ -9767,7 +7720,7 @@
       "product_id": "68f22fcd-e6d3-47cd-b011-663421084efe",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:09.883372Z",
+      "forecast_timestamp": "2026-10-22T20:29:54.717437+00:00",
       "observation_count": 185,
       "unique_dates": 184,
       "predicted_price": 23291.48,
@@ -9816,7 +7769,7 @@
       "product_id": "7e5a752d-35ed-459c-a86b-77ffdd6736b6",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:10.098706Z",
+      "forecast_timestamp": "2026-10-22T20:29:55.096733+00:00",
       "observation_count": 177,
       "unique_dates": 177,
       "predicted_price": 21317.68,
@@ -9865,7 +7818,7 @@
       "product_id": "e26f9c55-47d5-4ebb-ae79-054d328894dc",
       "status": "insufficient_data",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-linear-fallback",
-      "forecast_timestamp": "2026-10-18T11:45:10.309422Z",
+      "forecast_timestamp": "2026-10-22T20:29:55.455509+00:00",
       "observation_count": 2,
       "unique_dates": 2,
       "predicted_price": 20999.0,
@@ -9914,7 +7867,7 @@
       "product_id": "3231612f-d4e4-4c74-b94b-7ffdd30df433",
       "status": "success",
       "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:10.316190Z",
+      "forecast_timestamp": "2026-10-22T20:29:55.463524+00:00",
       "observation_count": 182,
       "unique_dates": 182,
       "predicted_price": 15067.3,
@@ -9956,55 +7909,6 @@
       ],
       "recommendation": "MONITOR",
       "explanation": "Price is stable and close to its 90-day typical average of \u20b915,377. Set a target alert if you are aiming for a specific price drop.",
-      "store_name": "Flipkart",
-      "store_slug": "flipkart"
-    },
-    "d6f94253-82a0-46f8-8b05-c65110327e35": {
-      "product_id": "d6f94253-82a0-46f8-8b05-c65110327e35",
-      "status": "success",
-      "model_version": "v2.1.0-hybrid-prophet-xgboost-xgboost",
-      "forecast_timestamp": "2026-10-18T11:45:10.523922Z",
-      "observation_count": 366,
-      "unique_dates": 366,
-      "predicted_price": 136727.86,
-      "predicted_7d": 135914.98,
-      "predicted_14d": 137898.11,
-      "predicted_30d": 136727.86,
-      "trend": "STABLE",
-      "confidence": "High",
-      "potential_saving": 0.0,
-      "points": [
-        {
-          "date": "Current",
-          "price": 134900.0,
-          "predicted": 134900.0,
-          "upper": 134900.0,
-          "lower": 134900.0
-        },
-        {
-          "date": "7 Days",
-          "price": null,
-          "predicted": 135914.98,
-          "upper": 141203.06,
-          "lower": 130626.9
-        },
-        {
-          "date": "14 Days",
-          "price": null,
-          "predicted": 137898.11,
-          "upper": 145376.58,
-          "lower": 130419.64
-        },
-        {
-          "date": "30 Days",
-          "price": null,
-          "predicted": 136727.86,
-          "upper": 147675.23,
-          "lower": 125780.49
-        }
-      ],
-      "recommendation": "BUY",
-      "explanation": "Excellent time to buy. At \u20b9134,900, this item is within 2% of its lowest recorded price (\u20b9133,209) across tracked retailers.",
       "store_name": "Flipkart",
       "store_slug": "flipkart"
     }

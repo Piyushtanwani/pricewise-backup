@@ -1,6 +1,7 @@
 import os
 import json
 import psycopg2
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../backend/.env'))
@@ -10,7 +11,14 @@ def extract():
     if not db_url:
         raise ValueError("DATABASE_URL is not set")
 
-    conn = psycopg2.connect(db_url)
+    parsed_url = urlsplit(db_url)
+    supported_query = [
+        (key, value)
+        for key, value in parse_qsl(parsed_url.query, keep_blank_values=True)
+        if key.lower() not in {'pgbouncer', 'connection_limit', 'schema'}
+    ]
+    psycopg_url = urlunsplit(parsed_url._replace(query=urlencode(supported_query)))
+    conn = psycopg2.connect(psycopg_url)
     cur = conn.cursor()
 
     # 1. Extract Products

@@ -1,93 +1,93 @@
 {
-  "timestamp": "2026-10-18T11:46:45.672734Z",
+  "timestamp": "2026-10-22T20:39:42.208652Z",
   "evaluated_products_count": 56,
   "metrics_by_horizon": {
     "7d": {
       "naive_baseline": {
-        "mae": 979.98,
-        "rmse": 3430.06,
-        "mape": 1.23,
-        "smape": 1.27,
+        "mae": 971.05,
+        "rmse": 3425.5,
+        "mape": 1.22,
+        "smape": 1.26,
         "count": 56
       },
       "linear_trend": {
-        "mae": 2082.98,
-        "rmse": 4500.99,
-        "mape": 3.23,
-        "smape": 3.32,
+        "mae": 2020.25,
+        "rmse": 4477.25,
+        "mape": 3.19,
+        "smape": 3.27,
         "count": 56
       },
       "xgboost": {
-        "mae": 2162.14,
-        "rmse": 4430.8,
-        "mape": 3.23,
-        "smape": 3.36,
+        "mae": 2137.86,
+        "rmse": 4425.49,
+        "mape": 3.21,
+        "smape": 3.34,
         "count": 56
       },
       "prophet": {
-        "mae": 1864.52,
-        "rmse": 4219.24,
-        "mape": 3.22,
-        "smape": 3.26,
+        "mae": 1930.96,
+        "rmse": 4258.55,
+        "mape": 3.27,
+        "smape": 3.31,
         "count": 56
       }
     },
     "14d": {
       "naive_baseline": {
-        "mae": 1671.82,
-        "rmse": 4184.5,
-        "mape": 2.17,
-        "smape": 2.23,
+        "mae": 1745.04,
+        "rmse": 4237.19,
+        "mape": 2.23,
+        "smape": 2.29,
         "count": 56
       },
       "linear_trend": {
-        "mae": 2833.62,
-        "rmse": 5462.58,
-        "mape": 4.25,
-        "smape": 4.37,
+        "mae": 2881.84,
+        "rmse": 5490.94,
+        "mape": 4.29,
+        "smape": 4.41,
         "count": 56
       },
       "xgboost": {
-        "mae": 2518.28,
-        "rmse": 4920.25,
-        "mape": 3.82,
-        "smape": 3.98,
+        "mae": 2623.22,
+        "rmse": 4974.52,
+        "mape": 3.9,
+        "smape": 4.06,
         "count": 56
       },
       "prophet": {
-        "mae": 2614.43,
-        "rmse": 4913.23,
-        "mape": 4.46,
-        "smape": 4.5,
+        "mae": 2758.12,
+        "rmse": 5053.69,
+        "mape": 4.57,
+        "smape": 4.61,
         "count": 56
       }
     },
     "30d": {
       "naive_baseline": {
-        "mae": 3313.7,
-        "rmse": 5618.26,
-        "mape": 7.11,
-        "smape": 7.33,
+        "mae": 3277.98,
+        "rmse": 5611.9,
+        "mape": 7.08,
+        "smape": 7.31,
         "count": 56
       },
       "linear_trend": {
-        "mae": 4557.01,
-        "rmse": 6562.75,
-        "mape": 9.54,
-        "smape": 9.74,
+        "mae": 4532.26,
+        "rmse": 6557.01,
+        "mape": 9.52,
+        "smape": 9.72,
         "count": 56
       },
       "xgboost": {
-        "mae": 3419.04,
-        "rmse": 5888.92,
-        "mape": 6.86,
-        "smape": 7.21,
+        "mae": 3384.89,
+        "rmse": 5880.33,
+        "mape": 6.83,
+        "smape": 7.18,
         "count": 56
       },
       "prophet": {
-        "mae": 4750.19,
-        "rmse": 7459.12,
-        "mape": 11.07,
+        "mae": 4759.12,
+        "rmse": 7458.45,
+        "mape": 11.08,
         "smape": 11.12,
         "count": 56
       }
@@ -159,124 +159,124 @@
     "medium (60-180d)": {
       "7d": {
         "naive_baseline": {
-          "mae": 1031.93,
-          "rmse": 3653.19,
-          "mape": 0.91,
-          "smape": 0.94,
-          "count": 29
+          "mae": 997.36,
+          "rmse": 3698.59,
+          "mape": 0.89,
+          "smape": 0.93,
+          "count": 28
         },
         "linear_trend": {
-          "mae": 2052.1,
-          "rmse": 4955.0,
-          "mape": 2.44,
-          "smape": 2.49,
-          "count": 29
+          "mae": 2042.37,
+          "rmse": 5023.54,
+          "mape": 2.47,
+          "smape": 2.52,
+          "count": 28
         },
         "xgboost": {
-          "mae": 2564.49,
-          "rmse": 4968.3,
-          "mape": 3.81,
-          "smape": 3.98,
-          "count": 29
+          "mae": 2605.57,
+          "rmse": 5049.18,
+          "mape": 3.92,
+          "smape": 4.09,
+          "count": 28
         },
         "prophet": {
-          "mae": 2046.19,
-          "rmse": 4842.27,
-          "mape": 3.2,
-          "smape": 3.23,
-          "count": 29
+          "mae": 2064.38,
+          "rmse": 4919.42,
+          "mape": 3.28,
+          "smape": 3.31,
+          "count": 28
         }
       },
       "30d": {
         "naive_baseline": {
-          "mae": 2957.24,
-          "rmse": 5510.43,
-          "mape": 5.28,
-          "smape": 5.12,
-          "count": 29
+          "mae": 2991.43,
+          "rmse": 5595.21,
+          "mape": 5.42,
+          "smape": 5.25,
+          "count": 28
         },
         "linear_trend": {
-          "mae": 5031.81,
-          "rmse": 7307.75,
-          "mape": 9.01,
-          "smape": 8.7,
-          "count": 29
+          "mae": 5180.75,
+          "rmse": 7435.32,
+          "mape": 9.31,
+          "smape": 8.99,
+          "count": 28
         },
         "xgboost": {
-          "mae": 3128.77,
-          "rmse": 5950.45,
-          "mape": 5.2,
-          "smape": 5.14,
-          "count": 29
+          "mae": 3162.2,
+          "rmse": 6041.58,
+          "mape": 5.33,
+          "smape": 5.27,
+          "count": 28
         },
         "prophet": {
-          "mae": 4847.88,
-          "rmse": 7355.38,
-          "mape": 10.52,
-          "smape": 9.87,
-          "count": 29
+          "mae": 4860.64,
+          "rmse": 7437.31,
+          "mape": 10.79,
+          "smape": 10.11,
+          "count": 28
         }
       }
     },
     "long (>180d)": {
       "7d": {
         "naive_baseline": {
-          "mae": 998.12,
-          "rmse": 3297.45,
-          "mape": 1.7,
-          "smape": 1.74,
-          "count": 25
+          "mae": 1017.42,
+          "rmse": 3246.77,
+          "mape": 1.68,
+          "smape": 1.72,
+          "count": 26
         },
         "linear_trend": {
-          "mae": 2282.57,
-          "rmse": 4110.9,
-          "mape": 4.39,
-          "smape": 4.52,
-          "count": 25
+          "mae": 2149.07,
+          "rmse": 3999.78,
+          "mape": 4.19,
+          "smape": 4.31,
+          "count": 26
         },
         "xgboost": {
-          "mae": 1868.38,
-          "rmse": 3916.92,
-          "mape": 2.82,
-          "smape": 2.9,
-          "count": 25
+          "mae": 1798.63,
+          "rmse": 3837.66,
+          "mape": 2.71,
+          "smape": 2.79,
+          "count": 26
         },
         "prophet": {
-          "mae": 1802.74,
-          "rmse": 3560.5,
-          "mape": 3.49,
-          "smape": 3.54,
-          "count": 25
+          "mae": 1935.62,
+          "rmse": 3605.3,
+          "mape": 3.5,
+          "smape": 3.56,
+          "count": 26
         }
       },
       "30d": {
         "naive_baseline": {
-          "mae": 3987.24,
-          "rmse": 5956.64,
-          "mape": 9.76,
-          "smape": 10.46,
-          "count": 25
+          "mae": 3833.88,
+          "rmse": 5840.96,
+          "mape": 9.39,
+          "smape": 10.06,
+          "count": 26
         },
         "linear_trend": {
-          "mae": 4358.12,
-          "rmse": 5875.74,
-          "mape": 10.84,
-          "smape": 11.64,
-          "count": 25
+          "mae": 4170.34,
+          "rmse": 5750.02,
+          "mape": 10.41,
+          "smape": 11.18,
+          "count": 26
         },
         "xgboost": {
-          "mae": 4024.24,
-          "rmse": 6050.48,
-          "mape": 9.3,
-          "smape": 10.15,
-          "count": 25
+          "mae": 3880.23,
+          "rmse": 5930.21,
+          "mape": 8.95,
+          "smape": 9.77,
+          "count": 26
         },
         "prophet": {
-          "mae": 5012.83,
-          "rmse": 7865.87,
-          "mape": 12.56,
-          "smape": 13.42,
-          "count": 25
+          "mae": 5011.99,
+          "rmse": 7761.85,
+          "mape": 12.22,
+          "smape": 13.05,
+          "count": 26
         }
       }
     }
@@ -285,60 +285,60 @@
     "Amazon": {
       "7d": {
         "naive_baseline": {
-          "mae": 979.98,
-          "rmse": 3430.06,
-          "mape": 1.23,
-          "smape": 1.27,
+          "mae": 971.05,
+          "rmse": 3425.5,
+          "mape": 1.22,
+          "smape": 1.26,
           "count": 56
         },
         "linear_trend": {
-          "mae": 2082.98,
-          "rmse": 4500.99,
-          "mape": 3.23,
-          "smape": 3.32,
+          "mae": 2020.25,
+          "rmse": 4477.25,
+          "mape": 3.19,
+          "smape": 3.27,
           "count": 56
         },
         "xgboost": {
-          "mae": 2162.14,
-          "rmse": 4430.8,
-          "mape": 3.23,
-          "smape": 3.36,
+          "mae": 2137.86,
+          "rmse": 4425.49,
+          "mape": 3.21,
+          "smape": 3.34,
           "count": 56
         },
         "prophet": {
-          "mae": 1864.52,
-          "rmse": 4219.24,
-          "mape": 3.22,
-          "smape": 3.26,
+          "mae": 1930.96,
+          "rmse": 4258.55,
+          "mape": 3.27,
+          "smape": 3.31,
           "count": 56
         }
       },
       "30d": {
         "naive_baseline": {
-          "mae": 3313.7,
-          "rmse": 5618.26,
-          "mape": 7.11,
-          "smape": 7.33,
+          "mae": 3277.98,
+          "rmse": 5611.9,
+          "mape": 7.08,
+          "smape": 7.31,
           "count": 56
         },
         "linear_trend": {
-          "mae": 4557.01,
-          "rmse": 6562.75,
-          "mape": 9.54,
-          "smape": 9.74,
+          "mae": 4532.26,
+          "rmse": 6557.01,
+          "mape": 9.52,
+          "smape": 9.72,
           "count": 56
         },
         "xgboost": {
-          "mae": 3419.04,
-          "rmse": 5888.92,
-          "mape": 6.86,
-          "smape": 7.21,
+          "mae": 3384.89,
+          "rmse": 5880.33,
+          "mape": 6.83,
+          "smape": 7.18,
           "count": 56
         },
         "prophet": {
-          "mae": 4750.19,
-          "rmse": 7459.12,
-          "mape": 11.07,
+          "mae": 4759.12,
+          "rmse": 7458.45,
+          "mape": 11.08,
           "smape": 11.12,
           "count": 56
         }

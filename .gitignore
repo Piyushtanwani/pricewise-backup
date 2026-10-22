@@ -11,6 +11,13 @@ node_modules
 dist
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.venv
+.venv/
+venv/
+env/
+ENV/
 *.db
 *.db-journal
 *.log

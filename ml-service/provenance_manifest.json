@@ -1,27 +1,8 @@
 {
-  "total_products": 91,
+  "total_products": 80,
   "genuine_count": 80,
-  "synthetic_count": 11,
+  "synthetic_count": 0,
   "products": [
-    {
-      "product_id": "268d1167-c457-4df1-84ce-ff581baa72e3",
-      "name": "55\" C3 OLED evo 4K Smart TV",
-      "brand": "LG",
-      "category": "Televisions",
-      "mrp": 129990.0,
-      "best_price": 79990.0,
-      "provenance": "synthetic_seed",
-      "store_count": 3,
-      "history_rows": 1098,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Vijay Sales"
-      ]
-    },
     {
       "product_id": "c9269e82-cf20-4690-a41f-a09545aa76c6",
       "name": "Apple iPhone 13",
@@ -142,7 +123,7 @@
       "brand": "Apple",
       "category": "Mobiles",
       "mrp": 155135.0,
-      "best_price": 127490.0,
+      "best_price": 134900.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
       "history_rows": 60,
@@ -199,15 +180,16 @@
       "brand": "Apple",
       "category": "Mobiles",
       "mrp": 150064.0,
-      "best_price": 130490.0,
+      "best_price": 129990.0,
       "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 185,
-      "unique_dates": 184,
+      "store_count": 2,
+      "history_rows": 276,
+      "unique_dates": 189,
       "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:33.927000",
+      "max_date": "2026-10-22 14:49:16.751000",
       "stores": [
-        "Amazon"
+        "Amazon",
+        "Flipkart"
       ]
     },
     {
@@ -218,14 +200,15 @@
       "mrp": 160989.0,
       "best_price": 139990.0,
       "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 176,
-      "unique_dates": 176,
+      "store_count": 3,
+      "history_rows": 267,
+      "unique_dates": 189,
       "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:42.568000",
+      "max_date": "2026-10-22 14:49:15.297000",
       "stores": [
         "Amazon",
-        "Croma"
+        "Croma",
+        "Flipkart"
       ]
     },
     {
@@ -383,121 +366,6 @@
       "unique_dates": 2,
       "min_date": "2026-10-16 00:00:00",
       "max_date": "2026-10-17 14:57:40.142000",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "4511126f-7640-4f4b-94ac-ac38ece0b3f8",
-      "name": "Galaxy S25 Ultra 256GB Titanium Black",
-      "brand": "Samsung",
-      "category": "Mobiles",
-      "mrp": 134999.0,
-      "best_price": 124999.0,
-      "provenance": "synthetic_seed",
-      "store_count": 4,
-      "history_rows": 1464,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart",
-        "Samsung"
-      ]
-    },
-    {
-      "product_id": "f1a7d974-a91f-4f86-8217-3ae3842300c5",
-      "name": "iPhone 16 Pro Max 256GB Natural Titanium",
-      "brand": "Apple",
-      "category": "Mobiles",
-      "mrp": 144900.0,
-      "best_price": 134900.0,
-      "provenance": "synthetic_seed",
-      "store_count": 5,
-      "history_rows": 1830,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart",
-        "Samsung",
-        "Vijay Sales"
-      ]
-    },
-    {
-      "product_id": "221d9eb2-44ed-48c3-b8c7-5ea7e0b0b9d5",
-      "name": "MacBook Air M3 13\" 8GB 256GB Midnight",
-      "brand": "Apple",
-      "category": "Laptops",
-      "mrp": 114900.0,
-      "best_price": 99900.0,
-      "provenance": "synthetic_seed",
-      "store_count": 3,
-      "history_rows": 1098,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "ef57ef25-9ba7-4767-8c55-1e51e6eb92fe",
-      "name": "Motorola Edge 50 Fusion 5G (8GB RAM + 128GB)",
-      "brand": "Motorola",
-      "category": "Mobiles",
-      "mrp": 25999.0,
-      "best_price": 20999.0,
-      "provenance": "synthetic_seed",
-      "store_count": 2,
-      "history_rows": 732,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "48f42ba0-b56f-49c4-bdfa-1cf69fff2bb8",
-      "name": "Motorola Moto G85 5G (8GB RAM + 128GB)",
-      "brand": "Motorola",
-      "category": "Mobiles",
-      "mrp": 20999.0,
-      "best_price": 16999.0,
-      "provenance": "synthetic_seed",
-      "store_count": 2,
-      "history_rows": 732,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "348b5c10-c51f-4146-b982-8fb229d136ca",
-      "name": "OnePlus 12R 5G (8GB RAM + 128GB)",
-      "brand": "OnePlus",
-      "category": "Mobiles",
-      "mrp": 39999.0,
-      "best_price": 35999.0,
-      "provenance": "synthetic_seed",
-      "store_count": 3,
-      "history_rows": 1098,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
       "stores": [
         "Amazon",
         "Croma",
@@ -844,24 +712,6 @@
       ]
     },
     {
-      "product_id": "35a92d18-ac9a-4412-869c-4d3b875dd380",
-      "name": "OnePlus Nord CE4 5G (8GB RAM + 128GB)",
-      "brand": "OnePlus",
-      "category": "Mobiles",
-      "mrp": 26999.0,
-      "best_price": 22999.0,
-      "provenance": "synthetic_seed",
-      "store_count": 2,
-      "history_rows": 732,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
       "product_id": "0ea99113-b45e-46e9-99d2-dc3abf512162",
       "name": "OnePlus Turbo 6",
       "brand": "OnePlus",
@@ -879,31 +729,12 @@
       ]
     },
     {
-      "product_id": "cddc2850-fa03-4c81-b46d-44d2073b7afb",
-      "name": "Pixel 9 Pro 128GB Obsidian",
-      "brand": "Google",
-      "category": "Mobiles",
-      "mrp": 109999.0,
-      "best_price": 89999.0,
-      "provenance": "synthetic_seed",
-      "store_count": 3,
-      "history_rows": 1098,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
       "product_id": "6d0491ad-6985-45ca-8ba8-5da7691d66c3",
       "name": "Samsung Galaxy A16 5G (6GB RAM + 128GB)",
       "brand": "Samsung",
       "category": "Mobiles",
       "mrp": 26450.0,
-      "best_price": 12796.0,
+      "best_price": 15999.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
       "history_rows": 185,
@@ -1252,45 +1083,6 @@
       "stores": [
         "Amazon",
         "Flipkart"
-      ]
-    },
-    {
-      "product_id": "1875c715-b872-4939-9a89-dc537abd539a",
-      "name": "Vivo V40 5G (8GB RAM + 256GB)",
-      "brand": "Vivo",
-      "category": "Mobiles",
-      "mrp": 39999.0,
-      "best_price": 34999.0,
-      "provenance": "synthetic_seed",
-      "store_count": 3,
-      "history_rows": 1098,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "2d0a29d9-6f0f-4024-bfda-d195b5fed705",
-      "name": "WH-1000XM5 Wireless Noise Cancelling Headphones",
-      "brand": "Sony",
-      "category": "Headphones",
-      "mrp": 34990.0,
-      "best_price": 29999.0,
-      "provenance": "synthetic_seed",
-      "store_count": 4,
-      "history_rows": 1464,
-      "unique_dates": 366,
-      "min_date": "2025-10-17 06:00:00",
-      "max_date": "2026-10-17 06:00:00",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart",
-        "Vijay Sales"
       ]
     },
     {
