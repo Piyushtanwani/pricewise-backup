@@ -21,8 +21,17 @@ const BROWSER_HEADERS = {
 /**
  * Live Scraper for Croma Product Pages
  */
-export const scrapeCroma = async (directUrl: string): Promise<Partial<ScrapedStoreOffer> | null> => {
+export const scrapeCroma = async (
+  directUrl: string,
+  basePrice?: number | null,
+): Promise<Partial<ScrapedStoreOffer> | null> => {
   try {
+    const urlLower = directUrl.toLowerCase();
+    // Do not scrape pricing from generic search pages
+    if (urlLower.includes('/search?') || urlLower.includes('/search/')) {
+      return null;
+    }
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 6000);
 
@@ -35,11 +44,13 @@ export const scrapeCroma = async (directUrl: string): Promise<Partial<ScrapedSto
     if (!res.ok) return null;
     const html = await res.text();
 
-    // 1. Check approvalStatus / discontinued status
+    // 1. Check approvalStatus / discontinued / out of stock status
     const appMatch = html.match(/"approvalStatus"\s*:\s*"([^"]+)"/i);
     const approvalStatus = appMatch ? appMatch[1].toLowerCase() : '';
-    const isDiscontinued =
+    const isOutOfStock =
       approvalStatus === 'discontinued' ||
+      /out of stock/i.test(html) ||
+      /currently unavailable/i.test(html) ||
       html.includes('this item has been discontinued') ||
       html.includes('This item has been discontinued');
 
@@ -48,9 +59,15 @@ export const scrapeCroma = async (directUrl: string): Promise<Partial<ScrapedSto
       html.match(/"offers"\s*:\s*\{[^}]*?"price"\s*:\s*"([0-9.]+)"/i) ||
       html.match(/"price"\s*:\s*"([0-9.]+)"/i);
 
-    const price = priceMatch ? Math.round(Number(priceMatch[1])) : null;
+    let price = priceMatch ? Math.round(Number(priceMatch[1])) : null;
 
-    if (isDiscontinued) {
+    // Sanity check against accessories or false prices
+    const minThreshold = Math.max(3000, (basePrice || 15000) * 0.4);
+    if (price && price < minThreshold) {
+      price = null;
+    }
+
+    if (isOutOfStock) {
       return {
         price: price || 0,
         stockStatus: StockStatus.OUT_OF_STOCK,
@@ -81,6 +98,12 @@ export const scrapeAmazon = async (
   basePrice?: number | null,
 ): Promise<Partial<ScrapedStoreOffer> | null> => {
   try {
+    const urlLower = directUrl.toLowerCase();
+    // Do not scrape pricing from search results
+    if (urlLower.includes('/s?') || urlLower.includes('/s/') || urlLower.includes('/search')) {
+      return null;
+    }
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 6000);
 
@@ -103,19 +126,22 @@ export const scrapeAmazon = async (
     const hasAddToCart = html.includes('id="add-to-cart-button"') || html.includes('name="submit.add-to-cart"');
     const hasBuyNow = html.includes('id="buy-now-button"') || html.includes('name="submit.buy-now"');
 
-    // 2. Out of Stock container checks
-    const hasOutOfStockDiv =
-      html.includes('id="outOfStock"') ||
-      html.includes('class="outOfStock"') ||
-      html.includes('Currently unavailable.') ||
-      html.includes('We don\'t know when or if this item will be back in stock');
-
+    // 2. Out of Stock checks on Amazon
     const availMatch = html.match(/id="availability"[^>]*>([\s\S]*?)<\/div>/i);
     const availText = availMatch ? availMatch[1].replace(/<[^>]+>/g, ' ').toLowerCase() : '';
 
     let isOutOfStock = false;
-    if (!hasAddToCart && !hasBuyNow) {
-      if (hasOutOfStockDiv || availText.includes('currently unavailable') || availText.length === 0) {
+    if (
+      availText.includes('currently unavailable') ||
+      availText.includes('out of stock') ||
+      html.includes('id="outOfStock"') ||
+      html.includes('class="outOfStock"') ||
+      html.includes('Currently unavailable.') ||
+      html.includes("We don't know when or if this item will be back in stock")
+    ) {
+      isOutOfStock = true;
+    } else if (!hasAddToCart && !hasBuyNow) {
+      if (availText.length === 0) {
         isOutOfStock = true;
       }
     }
@@ -135,8 +161,8 @@ export const scrapeAmazon = async (
 
     let price = priceWhole ? Math.round(Number(priceWhole[1].replace(/,/g, ''))) : null;
 
-    // Reject phone covers, accessories, or erroneous sub-prices (< 35% of phone price)
-    const minThreshold = Math.max(3000, (basePrice || 15000) * 0.35);
+    // Reject phone covers, accessories, or erroneous sub-prices (< 40% of phone price)
+    const minThreshold = Math.max(3000, (basePrice || 15000) * 0.4);
     if (price && price < minThreshold) {
       price = null;
     }
@@ -167,8 +193,24 @@ export const scrapeAmazon = async (
 /**
  * Live Scraper for Flipkart Product Pages
  */
-export const scrapeFlipkart = async (directUrl: string): Promise<Partial<ScrapedStoreOffer> | null> => {
+export const scrapeFlipkart = async (
+  directUrl: string,
+  basePrice?: number | null,
+): Promise<Partial<ScrapedStoreOffer> | null> => {
   try {
+    const urlLower = directUrl.toLowerCase();
+    // 1. Strict URL check: Do NOT scrape generic search result pages!
+    // Genuine Flipkart product pages contain '/p/' (e.g. flipkart.com/.../p/itm...)
+    if (
+      urlLower.includes('/search?') ||
+      urlLower.includes('/search/') ||
+      urlLower.includes('/pr?sid=') ||
+      urlLower.includes('q=') ||
+      !urlLower.includes('/p/')
+    ) {
+      return null;
+    }
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 6000);
 
@@ -182,21 +224,46 @@ export const scrapeFlipkart = async (directUrl: string): Promise<Partial<Scraped
     const html = await res.text();
 
     const isOutOfStock =
-      html.includes('Currently Out of Stock') ||
-      html.includes('Sold Out') ||
-      html.includes('Coming Soon');
+      /out of stock/i.test(html) ||
+      /sold out/i.test(html) ||
+      /coming soon/i.test(html) ||
+      /currently unavailable/i.test(html) ||
+      html.includes('NOT_AVAILABLE') ||
+      html.includes('OUT_OF_STOCK');
 
+    // On Flipkart product pages, the main price is in structured data or primary price class
     const priceMatch =
+      html.match(/"offers"\s*:\s*\{[^}]*?"price"\s*:\s*"([0-9.]+)"/i) ||
       html.match(/"price"\s*:\s*([0-9.]+)/i) ||
-      html.match(/₹([0-9,]+)/i);
+      html.match(/_30jeq3[^>]*>₹([0-9,]+)/i) ||
+      html.match(/Nx9bqj[^>]*>₹([0-9,]+)/i);
 
-    const price = priceMatch ? Math.round(Number(priceMatch[1].replace(/,/g, ''))) : null;
+    let price = priceMatch ? Math.round(Number(priceMatch[1].replace(/,/g, ''))) : null;
 
-    return {
-      price: price || undefined,
-      stockStatus: isOutOfStock ? StockStatus.OUT_OF_STOCK : StockStatus.IN_STOCK,
-      availability: isOutOfStock ? 'Out of Stock' : 'In Stock',
-    };
+    // Sanity check: Reject accessories, covers, or spurious prices (< 40% or > 250% of expected price)
+    const minThreshold = Math.max(3000, (basePrice || 15000) * 0.4);
+    const maxThreshold = (basePrice || 100000) * 2.5;
+    if (price && (price < minThreshold || price > maxThreshold)) {
+      price = null;
+    }
+
+    if (isOutOfStock) {
+      return {
+        price: price || 0,
+        stockStatus: StockStatus.OUT_OF_STOCK,
+        availability: 'Out of Stock',
+      };
+    }
+
+    if (price && price > 0) {
+      return {
+        price,
+        stockStatus: StockStatus.IN_STOCK,
+        availability: 'In Stock',
+      };
+    }
+
+    return null;
   } catch (err: any) {
     console.warn('[RetailerScraper] Flipkart scrape error:', err?.message || err);
     return null;
@@ -218,7 +285,7 @@ export const scrapeLiveStoreListing = async (
     const urlLower = directUrl.toLowerCase();
 
     if (sLower.includes('croma') || urlLower.includes('croma.com')) {
-      const scraped = await scrapeCroma(directUrl);
+      const scraped = await scrapeCroma(directUrl, basePrice);
       if (scraped) return { ...scraped, directUrl };
     }
 
@@ -228,7 +295,7 @@ export const scrapeLiveStoreListing = async (
     }
 
     if (sLower.includes('flipkart') || urlLower.includes('flipkart.com')) {
-      const scraped = await scrapeFlipkart(directUrl);
+      const scraped = await scrapeFlipkart(directUrl, basePrice);
       if (scraped) return { ...scraped, directUrl };
     }
 
