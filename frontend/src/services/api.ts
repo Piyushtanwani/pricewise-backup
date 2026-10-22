@@ -140,9 +140,10 @@ export const api = {
     return res.data;
   },
 
-  async getLiveStores(id: string): Promise<{ stores: StorePriceRow[]; bestDealUrl: string | null }> {
-    const res = await apiClient.get<{ stores: StorePriceRow[]; bestDealUrl: string | null }>(
-      `/products/${encodeURIComponent(id)}/live-stores`
+  async getLiveStores(id: string, refresh = true): Promise<{ stores: StorePriceRow[]; bestDealUrl: string | null; source?: string }> {
+    const res = await apiClient.get<{ stores: StorePriceRow[]; bestDealUrl: string | null; source?: string }>(
+      `/products/${encodeURIComponent(id)}/live-stores`,
+      { params: refresh ? { refresh: 'true' } : undefined }
     );
     return res.data;
   },

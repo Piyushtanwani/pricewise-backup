@@ -187,7 +187,7 @@ export const storePriceRows = (product: ProductWithStores): StorePriceRow[] => {
     shippingCost: s.shippingCost,
     availability: AVAILABILITY_LABEL[s.stockStatus],
     stockStatus: s.stockStatus,
-    diff: Math.round(s.currentPrice - best),
+    diff: s.stockStatus === 'OUT_OF_STOCK' ? 0 : Math.max(0, Math.round(s.currentPrice - best)),
     url: s.productUrl,
     lastCheckedAt: s.lastCheckedAt.toISOString(),
   }));

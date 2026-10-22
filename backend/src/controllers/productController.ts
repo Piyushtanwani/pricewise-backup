@@ -9,6 +9,7 @@ import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from
 import { env } from '../config/env';
 import { resolveDirectStoreUrl } from '../services/storeRedirectService';
 import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
+import { scrapeLiveStoreListing } from '../services/retailerScraperService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -100,14 +101,15 @@ export const getCatalogMeta = async (_req: Request, res: Response): Promise<void
   });
 };
 
-// Lightweight TTL cache for product details (120s TTL)
+// Lightweight TTL cache for product details (15s TTL for fresh stock & prices)
 const productDetailCache = new Map<string, { data: any; expiry: number }>();
 
 export const getProduct = async (req: Request, res: Response): Promise<void> => {
   const productId = String(req.params.id);
   const now = Date.now();
+  const forceRefresh = req.query.refresh === 'true';
 
-  const cached = productDetailCache.get(productId);
+  const cached = forceRefresh ? null : productDetailCache.get(productId);
   let baseData = cached && cached.expiry > now ? cached.data : null;
 
   if (!baseData) {
@@ -149,7 +151,7 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
       pricesUpdatedAt: lastChecked?.toISOString() ?? null,
     };
 
-    productDetailCache.set(productId, { data: baseData, expiry: now + 120_000 });
+    productDetailCache.set(productId, { data: baseData, expiry: now + 15_000 });
   }
 
   let userState = null;
@@ -174,29 +176,29 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
 
 export const getProductLiveStores = async (req: Request, res: Response): Promise<void> => {
   const productId = String(req.params.id);
+  const forceRefresh = req.query.refresh !== 'false';
   const product = await findProductOr404(productId);
 
-  // 1. Primary ground truth: verified database listings
+  // 1. Live real-time prices from SerpApi (always fresh when user visits phone page)
+  const livePrices = await getLiveSerpStorePrices(product.name, product.brand, product.bestPrice, forceRefresh);
+
+  // Verified database store rows (used for missing retailer fallback or metadata)
   const dbStores = storePriceRows(product).filter((s) => {
     const match = matchAllowedStore(s.store, product.brand, product.name);
     return match !== null;
   });
 
-  // 2. Auxiliary live prices from SerpApi (with strict title and price tolerance checks)
-  const livePrices = await getLiveSerpStorePrices(product.name, product.brand, product.bestPrice);
+  if (livePrices.length > 0) {
+    // 2. SerpApi live results are the PRIMARY ground truth for real-time prices & stock
+    const liveStoreRows: StorePriceRow[] = livePrices.map((s) => {
+      const stockStatus =
+        s.stockStatus === 'OUT_OF_STOCK'
+          ? StockStatus.OUT_OF_STOCK
+          : s.stockStatus === 'LIMITED'
+          ? StockStatus.LIMITED
+          : StockStatus.IN_STOCK;
 
-  // 3. Merge: Database verified store listings always take precedence for known stores
-  const storeMap = new Map<string, StorePriceRow>();
-
-  for (const s of dbStores) {
-    storeMap.set(s.store.toLowerCase(), s);
-  }
-
-  // Augment with non-duplicate live store offers that passed verification
-  for (const s of livePrices) {
-    const key = s.store.toLowerCase();
-    if (!storeMap.has(key)) {
-      const row: StorePriceRow = {
+      return {
         storeId: s.storeId,
         store: s.store,
         storeSlug: s.storeSlug,
@@ -206,30 +208,93 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
         shipping: s.shipping || 'Free',
         shippingCost: 0,
         availability: s.availability || 'In Stock',
-        stockStatus: StockStatus.IN_STOCK,
+        stockStatus,
         diff: s.diff,
         url: s.url,
         lastCheckedAt: s.lastCheckedAt ?? new Date().toISOString(),
       };
-      storeMap.set(key, row);
-    }
-  }
+    });
 
-  let stores = Array.from(storeMap.values());
-  stores.sort((a, b) => a.price - b.price);
+    // 3. Any store from DB not in live SerpApi offers is discontinued or out of stock
+    const liveSlugs = new Set(livePrices.map((p) => p.storeSlug.toLowerCase()));
+    const missingDbStores: StorePriceRow[] = dbStores
+      .filter((s) => !liveSlugs.has(s.storeSlug.toLowerCase()) && !liveSlugs.has(s.store.toLowerCase()))
+      .map((s) => ({
+        ...s,
+        availability: 'Out of Stock',
+        stockStatus: StockStatus.OUT_OF_STOCK,
+        diff: 0,
+      }));
 
-  // Recompute relative diffs from the best available price
-  if (stores.length > 0) {
-    const lowest = stores[0].price;
-    stores = stores.map((s) => ({
+    const stores = [...liveStoreRows, ...missingDbStores];
+
+    // In Stock stores first (sorted by price ascending), then Limited, then Out of Stock
+    stores.sort((a, b) => {
+      const rank = (status: StockStatus) => {
+        if (status === StockStatus.IN_STOCK) return 0;
+        if (status === StockStatus.LIMITED) return 1;
+        return 2;
+      };
+      const rankDiff = rank(a.stockStatus) - rank(b.stockStatus);
+      if (rankDiff !== 0) return rankDiff;
+      return a.price - b.price;
+    });
+
+    const lowestInStock = stores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK)?.price ?? stores[0].price;
+    const finalStores = stores.map((s) => ({
       ...s,
-      diff: Math.max(0, s.price - lowest),
+      diff: s.stockStatus === StockStatus.OUT_OF_STOCK ? 0 : Math.max(0, s.price - lowestInStock),
     }));
+
+    const bestInStock = finalStores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK) || finalStores[0];
+
+    res.json({
+      stores: finalStores,
+      bestDealUrl: bestInStock?.url || null,
+      source: 'live_serpapi',
+      refreshedAt: new Date().toISOString(),
+    });
+    return;
   }
+
+  // 4. Real-Time Live Direct Retailer Scraping:
+  // When SerpApi is exhausted (HTTP 429 quota reached) or returns no live results,
+  // scrape the verified store URLs (Croma, Amazon, Flipkart) directly in real-time!
+  const scrapedStores: StorePriceRow[] = await Promise.all(
+    dbStores.map(async (s) => {
+      const scraped = await scrapeLiveStoreListing(s.url, s.store, product.name);
+      if (!scraped) return s;
+
+      return {
+        ...s,
+        price: scraped.price && scraped.price > 0 ? scraped.price : s.price,
+        stockStatus: scraped.stockStatus ?? s.stockStatus,
+        availability: scraped.availability ?? s.availability,
+        url: scraped.directUrl ?? s.url,
+        lastCheckedAt: new Date().toISOString(),
+      };
+    }),
+  );
+
+  const stores = [...scrapedStores].sort((a, b) => {
+    const aOut = a.stockStatus === StockStatus.OUT_OF_STOCK ? 1 : 0;
+    const bOut = b.stockStatus === StockStatus.OUT_OF_STOCK ? 1 : 0;
+    return aOut - bOut || a.price - b.price;
+  });
+
+  const lowestInStock = stores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK)?.price ?? stores[0]?.price ?? 0;
+  const finalStores = stores.map((s) => ({
+    ...s,
+    diff: s.stockStatus === StockStatus.OUT_OF_STOCK ? 0 : Math.max(0, s.price - lowestInStock),
+  }));
+
+  const bestInStock = finalStores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK) || finalStores[0];
 
   res.json({
-    stores,
-    bestDealUrl: stores[0]?.url || null,
+    stores: finalStores,
+    bestDealUrl: bestInStock?.url || null,
+    source: 'live_scraped',
+    refreshedAt: new Date().toISOString(),
   });
 };
 

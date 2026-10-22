@@ -10,10 +10,73 @@ export interface SerpStoreRate {
   mrp: number | null;
   shipping: string;
   availability: string;
+  stockStatus: 'IN_STOCK' | 'LIMITED' | 'OUT_OF_STOCK';
   diff: number;
   url: string;
   lastCheckedAt?: string;
 }
+
+/**
+ * Extracts stock availability from SerpApi Google Shopping item attributes
+ */
+export const parseStockStatus = (
+  item: any,
+): { availability: string; stockStatus: 'IN_STOCK' | 'LIMITED' | 'OUT_OF_STOCK' } => {
+  const text = [
+    item?.availability,
+    item?.delivery,
+    item?.tag,
+    item?.snippet,
+    Array.isArray(item?.extensions) ? item.extensions.join(' ') : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (
+    text.includes('out of stock') ||
+    text.includes('currently unavailable') ||
+    text.includes('sold out') ||
+    text.includes('unavailable') ||
+    text.includes('out_of_stock') ||
+    item?.in_stock === false
+  ) {
+    return { availability: 'Out of Stock', stockStatus: 'OUT_OF_STOCK' };
+  }
+
+  if (
+    text.includes('limited') ||
+    text.includes('few left') ||
+    (text.includes('only ') && text.includes('left')) ||
+    text.includes('order soon')
+  ) {
+    return { availability: 'Limited Stock', stockStatus: 'LIMITED' };
+  }
+
+  return { availability: 'In Stock', stockStatus: 'IN_STOCK' };
+};
+
+/**
+ * Resolves direct offer link from Google Shopping, unwrapping Google redirect if present
+ */
+export const resolveOfferUrl = (rawLink: string | undefined, fallbackUrl: string): string => {
+  if (!rawLink || typeof rawLink !== 'string') return fallbackUrl;
+  const trimmed = rawLink.trim();
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) return fallbackUrl;
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.hostname.includes('google.')) {
+      const target = parsed.searchParams.get('url') || parsed.searchParams.get('q');
+      if (target && (target.startsWith('http://') || target.startsWith('https://'))) {
+        return target;
+      }
+    }
+  } catch {
+    // Ignore URL parse errors and return trimmed
+  }
+  return trimmed;
+};
 
 interface CacheEntry {
   data: SerpStoreRate[];
@@ -21,7 +84,7 @@ interface CacheEntry {
 }
 
 const memoryCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes cache
+const CACHE_TTL_MS = 30 * 1000; // 30 seconds debounce cache
 
 const ACCESSORY_KEYWORDS = [
   'case',
@@ -181,6 +244,7 @@ export const getLiveSerpStorePrices = async (
   productName: string,
   brandName = '',
   basePrice?: number | null,
+  forceRefresh = false,
 ): Promise<SerpStoreRate[]> => {
   if (!productName || !env.serpApiKey) return [];
 
@@ -193,9 +257,13 @@ export const getLiveSerpStorePrices = async (
     .trim();
   const cacheKey = `${cleanQuery.toLowerCase()}::${(brandName || '').toLowerCase()}`;
 
-  const cached = memoryCache.get(cacheKey);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.data;
+  if (!forceRefresh) {
+    const cached = memoryCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data;
+    }
+  } else {
+    memoryCache.delete(cacheKey);
   }
 
   try {
@@ -237,6 +305,8 @@ export const getLiveSerpStorePrices = async (
       price: number;
       directUrl: string;
       shipping: string;
+      availability: string;
+      stockStatus: 'IN_STOCK' | 'LIMITED' | 'OUT_OF_STOCK';
     }[] = [];
 
     for (const item of shoppingResults) {
@@ -268,17 +338,27 @@ export const getLiveSerpStorePrices = async (
       const match = matchAllowedStore(item.source || '', brandName, productName);
       if (!match) continue; // Completely ignore any other website
 
+      const stock = parseStockStatus(item);
+      const offerUrl = resolveOfferUrl(item.link || item.product_link, match.directUrl);
+
       validOffers.push({
         storeKey: match.key,
         storeName: match.displayName,
         price,
-        directUrl: match.directUrl,
+        directUrl: offerUrl,
         shipping: item.delivery && !item.delivery.toLowerCase().includes('₹') ? item.delivery : 'Free',
+        availability: stock.availability,
+        stockStatus: stock.stockStatus,
       });
     }
 
-    // Sort by price ascending
-    validOffers.sort((a, b) => a.price - b.price);
+    // Sort: In Stock first, then ascending by price
+    validOffers.sort((a, b) => {
+      const aOut = a.stockStatus === 'OUT_OF_STOCK' ? 1 : 0;
+      const bOut = b.stockStatus === 'OUT_OF_STOCK' ? 1 : 0;
+      if (aOut !== bOut) return aOut - bOut;
+      return a.price - b.price;
+    });
 
     // Keep best rate for each unique store
     const seenStores = new Set<string>();
@@ -294,7 +374,8 @@ export const getLiveSerpStorePrices = async (
 
     if (topOffers.length === 0) return [];
 
-    const bestPrice = topOffers[0].price;
+    const bestInStock = topOffers.find((o) => o.stockStatus !== 'OUT_OF_STOCK') || topOffers[0];
+    const bestPrice = bestInStock.price;
 
     const formatted: SerpStoreRate[] = topOffers.map((offer, index) => ({
       storeId: `serp_${offer.storeKey}_${index}`,
@@ -304,8 +385,9 @@ export const getLiveSerpStorePrices = async (
       price: offer.price,
       mrp: estimatedPrice > offer.price ? Math.round(estimatedPrice * 1.15) : null,
       shipping: offer.shipping,
-      availability: 'In Stock',
-      diff: Math.round(offer.price - bestPrice),
+      availability: offer.availability,
+      stockStatus: offer.stockStatus,
+      diff: Math.max(0, Math.round(offer.price - bestPrice)),
       url: offer.directUrl,
       lastCheckedAt: new Date().toISOString(),
     }));
