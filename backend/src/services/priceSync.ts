@@ -4,6 +4,8 @@ import { TtlCache, livePriceCache } from '../utils/cache';
 import { parsePrice, evaluateStockStatus } from '../utils/priceNormalizer';
 import { evaluatePriceChange } from './alertEngine';
 import { MATCH_THRESHOLD, titleSimilarity } from './matching';
+import { isExactProductMatch } from '../utils/productMatcher';
+import { sanitizeRetailerUrl } from '../utils/urlSanitizer';
 import { refreshProductAggregates } from './productService';
 import { ProviderId, StoreOffer, StoreProvider, configuredProviders, providers } from './stores';
 import { clearMarketIntelligenceCache } from './marketIntelligenceService';
@@ -67,7 +69,7 @@ const recordOffer = async (listingId: string, offer: StoreOffer, current: { mrp:
       currency: offer.currency,
       stockStatus: stock.stockStatus,
       shippingCost: offer.shippingCost ?? current.shippingCost,
-      productUrl: offer.productUrl,
+      productUrl: sanitizeRetailerUrl(offer.productUrl, offer.provider),
       lastCheckedAt: now,
       priceHistory: { create: { price: cleanPrice, currency: offer.currency, timestamp: now } },
     },
@@ -188,6 +190,9 @@ const findMatchingProduct = async (offer: StoreOffer) => {
   });
   let best: { id: string; score: number } | null = null;
   for (const c of candidates) {
+    if (!isExactProductMatch(c.name, offer.title, 0.45) && titleSimilarity(offer.title, c.name, offer.brand) < 0.8) {
+      continue;
+    }
     const score = titleSimilarity(offer.title, c.name, offer.brand);
     if (score >= MATCH_THRESHOLD && (!best || score > best.score)) best = { id: c.id, score };
   }
@@ -262,7 +267,7 @@ export const importFromStores = async (
           productId,
           storeId: store.id,
           externalId: offer.externalId,
-          productUrl: offer.productUrl,
+          productUrl: sanitizeRetailerUrl(offer.productUrl, offer.provider),
           currentPrice: parsePrice(offer.price),
           mrp: offer.mrp ? parsePrice(offer.mrp) : null,
         },

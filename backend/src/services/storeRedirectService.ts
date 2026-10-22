@@ -1,5 +1,6 @@
 import { execSync } from 'child_process';
 import prisma from '../utils/prisma';
+import { sanitizeRetailerUrl } from '../utils/urlSanitizer';
 
 // Memory cache for quick lookups
 const urlCache = new Map<string, string>();
@@ -25,6 +26,153 @@ export const isFlipkartVariantMismatch = (url: string, productName: string): boo
     return true; // Conflicting storage variant
   }
   return false;
+};
+
+/**
+ * Comprehensive Model & Variant Mismatch Check:
+ * Compares a retailer product URL (slug / query) against the target product title
+ * to prevent wrong-product redirects (e.g. S25 FE instead of A16, iPhone 13 instead of 15, Pro instead of base).
+ */
+export const checkProductUrlModelMismatch = (
+  url: string,
+  productName: string,
+): { isMismatch: boolean; reason?: string } => {
+  if (!url || !productName) return { isMismatch: false };
+
+  const urlLower = url.toLowerCase();
+  const nameLower = productName.toLowerCase();
+
+  // 1. Accessory check in URL (cases, panels, protectors, chargers, housings)
+  const ACCESSORY_LIST = [
+    'case',
+    'cover',
+    'back-cover',
+    'skin',
+    'tempered-glass',
+    'screen-protector',
+    'charger',
+    'cable',
+    'pouch',
+    'adapter',
+    'strap',
+    'holder',
+    'stand',
+    'lens-protector',
+    'guard',
+    'housing',
+    'full-panel',
+    'back-panel',
+    'front-panel',
+    'sim-tray',
+    'sim-card-tray',
+    'middle-frame',
+    'lcd',
+  ];
+  for (const acc of ACCESSORY_LIST) {
+    if (
+      urlLower.includes(`/${acc}`) ||
+      urlLower.includes(`-${acc}-`) ||
+      urlLower.includes(`_${acc}_`) ||
+      urlLower.includes(`-${acc}`) ||
+      urlLower.includes(`${acc}-`)
+    ) {
+      return { isMismatch: true, reason: `URL points to an accessory (${acc}) rather than the device` };
+    }
+  }
+
+  // 2. Storage variant conflict
+  if (isFlipkartVariantMismatch(url, productName)) {
+    return { isMismatch: true, reason: 'URL points to conflicting storage variant' };
+  }
+
+  // Extract slug from URL if present (must not be 'p', 'dp', 'gp', or 'item')
+  const slugMatch =
+    urlLower.match(/(?:\.com|\.in)\/([a-zA-Z0-9-_]+)\/p\//i) ||
+    urlLower.match(/(?:\.com|\.in)\/([a-zA-Z0-9-_]+)\/dp\//i);
+  const rawSlug = slugMatch ? slugMatch[1] : '';
+  const slug = rawSlug && !['p', 'dp', 'gp', 'item'].includes(rawSlug) ? rawSlug : '';
+
+  // 3. Variant words check (pro, max, ultra, plus, mini, lite, fe, se, neo, fold, flip)
+  const VARIANT_WORDS = ['pro', 'max', 'plus', 'ultra', 'mini', 'lite', 'fe', 'neo', 'se', 'fold', 'flip'];
+  for (const vw of VARIANT_WORDS) {
+    const nameHasVariant = new RegExp(`\\b${vw}\\b`, 'i').test(nameLower);
+
+    // Filter out false positives from color names like "ultra-violet" and "neo-green"
+    if (vw === 'ultra' && slug && (slug.includes('ultra-violet') || slug.includes('ultra_violet') || slug.includes('ultraviolet'))) {
+      continue;
+    }
+    if (vw === 'neo' && slug && (slug.includes('neo-green') || slug.includes('neo_green') || slug.includes('neogreen'))) {
+      continue;
+    }
+
+    const urlHasVariant = slug
+      ? new RegExp(`[-_]${vw}[-_]`, 'i').test(`-${slug}-`)
+      : new RegExp(`[-_\\/]${vw}[-_\\/]`, 'i').test(urlLower);
+
+    // If URL contains a variant word that the product does NOT have (e.g. S25 FE for A16, or Pro for base phone)
+    if (!nameHasVariant && urlHasVariant) {
+      return {
+        isMismatch: true,
+        reason: `URL contains conflicting variant "${vw}" not in product name`,
+      };
+    }
+
+    // If product HAS a variant (e.g. Pro, Plus), but URL HAS A SLUG and the slug omits that variant:
+    if (nameHasVariant && slug && !urlHasVariant) {
+      return {
+        isMismatch: true,
+        reason: `Expected variant "${vw}" missing in URL slug ("${slug}")`,
+      };
+    }
+  }
+
+  // 4. Model code check (e.g. A16, S25, S24, M15, F54, 12R)
+  const modelCodeMatch = nameLower.match(/\b([a-z]\d{1,2}[a-z]?)\b/i);
+  if (modelCodeMatch && slug) {
+    const code = modelCodeMatch[1].toLowerCase(); // e.g. 'a16'
+    const slugHasCode =
+      slug.includes(`-${code}-`) ||
+      slug.includes(`-${code}`) ||
+      slug.includes(`${code}-`) ||
+      slug.includes(`/${code}-`) ||
+      slug.includes(`/${code}`);
+
+    if (!slugHasCode) {
+      return {
+        isMismatch: true,
+        reason: `Model code mismatch: product is "${code}", but URL slug is "${slug}"`,
+      };
+    }
+  }
+
+  // 5. Generation numbers (e.g. 11, 12, 13, 14, 15, 16, 23, 24, 25)
+  const prodTokens = nameLower.replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter(Boolean);
+  const numTokens = prodTokens.filter((t) => /^\d{2}$/.test(t) && Number(t) < 50);
+  if (slug) {
+    for (const num of numTokens) {
+      const otherGenerations = ['11', '12', '13', '14', '15', '16', '23', '24', '25'].filter((g) => g !== num);
+      const hasOther = otherGenerations.some(
+        (g) =>
+          slug.includes(`-${g}-`) ||
+          slug.includes(`-${g}`) ||
+          slug.includes(`${g}-`) ||
+          slug.includes(`_${g}_`),
+      );
+      const hasThis =
+        slug.includes(`-${num}-`) ||
+        slug.includes(`-${num}`) ||
+        slug.includes(`${num}-`) ||
+        slug.includes(`_${num}_`);
+      if (hasOther && !hasThis) {
+        return {
+          isMismatch: true,
+          reason: `Generation mismatch: product has "${num}", but URL slug points to a different generation (${slug})`,
+        };
+      }
+    }
+  }
+
+  return { isMismatch: false };
 };
 
 /**
@@ -59,20 +207,34 @@ export const resolveFlipkartDirectUrl = async (productName: string): Promise<str
     const itmMatches = [...html.matchAll(/\/([a-zA-Z0-9-]+)\/p\/(itm[a-zA-Z0-9]+)/g)];
     if (!itmMatches.length) return null;
 
-    // Prioritize match that has the exact storage variant in slug (e.g. '512-gb' or '512gb')
-    if (targetStorage) {
-      const variantMatch = itmMatches.find((m) => {
-        const slug = m[1].toLowerCase();
-        return slug.includes(`${targetStorage}-gb`) || slug.includes(`${targetStorage}gb`) || slug.includes(`${targetStorage}-tb`);
-      });
-      if (variantMatch) {
-        const direct = `https://www.flipkart.com${variantMatch[0]}`;
-        urlCache.set(cacheKey, direct);
-        return direct;
+    // Filter candidate matches to only those that genuinely match the product model & are not accessories
+    const validCandidates: string[] = [];
+    for (const m of itmMatches) {
+      const candidateUrl = `https://www.flipkart.com${m[0]}`;
+      const mismatch = checkProductUrlModelMismatch(candidateUrl, productName);
+      if (!mismatch.isMismatch) {
+        validCandidates.push(candidateUrl);
       }
     }
 
-    const direct = `https://www.flipkart.com${itmMatches[0][0]}`;
+    if (validCandidates.length === 0) {
+      // No genuine matching phone product found on Flipkart (e.g. only accessories or sponsored ads)
+      return null;
+    }
+
+    // Prioritize match that has the exact storage variant in slug (e.g. '512-gb' or '512gb')
+    if (targetStorage) {
+      const variantMatch = validCandidates.find((url) => {
+        const uLower = url.toLowerCase();
+        return uLower.includes(`${targetStorage}-gb`) || uLower.includes(`${targetStorage}gb`) || uLower.includes(`${targetStorage}-tb`);
+      });
+      if (variantMatch) {
+        urlCache.set(cacheKey, variantMatch);
+        return variantMatch;
+      }
+    }
+
+    const direct = validCandidates[0];
     urlCache.set(cacheKey, direct);
     return direct;
   } catch {
@@ -156,7 +318,14 @@ export const validateCanonicalProductUrl = (
   // 2. Check for accessory keywords in URL slug
   const urlLower = cleanUrl.toLowerCase();
   for (const acc of ACCESSORY_TERMS) {
-    if (urlLower.includes(`/${acc}`) || urlLower.includes(`-${acc}-`) || urlLower.includes(`_${acc}_`)) {
+    if (
+      urlLower.includes(`/${acc}`) ||
+      urlLower.includes(`-${acc}-`) ||
+      urlLower.includes(`_${acc}_`) ||
+      rawLower.includes(`/${acc}`) ||
+      rawLower.includes(`-${acc}-`) ||
+      rawLower.includes(`_${acc}_`)
+    ) {
       return {
         isValid: false,
         canonicalId: null,
@@ -168,7 +337,20 @@ export const validateCanonicalProductUrl = (
     }
   }
 
-  // 3. Retailer-specific canonical signatures & identifiers
+  // 3. Global Model & Variant Mismatch Check
+  const modelMismatch = checkProductUrlModelMismatch(cleanUrl, product.name);
+  if (modelMismatch.isMismatch) {
+    return {
+      isValid: false,
+      canonicalId: null,
+      canonicalUrl: fallbackUrl,
+      fallbackUrl,
+      reason: modelMismatch.reason || 'Model or variant mismatch detected in store URL',
+      isFallback: true,
+    };
+  }
+
+  // 4. Retailer-specific canonical signatures & identifiers
 
   // --- AMAZON ---
   if (sLower.includes('amazon') || urlLower.includes('amazon.')) {
@@ -201,12 +383,24 @@ export const validateCanonicalProductUrl = (
     const prodTokens = product.name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter(Boolean);
     const numTokens = prodTokens.filter((t) => /^\d+$/.test(t) && Number(t) < 100);
     for (const num of numTokens) {
-      const urlHasNum = urlLower.includes(`-${num}-`) || urlLower.includes(`-${num}/`) || urlLower.includes(`/${num}-`);
+      const urlHasNum =
+        urlLower.includes(`-${num}-`) ||
+        urlLower.includes(`-${num}/`) ||
+        urlLower.includes(`/${num}-`) ||
+        rawLower.includes(`-${num}-`) ||
+        rawLower.includes(`-${num}/`) ||
+        rawLower.includes(`/${num}-`);
       const urlHasOtherNum = [11, 12, 13, 14, 15, 16, 17, 18, 23, 24, 25]
         .filter((n) => n !== Number(num))
-        .some((other) => urlLower.includes(`-${other}-`) || urlLower.includes(`-${other}/`));
+        .some(
+          (other) =>
+            urlLower.includes(`-${other}-`) ||
+            urlLower.includes(`-${other}/`) ||
+            rawLower.includes(`-${other}-`) ||
+            rawLower.includes(`-${other}/`),
+        );
 
-      if (urlHasOtherNum && !urlHasNum && (urlLower.includes('iphone') || urlLower.includes('galaxy') || urlLower.includes('oneplus'))) {
+      if (urlHasOtherNum && !urlHasNum && (rawLower.includes('iphone') || rawLower.includes('galaxy') || rawLower.includes('oneplus'))) {
         return {
           isValid: false,
           canonicalId: asin,
@@ -267,7 +461,7 @@ export const validateCanonicalProductUrl = (
     return {
       isValid: true,
       canonicalId: itmId,
-      canonicalUrl: cleanUrl,
+      canonicalUrl: sanitizeRetailerUrl(cleanUrl, 'Flipkart'),
       fallbackUrl,
       isFallback: false,
     };
@@ -300,7 +494,7 @@ export const validateCanonicalProductUrl = (
     return {
       isValid: true,
       canonicalId: skuMatch[1],
-      canonicalUrl: cleanUrl,
+      canonicalUrl: sanitizeRetailerUrl(cleanUrl, 'Croma'),
       fallbackUrl,
       isFallback: false,
     };
@@ -380,6 +574,20 @@ export const resolveDirectStoreUrl = async (
     (rawUrl.includes('/p/') || rawUrl.includes('/dp/')) &&
     (rawUrl.includes('amazon.') || rawUrl.includes('flipkart.com') || rawUrl.includes('croma.com') || rawUrl.includes('vijaysales.com'))
   ) {
+    const rawMismatch = checkProductUrlModelMismatch(rawUrl, productName);
+    if (rawMismatch.isMismatch) {
+      if (storeTarget.includes('flipkart') && productName) {
+        const correctVariant = await resolveFlipkartDirectUrl(productName);
+        if (correctVariant) {
+          urlCache.set(cacheKey, correctVariant);
+          return correctVariant;
+        }
+      }
+      const fallback = getFallbackStoreSearch(storeName, productName);
+      urlCache.set(cacheKey, fallback);
+      return fallback;
+    }
+
     if (storeTarget.includes('flipkart') && productName && isFlipkartVariantMismatch(rawUrl, productName)) {
       const correctVariant = await resolveFlipkartDirectUrl(productName);
       if (correctVariant) {
@@ -421,7 +629,15 @@ export const resolveDirectStoreUrl = async (
       const loc = resp.headers.get('location');
       if (loc) {
         let dest = cleanDestinationUrl(loc.trim(), productName);
-        if (storeTarget.includes('flipkart') && productName && isFlipkartVariantMismatch(dest, productName)) {
+        const modelCheck = checkProductUrlModelMismatch(dest, productName);
+        if (modelCheck.isMismatch) {
+          if (storeTarget.includes('flipkart') && productName) {
+            const correctVariant = await resolveFlipkartDirectUrl(productName);
+            dest = correctVariant || getFallbackStoreSearch(storeName, productName);
+          } else {
+            dest = getFallbackStoreSearch(storeName, productName);
+          }
+        } else if (storeTarget.includes('flipkart') && productName && isFlipkartVariantMismatch(dest, productName)) {
           const correctVariant = await resolveFlipkartDirectUrl(productName);
           if (correctVariant) {
             dest = correctVariant;
@@ -436,7 +652,15 @@ export const resolveDirectStoreUrl = async (
         const locMatch = head.match(/location:\s*([^\r\n]+)/i);
         if (locMatch) {
           let dest = cleanDestinationUrl(locMatch[1].trim(), productName);
-          if (storeTarget.includes('flipkart') && productName && isFlipkartVariantMismatch(dest, productName)) {
+          const modelCheck = checkProductUrlModelMismatch(dest, productName);
+          if (modelCheck.isMismatch) {
+            if (storeTarget.includes('flipkart') && productName) {
+              const correctVariant = await resolveFlipkartDirectUrl(productName);
+              dest = correctVariant || getFallbackStoreSearch(storeName, productName);
+            } else {
+              dest = getFallbackStoreSearch(storeName, productName);
+            }
+          } else if (storeTarget.includes('flipkart') && productName && isFlipkartVariantMismatch(dest, productName)) {
             const correctVariant = await resolveFlipkartDirectUrl(productName);
             if (correctVariant) {
               dest = correctVariant;
@@ -468,6 +692,10 @@ export const resolveDirectStoreUrl = async (
           const loc = resp.headers.get('location');
           if (loc) {
             const dest = cleanDestinationUrl(loc.trim(), productName);
+            const modelCheck = checkProductUrlModelMismatch(dest, productName);
+            if (modelCheck.isMismatch) {
+              continue;
+            }
             const destLower = dest.toLowerCase();
 
             if (

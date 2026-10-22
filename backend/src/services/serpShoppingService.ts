@@ -1,10 +1,12 @@
 import { env } from '../config/env';
 import { titleSimilarity, MATCH_THRESHOLD } from './matching';
 import { parsePrice, evaluateStockStatus, normalizeStoreOffer } from '../utils/priceNormalizer';
+import { isExactProductMatch } from '../utils/productMatcher';
+import { sanitizeRetailerUrl } from '../utils/urlSanitizer';
 import { livePriceCache } from '../utils/cache';
 import { cleanDestinationUrl } from './storeRedirectService';
 
-export { normalizeStoreOffer };
+export { normalizeStoreOffer, isExactProductMatch, sanitizeRetailerUrl };
 
 export interface SerpStoreRate {
   storeId: string;
@@ -52,26 +54,31 @@ export const parseStockStatus = (
   };
 };
 
+
 /**
  * Resolves direct offer link from Google Shopping, unwrapping Google redirect if present
  */
-export const resolveOfferUrl = (rawLink: string | undefined, fallbackUrl: string): string => {
-  if (!rawLink || typeof rawLink !== 'string') return fallbackUrl;
+export const resolveOfferUrl = (rawLink: string | undefined, fallbackUrl: string, storeName = ''): string => {
+  if (!rawLink || typeof rawLink !== 'string') return sanitizeRetailerUrl(fallbackUrl, storeName);
   const trimmed = rawLink.trim();
-  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) return fallbackUrl;
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    return sanitizeRetailerUrl(fallbackUrl, storeName);
+  }
 
+  let dest = trimmed;
   try {
     const parsed = new URL(trimmed);
     if (parsed.hostname.includes('google.')) {
       const target = parsed.searchParams.get('url') || parsed.searchParams.get('q') || parsed.searchParams.get('adurl');
       if (target && (target.startsWith('http://') || target.startsWith('https://'))) {
-        return cleanDestinationUrl(target);
+        dest = target;
       }
     }
   } catch {
     // Ignore URL parse errors and return trimmed
   }
-  return cleanDestinationUrl(trimmed);
+  const cleaned = cleanDestinationUrl(dest);
+  return sanitizeRetailerUrl(cleaned, storeName);
 };
 
 const ACCESSORY_KEYWORDS = [
@@ -325,7 +332,7 @@ export const getLiveSerpStorePrices = async (
       if (!match) continue; // Completely ignore any other website
 
       const stock = parseStockStatus(item);
-      const offerUrl = resolveOfferUrl(item.link || item.product_link, match.directUrl);
+      const offerUrl = resolveOfferUrl(item.link || item.product_link, match.directUrl, match.displayName);
 
       validOffers.push({
         storeKey: match.key,

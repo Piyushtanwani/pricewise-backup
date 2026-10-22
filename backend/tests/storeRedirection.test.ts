@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   validateCanonicalProductUrl,
   isFlipkartVariantMismatch,
+  checkProductUrlModelMismatch,
   cleanDestinationUrl,
   getFallbackStoreSearch,
 } from '../src/services/storeRedirectService';
@@ -109,6 +110,48 @@ test('cleanDestinationUrl unwraps affiliate redirect links and cleans placeholde
   const brokenCroma = 'https://www.croma.com/searchB?q=null';
   const cromaCleaned = cleanDestinationUrl(brokenCroma, 'OnePlus 12');
   assert.ok(cromaCleaned.includes('searchB?q=OnePlus%2012'));
+});
+
+test('validateCanonicalProductUrl rejects Flipkart URL when model/series conflicts (e.g. S25 FE instead of Galaxy A16)', () => {
+  const badUrl = 'https://www.flipkart.com/samsung-galaxy-s25-fe-5g-jetblack-128-gb/p/itm90e887b150eea';
+  const product = { name: 'Samsung Galaxy A16 5G (6GB RAM + 128GB)', brand: 'Samsung' };
+
+  const result = validateCanonicalProductUrl(badUrl, 'Flipkart', product);
+  assert.equal(result.isValid, false);
+  assert.equal(result.isFallback, true);
+  assert.ok(result.reason?.toLowerCase().includes('mismatch') || result.reason?.toLowerCase().includes('fe'));
+  assert.ok(result.fallbackUrl.includes('flipkart.com/search?q=Samsung%20Galaxy%20A16%205G'));
+});
+
+test('checkProductUrlModelMismatch accurately detects conflicting model series and variant words', () => {
+  // S25 FE vs A16
+  const fkS25Mismatch = checkProductUrlModelMismatch(
+    'https://www.flipkart.com/samsung-galaxy-s25-fe-5g-jetblack-128-gb/p/itm90e887b150eea',
+    'Samsung Galaxy A16 5G (6GB RAM + 128GB)',
+  );
+  assert.equal(fkS25Mismatch.isMismatch, true);
+
+  // A16 genuine URL vs A16
+  const fkA16Match = checkProductUrlModelMismatch(
+    'https://www.flipkart.com/samsung-galaxy-a16-5g-gold-128-gb/p/itm8026353efa9d5?pid=MOBH92ADZSZYUKVG',
+    'Samsung Galaxy A16 5G (6GB RAM + 128GB)',
+  );
+  assert.equal(fkA16Match.isMismatch, false);
+
+  // Accessory rejection
+  const accessoryCheck = checkProductUrlModelMismatch(
+    'https://www.flipkart.com/flounder-samsung-galaxy-a16-5g-original-housing-body-full-panel/p/itm5e143890e2694',
+    'Samsung Galaxy A16 5G',
+  );
+  assert.equal(accessoryCheck.isMismatch, true);
+  assert.ok(accessoryCheck.reason?.includes('accessory'));
+
+  // Pro vs Non-Pro
+  const proCheck = checkProductUrlModelMismatch(
+    'https://www.flipkart.com/apple-iphone-15-pro-black-128-gb/p/itm123',
+    'Apple iPhone 15 128 GB',
+  );
+  assert.equal(proCheck.isMismatch, true);
 });
 
 test('getFallbackStoreSearch generates correct store search URLs', () => {

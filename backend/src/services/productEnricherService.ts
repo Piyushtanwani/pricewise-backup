@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { refreshProductAggregates } from './productService';
 import { StockStatus } from '../generated/prisma';
 import { parsePrice, evaluateStockStatus } from '../utils/priceNormalizer';
+import { sanitizeRetailerUrl } from '../utils/urlSanitizer';
 
 export interface EnrichedStore {
   name: string;
@@ -93,7 +94,7 @@ export const applyEnrichmentToProduct = async (
       update: {
         currentPrice: parsePrice(st.price),
         mrp: st.mrp ? parsePrice(st.mrp) : undefined,
-        productUrl: st.productUrl,
+        productUrl: sanitizeRetailerUrl(st.productUrl, cleanName),
         stockStatus: evaluateStockStatus(st.stockStatus).stockStatus,
         lastCheckedAt: new Date(),
       },
@@ -102,7 +103,7 @@ export const applyEnrichmentToProduct = async (
         storeId: store.id,
         currentPrice: parsePrice(st.price),
         mrp: st.mrp ? parsePrice(st.mrp) : undefined,
-        productUrl: st.productUrl,
+        productUrl: sanitizeRetailerUrl(st.productUrl, cleanName),
         currency: 'INR',
         stockStatus: evaluateStockStatus(st.stockStatus).stockStatus,
         lastCheckedAt: new Date(),
