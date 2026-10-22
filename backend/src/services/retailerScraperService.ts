@@ -240,10 +240,14 @@ export function matchProductVariant(
   }
 
   // 2. Critical model tier modifiers: max, ultra, plus, mini, fe, xl, lite
+  // Use model name segment (before marketing bullets '|' and processor specs) to prevent Snapdragon 7+ / 8+ false positives
+  const modelSegment = candidateTitle.split(/\s*\|\s*/)[0].replace(/qualcomm.*$/i, '').replace(/snapdragon\s+\d+\s*\+?/gi, '');
+  const modelTokens = modelSegment.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter(Boolean);
+
   const criticalModifiers = ['max', 'ultra', 'plus', 'mini', 'fe', 'xl', 'lite'];
   for (const mod of criticalModifiers) {
     const inTarget = targetTokens.includes(mod);
-    const inTitle = titleTokens.includes(mod);
+    const inTitle = modelTokens.includes(mod);
     if (inTarget !== inTitle) {
       return { matches: false, score: -1 };
     }
@@ -251,7 +255,7 @@ export function matchProductVariant(
 
   // Check 'pro':
   const targetHasPro = targetTokens.includes('pro');
-  const titleHasPro = titleTokens.includes('pro');
+  const titleHasPro = modelTokens.includes('pro');
   if (targetHasPro !== titleHasPro) {
     return { matches: false, score: -1 };
   }
@@ -430,22 +434,23 @@ export const scrapeFlipkart = async (
 
     const schemaMatch = html.match(/"offers"\s*:\s*\{[^}]*?"price"\s*:\s*"?([0-9.]+)"?/i);
     const classMatch = html.match(/class="[^"]*(?:Nx9bqj|_30jeq3)[^"]*">₹?([0-9,]+)/i);
+    const fontMatch = html.match(/font="default-fk-font-l">₹?([0-9,]+)<\/div>/i);
+    const divPriceMatch = html.match(/<div[^>]*>₹([0-9,]+)<\/div>/i);
 
     let price: number | null = null;
     if (schemaMatch) {
       price = Math.round(Number(schemaMatch[1]));
     } else if (classMatch) {
       price = Math.round(Number(classMatch[1].replace(/,/g, '')));
+    } else if (fontMatch) {
+      price = Math.round(Number(fontMatch[1].replace(/,/g, '')));
+    } else if (divPriceMatch) {
+      price = Math.round(Number(divPriceMatch[1].replace(/,/g, '')));
     }
 
     const minThreshold = Math.max(3000, (basePrice || 15000) * 0.35);
-    if (price && price < minThreshold) {
+    if (price && (price < minThreshold || price > 400000)) {
       price = null;
-    }
-    if (typeof basePrice === 'number' && basePrice > 0 && price) {
-      if (price < basePrice * 0.65 || price > basePrice * 1.35) {
-        price = null;
-      }
     }
 
     if (price) {
@@ -483,7 +488,13 @@ export const scrapeLiveStoreListing = async (
 
     if (sLower.includes('croma') || urlLower.includes('croma.com')) {
       const scraped = await scrapeCroma(directUrl);
-      if (scraped) return { ...scraped, directUrl };
+      if (scraped) {
+        const finalUrl =
+          scraped.stockStatus === StockStatus.OUT_OF_STOCK
+            ? `https://www.croma.com/searchB?q=${encodeURIComponent(productName.replace(/\(.*?\)/g, '').trim())}`
+            : directUrl;
+        return { ...scraped, directUrl: finalUrl };
+      }
     }
 
     if (sLower.includes('amazon') || urlLower.includes('amazon.in')) {

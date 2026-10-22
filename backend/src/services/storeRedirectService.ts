@@ -142,6 +142,15 @@ export const cleanDestinationUrl = (url: string, productName?: string): string =
     return `https://www.flipkart.com/search?q=${encodeURIComponent(query)}`;
   }
 
+  // Handle broken / discontinued Croma search queries (e.g. q=null, text=null, {search_term_string})
+  if (
+    url.includes('croma.com') &&
+    (url.includes('q=null') || url.includes('text=null') || url.includes('{search_term_string}') || url.includes('/p/null'))
+  ) {
+    const clean = (productName || 'smartphone').replace(/\(.*?\)/g, '').trim();
+    return `https://www.croma.com/searchB?q=${encodeURIComponent(clean)}`;
+  }
+
   // Fix Vijay Sales search URLs falling back to refrigerator filters
   if (url.includes('vijaysales.com/search') && !url.includes('/p/')) {
     if (url.toLowerCase().includes('apple') || url.toLowerCase().includes('iphone')) {

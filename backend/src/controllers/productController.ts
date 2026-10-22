@@ -9,7 +9,7 @@ import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from
 import { env } from '../config/env';
 import { resolveDirectStoreUrl } from '../services/storeRedirectService';
 import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
-import { scrapeLiveStoreListing, scrapeFlipkart } from '../services/retailerScraperService';
+import { scrapeLiveStoreListing, scrapeFlipkart, scrapeCroma } from '../services/retailerScraperService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -189,25 +189,48 @@ export function extractProductSpecs(product: {
   let ram: string | null = null;
   if (tech['RAM']) {
     ram = String(tech['RAM']);
+  } else if (tech['Memory & Storage']) {
+    const ms = String(tech['Memory & Storage']);
+    const rMatch = ms.match(/([0-9]+)\s*GB\s*RAM/i) || ms.match(/([0-9]+)\s*GB/i);
+    if (rMatch) ram = `${rMatch[1]} GB`;
   } else {
     const ramMatch = combined.match(/([0-9]+)\s*GB\s*RAM/i);
     if (ramMatch) ram = `${ramMatch[1]} GB`;
   }
 
-  // 2. Storage extraction
+  // 2. Storage extraction (internal storage only)
   let storage: string | null = null;
   if (tech['Internal Storage'] || tech['Storage'] || tech['ROM']) {
     storage = String(tech['Internal Storage'] || tech['Storage'] || tech['ROM']);
-  } else {
-    const tbMatch = combined.match(/([0-9]+)\s*TB/i);
-    if (tbMatch) {
-      storage = `${tbMatch[1]} TB`;
+  } else if (tech['Memory & Storage']) {
+    const ms = String(tech['Memory & Storage']);
+    const sMatch =
+      ms.match(/([0-9]+)\s*(?:GB|TB)\s*(?:inbuilt|internal|ROM|storage)/i) ||
+      ms.match(/,\s*([0-9]+)\s*(?:GB|TB)/i) ||
+      ms.match(/([0-9]+)\s*(?:GB|TB)/i);
+    if (sMatch) storage = sMatch[0].replace(/^,\s*/, '').trim();
+  }
+
+  // Fallback to searching specs, ignoring expandable memory card / upto phrases
+  if (!storage) {
+    const cleanCombined = combined
+      .replace(/memory\s*card[^,]*/gi, '')
+      .replace(/upto\s*[0-9]+\s*(?:tb|gb)/gi, '')
+      .replace(/expandable[^,]*/gi, '');
+
+    const explicitInbuilt = cleanCombined.match(/([0-9]+)\s*(?:GB|TB)\s*(?:inbuilt|internal|ROM|storage)/i);
+    if (explicitInbuilt) {
+      storage = explicitInbuilt[0].trim();
     } else {
-      const storageMatch =
-        combined.match(/([0-9]+)\s*GB\s*(?:inbuilt|storage|ROM)/i) ||
-        nameStr.match(/([0-9]+)\s*GB/i) ||
-        specsStr.match(/([0-9]+)\s*GB/i);
-      if (storageMatch) storage = `${storageMatch[1]} GB`;
+      const tbMatch = cleanCombined.match(/([0-9]+)\s*TB/i);
+      if (tbMatch) {
+        storage = `${tbMatch[1]} TB`;
+      } else {
+        const storageMatch =
+          nameStr.match(/([0-9]+)\s*GB/i) ||
+          cleanCombined.match(/([0-9]+)\s*GB/i);
+        if (storageMatch) storage = `${storageMatch[1]} GB`;
+      }
     }
   }
 
@@ -512,6 +535,27 @@ export const redirectToStore = async (req: Request, res: Response): Promise<void
       }
     } catch {
       // Keep directUrl
+    }
+  }
+
+  // If redirecting to Croma, guard against discontinued SKUs that redirect users to "?q=null"
+  if (storeName.toLowerCase().includes('croma')) {
+    const cleanName = product.name.replace(/\(.*?\)/g, '').trim();
+    if (
+      !directUrl.includes('/p/') ||
+      directUrl.includes('null') ||
+      listing?.stockStatus === StockStatus.OUT_OF_STOCK
+    ) {
+      directUrl = `https://www.croma.com/searchB?q=${encodeURIComponent(cleanName)}`;
+    } else {
+      try {
+        const cromaOffer = await scrapeCroma(directUrl);
+        if (cromaOffer?.stockStatus === StockStatus.OUT_OF_STOCK) {
+          directUrl = `https://www.croma.com/searchB?q=${encodeURIComponent(cleanName)}`;
+        }
+      } catch {
+        // Keep directUrl
+      }
     }
   }
 

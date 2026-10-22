@@ -51,7 +51,14 @@ const features = [
   },
 ]
 
-const popular = ["iPhone 18", "Galaxy S26", "OnePlus 13", "Edge 70", "Find X10", "Vivo X200"]
+const popular = [
+  "iPhone 16 Pro Max",
+  "Galaxy S25 Ultra",
+  "OnePlus Nord 4",
+  "Redmi Note 15 5G",
+  "Galaxy S24 FE",
+  "iPhone 17 Pro Max",
+]
 
 export default function Home() {
   const [query, setQuery] = useState("")
@@ -164,7 +171,7 @@ export default function Home() {
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search for iPhone, Galaxy, OnePlus, Edge, Reno..."
+                    placeholder="Search for iPhone, Galaxy, OnePlus, Redmi..."
                     className="flex-1 text-sm text-slate-700 placeholder:text-slate-400 outline-none"
                   />
                   <span className="text-xs text-slate-300 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-mono hidden sm:block">Enter</span>
