@@ -9,7 +9,7 @@ import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from
 import { env } from '../config/env';
 import { resolveDirectStoreUrl } from '../services/storeRedirectService';
 import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
-import { scrapeLiveStoreListing } from '../services/retailerScraperService';
+import { scrapeLiveStoreListing, scrapeFlipkart } from '../services/retailerScraperService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -174,10 +174,51 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
   });
 };
 
+export function extractProductSpecs(product: {
+  name: string;
+  specs?: string[];
+  techSpecs?: any;
+}): { ram?: string | null; storage?: string | null } {
+  const specsList = Array.isArray(product.specs) ? product.specs : [];
+  const specsStr = specsList.join(' ');
+  const tech = product.techSpecs && typeof product.techSpecs === 'object' ? (product.techSpecs as Record<string, unknown>) : {};
+  const nameStr = product.name || '';
+  const combined = `${nameStr} ${specsStr}`;
+
+  // 1. RAM extraction
+  let ram: string | null = null;
+  if (tech['RAM']) {
+    ram = String(tech['RAM']);
+  } else {
+    const ramMatch = combined.match(/([0-9]+)\s*GB\s*RAM/i);
+    if (ramMatch) ram = `${ramMatch[1]} GB`;
+  }
+
+  // 2. Storage extraction
+  let storage: string | null = null;
+  if (tech['Internal Storage'] || tech['Storage'] || tech['ROM']) {
+    storage = String(tech['Internal Storage'] || tech['Storage'] || tech['ROM']);
+  } else {
+    const tbMatch = combined.match(/([0-9]+)\s*TB/i);
+    if (tbMatch) {
+      storage = `${tbMatch[1]} TB`;
+    } else {
+      const storageMatch =
+        combined.match(/([0-9]+)\s*GB\s*(?:inbuilt|storage|ROM)/i) ||
+        nameStr.match(/([0-9]+)\s*GB/i) ||
+        specsStr.match(/([0-9]+)\s*GB/i);
+      if (storageMatch) storage = `${storageMatch[1]} GB`;
+    }
+  }
+
+  return { ram, storage };
+}
+
 export const getProductLiveStores = async (req: Request, res: Response): Promise<void> => {
   const productId = String(req.params.id);
   const forceRefresh = req.query.refresh !== 'false';
   const product = await findProductOr404(productId);
+  const targetSpecs = extractProductSpecs(product);
 
   // 1. Live real-time prices from SerpApi (always fresh when user visits phone page)
   const livePrices = await getLiveSerpStorePrices(product.name, product.brand, product.bestPrice, forceRefresh);
@@ -262,7 +303,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   // scrape the verified store URLs (Croma, Amazon, Flipkart) directly in real-time!
   const scrapedStores: StorePriceRow[] = await Promise.all(
     dbStores.map(async (s) => {
-      const scraped = await scrapeLiveStoreListing(s.url, s.store, product.name, product.bestPrice);
+      const scraped = await scrapeLiveStoreListing(s.url, s.store, product.name, product.bestPrice, targetSpecs);
       if (!scraped) return s;
 
       return {
@@ -275,6 +316,35 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
       };
     }),
   );
+
+  // If Flipkart is not yet linked in database or live results, dynamically scrape Flipkart live in real-time!
+  const hasFlipkart = scrapedStores.some(
+    (s) => s.storeSlug?.toLowerCase() === 'flipkart' || s.store.toLowerCase().includes('flipkart'),
+  );
+  if (!hasFlipkart) {
+    try {
+      const fkOffer = await scrapeFlipkart('https://www.flipkart.com/search', product.bestPrice, product.name, targetSpecs);
+      if (fkOffer && fkOffer.price && fkOffer.price > 0) {
+        scrapedStores.push({
+          storeId: 'flipkart-live',
+          store: 'Flipkart',
+          storeSlug: 'flipkart',
+          logoUrl: 'https://img1a.flixcart.com/www/linchpin/fk-cp-zion/img/flipkart-plus_8d85f4.png',
+          price: fkOffer.price,
+          mrp: null,
+          shipping: 'Free',
+          shippingCost: 0,
+          availability: fkOffer.availability || 'In Stock',
+          stockStatus: fkOffer.stockStatus ?? StockStatus.IN_STOCK,
+          diff: 0,
+          url: fkOffer.directUrl || `https://www.flipkart.com/search?q=${encodeURIComponent(product.name)}`,
+          lastCheckedAt: new Date().toISOString(),
+        });
+      }
+    } catch (e) {
+      console.warn('[LiveStore] Flipkart dynamic scrape error:', e);
+    }
+  }
 
   const stores = [...scrapedStores].sort((a, b) => {
     const aOut = a.stockStatus === StockStatus.OUT_OF_STOCK ? 1 : 0;
@@ -430,7 +500,20 @@ export const redirectToStore = async (req: Request, res: Response): Promise<void
   const storeName = listing?.store?.name || product.bestStore?.name || requestedStore || 'Amazon';
   const rawUrl = listing?.productUrl || '';
 
-  const directUrl = await resolveDirectStoreUrl(rawUrl, storeName, product.name);
+  let directUrl = await resolveDirectStoreUrl(rawUrl, storeName, product.name);
+
+  // If redirecting to Flipkart, ensure the direct link matches the EXACT RAM & storage variant
+  if (storeName.toLowerCase().includes('flipkart') && (!directUrl.includes('/p/itm') || directUrl.includes('flipkart.com/search'))) {
+    try {
+      const targetSpecs = extractProductSpecs(product);
+      const fkScraped = await scrapeFlipkart('https://www.flipkart.com/search', product.bestPrice, product.name, targetSpecs);
+      if (fkScraped?.directUrl && fkScraped.directUrl.includes('/p/itm')) {
+        directUrl = fkScraped.directUrl;
+      }
+    } catch {
+      // Keep directUrl
+    }
+  }
 
   // If client wants JSON info instead of direct 302 redirect
   if (req.query.format === 'json') {
