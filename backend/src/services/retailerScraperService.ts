@@ -90,18 +90,47 @@ export const scrapeAmazon = async (directUrl: string): Promise<Partial<ScrapedSt
     if (!res.ok) return null;
     const html = await res.text();
 
-    const isOutOfStock =
-      html.includes('Currently unavailable') ||
-      html.includes('currently unavailable') ||
-      html.includes('We don\'t know when or if this item will be back in stock');
+    // Robot check / Captcha safety: don't produce false out-of-stock
+    const isCaptcha = html.includes('validateCaptcha') || html.includes('Robot Check');
+    if (isCaptcha) {
+      return null;
+    }
 
-    const priceMatch =
-      html.match(/class="a-price-whole">([0-9,]+)/i) ||
-      html.match(/class="a-offscreen">₹?([0-9,]+)/i);
+    // 1. Direct BuyBox action buttons (strongest in-stock signal on Amazon)
+    const hasAddToCart = html.includes('id="add-to-cart-button"') || html.includes('name="submit.add-to-cart"');
+    const hasBuyNow = html.includes('id="buy-now-button"') || html.includes('name="submit.buy-now"');
 
-    const price = priceMatch ? Math.round(Number(priceMatch[1].replace(/,/g, ''))) : null;
+    // 2. Scoped #availability container (avoids matching JS dictionary strings on the page)
+    const availMatch = html.match(/id="availability"[^>]*>([\s\S]*?)<\/div>/i);
+    const availText = availMatch ? availMatch[1].replace(/<[^>]+>/g, ' ').toLowerCase() : '';
 
-    if (isOutOfStock) {
+    const isExplicitlyUnavailable =
+      availText.includes('currently unavailable') ||
+      availText.includes('we don\'t know when or if this item will be back in stock');
+
+    const isLimited = availText.includes('only ') && availText.includes('left in stock');
+
+    let stockStatus: StockStatus = StockStatus.IN_STOCK;
+    let availability = 'In Stock';
+
+    if (!hasAddToCart && !hasBuyNow && isExplicitlyUnavailable) {
+      stockStatus = StockStatus.OUT_OF_STOCK;
+      availability = 'Out of Stock';
+    } else if (isLimited) {
+      stockStatus = StockStatus.LIMITED;
+      availability = 'Limited Stock';
+    } else if (hasAddToCart || hasBuyNow || availText.includes('in stock')) {
+      stockStatus = StockStatus.IN_STOCK;
+      availability = 'In Stock';
+    }
+
+    // 3. Price extraction
+    const priceWhole = html.match(/class="a-price-whole">([0-9,]+)/i);
+    const offscreen = html.match(/class="a-offscreen">₹?([0-9,]+)/i);
+    const rawPriceStr = priceWhole ? priceWhole[1] : (offscreen ? offscreen[1] : null);
+    const price = rawPriceStr ? Math.round(Number(rawPriceStr.replace(/,/g, ''))) : null;
+
+    if (stockStatus === StockStatus.OUT_OF_STOCK) {
       return {
         price: price || 0,
         stockStatus: StockStatus.OUT_OF_STOCK,
@@ -112,8 +141,8 @@ export const scrapeAmazon = async (directUrl: string): Promise<Partial<ScrapedSt
     if (price && price > 0) {
       return {
         price,
-        stockStatus: StockStatus.IN_STOCK,
-        availability: 'In Stock',
+        stockStatus,
+        availability,
       };
     }
 
