@@ -142,22 +142,56 @@ model Watchlist {
 }
 
 model Alert {
-  id          String    @id @default(uuid())
-  userId      String
-  productId   String
-  targetPrice Float
-  notifyEmail Boolean   @default(true)
-  notifyInApp Boolean   @default(true)
-  notifyPush  Boolean   @default(false)
-  isActive    Boolean   @default(true)
+  id                String            @id @default(uuid())
+  userId            String
+  productId         String
+  targetPrice       Float
+  notifyEmail       Boolean           @default(true)
+  notifyInApp       Boolean           @default(true)
+  notifyPush        Boolean           @default(false)
+  isActive          Boolean           @default(true)
   // Set when the best price reaches the target; cleared when the price rises above it again
-  triggeredAt DateTime?
-  createdAt   DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  triggeredAt       DateTime?
+  lastCheckedPrice  Float?
+  lastNotifiedPrice Float?
+  createdAt         DateTime          @default(now())
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product           Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  notificationJobs  NotificationJob[]
 
   @@index([productId, isActive])
   @@index([userId])
+}
+
+enum NotificationJobStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
+model NotificationJob {
+  id            String                @id @default(uuid())
+  alertId       String
+  userId        String
+  productId     String
+  triggerPrice  Float
+  previousPrice Float?
+  targetPrice   Float
+  status        NotificationJobStatus @default(PENDING)
+  attempts      Int                   @default(0)
+  maxAttempts   Int                   @default(3)
+  lastError     String?
+  lockedAt      DateTime?
+  lockedBy      String?
+  processedAt   DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  alert         Alert                 @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@unique([alertId, triggerPrice])
+  @@index([status, createdAt])
+  @@index([alertId])
 }
 
 model Notification {

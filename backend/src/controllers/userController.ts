@@ -220,7 +220,7 @@ const upsertAlert = async (
 ) => {
   const existing = await prisma.alert.findFirst({ where: { userId, productId, isActive: true } });
   const alert = existing
-    ? await prisma.alert.update({ where: { id: existing.id }, data: { targetPrice, triggeredAt: null, ...channels } })
+    ? await prisma.alert.update({ where: { id: existing.id }, data: { targetPrice, triggeredAt: null, lastNotifiedPrice: null, ...channels } })
     : await prisma.alert.create({ data: { userId, productId, targetPrice, ...channels } });
   return { alert, created: !existing };
 };
@@ -388,7 +388,7 @@ export const updateAlert = async (req: Request, res: Response): Promise<void> =>
     where: { id: alertId },
     data: {
       ...withoutUndefined({ targetPrice, isActive, ...channelInput(req.body) }),
-      ...(targetPrice !== undefined ? { triggeredAt: null } : {}),
+      ...(targetPrice !== undefined ? { triggeredAt: null, lastNotifiedPrice: null } : {}),
     },
   });
   res.json({

@@ -1,6 +1,7 @@
 import { env } from './config/env';
 import { createApp } from './app';
 import { startPriceSyncScheduler } from './jobs/scheduler';
+import { startPriceAlertMonitoring, stopPriceAlertMonitoring } from './jobs/priceAlertScheduler';
 import { providerStatus } from './services/stores';
 import prisma from './utils/prisma';
 
@@ -12,11 +13,13 @@ const server = app.listen(env.port, () => {
     console.log(`  ${p.store} API: ${p.configured ? 'configured' : `not configured (missing ${p.missing.join(', ')})`}`);
   }
   startPriceSyncScheduler();
+  startPriceAlertMonitoring(60000);
 });
 
 const shutdown = async (signal: string) => {
   console.log(`${signal} received, shutting down`);
   server.close();
+  await stopPriceAlertMonitoring();
   await prisma.$disconnect();
   process.exit(0);
 };

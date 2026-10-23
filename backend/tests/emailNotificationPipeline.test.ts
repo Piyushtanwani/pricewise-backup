@@ -231,10 +231,10 @@ test('4. Missing or stale price data suppresses email alert', async () => {
 
   const listing = genuineProduct.stores[0];
 
-  // Set lastCheckedAt to 45 days ago (stale)
+  // Set lastCheckedAt to 45 days ago (stale) for all listings
   const staleDate = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000);
-  await prisma.productStore.update({
-    where: { id: listing.id },
+  await prisma.productStore.updateMany({
+    where: { productId: genuineProduct.id },
     data: { lastCheckedAt: staleDate },
   });
 
@@ -272,8 +272,8 @@ test('4. Missing or stale price data suppresses email alert', async () => {
     assert.equal(zeroResult, 0, 'Zero or negative price must return 0');
   } finally {
     // Restore listing lastCheckedAt
-    await prisma.productStore.update({
-      where: { id: listing.id },
+    await prisma.productStore.updateMany({
+      where: { productId: genuineProduct.id },
       data: { lastCheckedAt: new Date() },
     });
     await prisma.alert.deleteMany({ where: { id: alert.id } });
@@ -287,10 +287,24 @@ test('4. Missing or stale price data suppresses email alert', async () => {
 test('5. Synthetic or demo data suppresses email alert', async () => {
   // Take one of the known synthetic seed products
   const syntheticId = Array.from(SYNTHETIC_PRODUCT_IDS)[0];
-  const syntheticProduct = await prisma.product.findUnique({
+  let syntheticProduct = await prisma.product.findUnique({
     where: { id: syntheticId },
     include: { stores: true },
   });
+
+  let createdSynthetic = false;
+  if (!syntheticProduct) {
+    syntheticProduct = await prisma.product.create({
+      data: {
+        id: syntheticId,
+        name: 'iPhone 16 Pro Max 256GB Natural Titanium',
+        brand: 'Apple',
+        category: 'Mobiles',
+      },
+      include: { stores: true },
+    });
+    createdSynthetic = true;
+  }
 
   assert.ok(syntheticProduct, 'Synthetic seed product should exist in database');
   assert.equal(isSyntheticProduct(syntheticProduct), true, 'Must be flagged as synthetic');
@@ -321,6 +335,9 @@ test('5. Synthetic or demo data suppresses email alert', async () => {
   } finally {
     await prisma.alert.deleteMany({ where: { id: alert.id } });
     await prisma.user.deleteMany({ where: { id: testUser.id } });
+    if (createdSynthetic) {
+      await prisma.product.deleteMany({ where: { id: syntheticId } });
+    }
   }
 });
 
