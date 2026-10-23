@@ -490,9 +490,13 @@ export const getAlternatives = async (req: Request, res: Response): Promise<void
       });
       clearTimeout(timer);
       if (mlRes.ok) {
-        const payload = (await mlRes.json()) as { recommendations?: { product_id: string }[] };
-        if (payload.recommendations && payload.recommendations.length > 0) {
-          const recIds = payload.recommendations.map((r) => r.product_id);
+        const payload = (await mlRes.json()) as {
+          recommendations?: { product_id: string }[];
+          alternatives?: { product_id: string }[];
+        };
+        const recList = payload.alternatives || payload.recommendations;
+        if (recList && recList.length > 0) {
+          const recIds = recList.map((r) => r.product_id);
           const dbProducts = await prisma.product.findMany({
             where: { id: { in: recIds } },
             include: productInclude,

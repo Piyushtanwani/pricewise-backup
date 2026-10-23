@@ -49,6 +49,8 @@ export interface Prediction {
   potentialSaving: number;
   confidence: Confidence;
   recommendation: Recommendation;
+  explanation?: string;
+  trend?: string;
   insufficientData: boolean;
   source: 'local-trend' | 'ml-service';
   disclaimer: string;

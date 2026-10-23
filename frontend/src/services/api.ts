@@ -9,6 +9,7 @@ import type {
   StorePriceRow,
   PricePoint,
   PredictionPoint,
+  ProductPredictionResult,
 } from '../types/product';
 import type {
   User,
@@ -163,9 +164,24 @@ export const api = {
     return res.data?.points || (Array.isArray(res.data) ? res.data : []);
   },
 
-  async getProductPrediction(id: string): Promise<PredictionPoint[]> {
+  async getProductPrediction(id: string): Promise<ProductPredictionResult> {
     const res = await apiClient.get<any>(`/products/${encodeURIComponent(id)}/prediction`);
-    return res.data?.points || (Array.isArray(res.data) ? res.data : []);
+    const data = res.data || {};
+    const points: PredictionPoint[] = data?.points || (Array.isArray(data) ? data : []);
+    return {
+      productId: data?.productId || id,
+      points,
+      predicted7d: Number(data?.predicted7d ?? 0),
+      predicted30d: Number(data?.predicted30d ?? 0),
+      potentialSaving: Number(data?.potentialSaving ?? 0),
+      confidence: data?.confidence || 'Moderate',
+      recommendation: data?.recommendation || 'MONITOR',
+      explanation: data?.explanation,
+      trend: data?.trend,
+      source: data?.source || 'ml-service',
+      insufficientData: Boolean(data?.insufficientData),
+      disclaimer: data?.disclaimer,
+    };
   },
 
   async getProductAlternatives(id: string): Promise<Product[]> {

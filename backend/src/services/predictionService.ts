@@ -59,7 +59,17 @@ export const predictPrices = async (
   storeId?: string
 ): Promise<Prediction> => {
   const local = predictLinear(series);
-  if (!env.mlServiceUrl || local.insufficientData) return local;
+  if (!env.mlServiceUrl) {
+    const localExp = local.recommendation === 'BUY'
+      ? `Price is projected to rise towards ₹${local.predicted30d.toLocaleString('en-IN')} within 30 days. Current price is favorable.`
+      : local.recommendation === 'WAIT'
+      ? `Price is expected to drop towards ₹${local.predicted30d.toLocaleString('en-IN')} within 30 days. Recommend waiting for upcoming drops.`
+      : `Price is stable near ₹${local.predicted30d.toLocaleString('en-IN')}. Monitor for promotional retailer sales.`;
+    return {
+      ...local,
+      explanation: localExp,
+    };
+  }
 
   const payload = {
     product_id: productId,
@@ -113,6 +123,14 @@ export const predictPrices = async (
       }));
     }
 
+    const explanation = body.explanation || (
+      recommendation === 'BUY'
+        ? `PriceWise ML model forecasts a favorable buying window with prices projected near ₹${predicted30d.toLocaleString('en-IN')}.`
+        : recommendation === 'WAIT'
+        ? `PriceWise ML model projects prices softening to ₹${predicted30d.toLocaleString('en-IN')} with potential savings of ₹${potentialSaving.toLocaleString('en-IN')}.`
+        : `PriceWise ML model projects stable pricing near ₹${predicted30d.toLocaleString('en-IN')}. Monitor for flash retailer discounts.`
+    );
+
     return {
       points,
       predicted7d,
@@ -120,14 +138,23 @@ export const predictPrices = async (
       potentialSaving,
       confidence,
       recommendation,
+      explanation,
+      trend: body.trend,
       insufficientData: body.status === 'insufficient_data',
       source: 'ml-service',
       disclaimer: PREDICTION_DISCLAIMER,
     };
   } catch (err: any) {
     console.warn(`[PredictionService] ML service unavailable at ${env.mlServiceUrl}: ${err?.message || err}. Falling back to local deterministic model.`);
+    const localExp = local.recommendation === 'BUY'
+      ? `Price is projected to rise towards ₹${local.predicted30d.toLocaleString('en-IN')} within 30 days. Current price is favorable.`
+      : local.recommendation === 'WAIT'
+      ? `Price is expected to drop towards ₹${local.predicted30d.toLocaleString('en-IN')} within 30 days. Recommend waiting for upcoming drops.`
+      : `Price is stable near ₹${local.predicted30d.toLocaleString('en-IN')}. Monitor for promotional retailer sales.`;
+
     return {
       ...local,
+      explanation: localExp,
       source: 'local-trend',
     };
   }

@@ -32,7 +32,7 @@ export const env = {
   adminApiKey: str('ADMIN_API_KEY'),
   redisUrl: str('REDIS_URL', ''),
 
-  mlServiceUrl: str('ML_SERVICE_URL').replace(/\/+$/, ''),
+  mlServiceUrl: str('ML_SERVICE_URL', 'http://127.0.0.1:8000').replace(/\/+$/, ''),
 
   priceSyncIntervalMinutes: num('PRICE_SYNC_INTERVAL_MINUTES', 0),
   priceDropThresholdPercent: num('PRICE_DROP_THRESHOLD_PERCENT', 5),

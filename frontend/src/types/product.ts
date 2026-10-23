@@ -56,6 +56,21 @@ export interface PredictionPoint {
   lower: number
 }
 
+export interface ProductPredictionResult {
+  productId: string
+  points: PredictionPoint[]
+  predicted7d: number
+  predicted30d: number
+  potentialSaving: number
+  confidence: 'High' | 'Moderate' | 'Low' | string
+  recommendation: 'BUY' | 'WAIT' | 'MONITOR' | string
+  explanation?: string
+  trend?: string
+  source: 'ml-service' | 'local-trend'
+  insufficientData?: boolean
+  disclaimer?: string
+}
+
 export interface ProductDetailResponse {
   id: string
   brand: string

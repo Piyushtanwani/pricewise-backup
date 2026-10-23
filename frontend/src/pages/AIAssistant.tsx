@@ -31,8 +31,8 @@ const INITIAL_MESSAGES: Message[] = [
     role: "assistant",
     content: "Hello! I'm your PriceWise AI Shopping Assistant. Ask me anything about smartphone pricing, specs comparison, retailer discounts, or the best time to buy.",
     insights: [
-      { label: "Catalog Live", value: "140 smartphones tracked across Amazon, Flipkart, Croma" },
-      { label: "Price Analysis", value: "Smart predictions & historical discount tracking active" },
+      { label: "Price Intelligence", value: "Real-time pricing and multi-store tracking active" },
+      { label: "Forecast Models", value: "Hybrid Prophet & XGBoost price trend analysis ready" },
     ],
   },
 ]
@@ -161,8 +161,8 @@ export default function AIAssistant() {
           role: "assistant",
           content: `I've analyzed our smartphone catalog for "${text}". Here are the top matches and price recommendations:`,
           insights: [
-            { label: "Catalog Advice", value: "Check historical price drops before buying during festival sales" },
-            { label: "Retailer Tip", value: "Compare Amazon and Flipkart for exchange bonuses" },
+            { label: "Price Intelligence", value: "Verified multi-retailer price tracking across Amazon, Flipkart, and Croma" },
+            { label: "Smart Tracking", value: "Set target price alerts to automatically catch sudden retailer drops" },
           ],
         },
       ])
