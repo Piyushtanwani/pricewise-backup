@@ -77,6 +77,46 @@ const recordOffer = async (listingId: string, offer: StoreOffer, current: { mrp:
 };
 
 /**
+ * Execute an async operation with exponential backoff on transient errors (429, 503, timeouts)
+ */
+async function executeWithRetry<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  initialDelayMs = 1000,
+  context = 'priceSync',
+): Promise<T> {
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      attempt++;
+      const isTransient =
+        err?.status === 429 ||
+        err?.statusCode === 429 ||
+        err?.status === 503 ||
+        err?.statusCode === 503 ||
+        err?.code === 'ETIMEDOUT' ||
+        err?.code === 'ECONNRESET' ||
+        err?.name === 'AbortError' ||
+        (typeof err?.message === 'string' &&
+          (err.message.includes('429') ||
+            err.message.includes('503') ||
+            err.message.includes('rate limit') ||
+            err.message.includes('timeout')));
+
+      if (attempt >= retries || !isTransient) {
+        throw err;
+      }
+      const backoff = initialDelayMs * Math.pow(2, attempt - 1);
+      console.warn(`[${context}] Transient error (attempt ${attempt}/${retries}): ${err?.message || err}. Retrying in ${backoff}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, backoff));
+    }
+  }
+  return fn();
+}
+
+/**
  * Refreshes prices for every listing that is linked to a store identifier (ASIN / FSN)
  * on a configured provider. Unconfigured providers are reported and skipped.
  */
@@ -101,12 +141,27 @@ const runSync = async (opts: { productId?: string }): Promise<SyncSummary> => {
     if (listings.length === 0) continue;
 
     try {
-      const offers = await provider.getOffers(listings.map((l) => l.externalId!));
+      const offers = await executeWithRetry(
+        () => provider.getOffers(listings.map((l) => l.externalId!)),
+        3,
+        1000,
+        `ProviderSync:${provider.id}`,
+      );
       const byId = new Map(offers.map((o) => [o.externalId, o]));
       for (const listing of listings) {
         const offer = byId.get(listing.externalId!);
         if (!offer) {
           result.notFound++;
+          // Stale listing ghost-price protection: If an offer is no longer found and the listing
+          // was last checked more than 48 hours ago, mark OUT_OF_STOCK rather than retaining old ghost prices indefinitely
+          const daysSinceLastCheck = (Date.now() - new Date(listing.lastCheckedAt).getTime()) / (1000 * 60 * 60 * 24);
+          if (daysSinceLastCheck > 2 && listing.stockStatus !== 'OUT_OF_STOCK') {
+            await prisma.productStore.update({
+              where: { id: listing.id },
+              data: { stockStatus: 'OUT_OF_STOCK', lastCheckedAt: new Date() },
+            });
+            affected.add(listing.productId);
+          }
           continue;
         }
         await recordOffer(listing.id, offer, listing);

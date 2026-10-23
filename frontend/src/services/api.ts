@@ -141,8 +141,10 @@ export const api = {
     return res.data;
   },
 
-  async getProduct(id: string): Promise<ProductDetailResponse> {
-    const res = await apiClient.get<ProductDetailResponse>(`/products/${encodeURIComponent(id)}`);
+  async getProduct(id: string, refresh = false): Promise<ProductDetailResponse> {
+    const res = await apiClient.get<ProductDetailResponse>(`/products/${encodeURIComponent(id)}`, {
+      params: refresh ? { refresh: 'true' } : undefined,
+    });
     return res.data;
   },
 

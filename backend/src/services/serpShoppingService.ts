@@ -258,7 +258,8 @@ export const getLiveSerpStorePrices = async (
       return cached;
     }
   } else {
-    await livePriceCache.del(cacheKey);
+    await livePriceCache.evict(cacheKey);
+    await livePriceCache.invalidatePattern(`serp_live::${cleanQuery.toLowerCase()}*`);
   }
 
   try {

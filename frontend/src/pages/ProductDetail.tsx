@@ -153,6 +153,11 @@ export default function ProductDetail() {
       if (res.stores && res.stores.length > 0) {
         setLiveStores(res.stores)
       }
+      // Re-fetch product details to synchronize UI with PostgreSQL records updated by the live sync
+      const refreshedDetail = await api.getProduct(id, true)
+      if (refreshedDetail) {
+        setDetail(refreshedDetail)
+      }
     } catch (err) {
       console.error("Failed to refresh live store prices:", err)
     } finally {

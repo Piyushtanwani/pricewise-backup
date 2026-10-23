@@ -6,6 +6,7 @@ export interface ScrapedStoreOffer {
   storeName: string;
   storeSlug: string;
   price: number;
+  mrp?: number;
   stockStatus: StockStatus;
   availability: string;
   directUrl: string;
@@ -240,8 +241,19 @@ export const scrapeCroma = async (
   }
 };
 
+const AMAZON_BUYBOX_HEADERS: Record<string, string> = {
+  ...BROWSER_HEADERS,
+  'Accept-Language': 'en-IN,en-GB;q=0.9,en;q=0.8',
+  'Cookie': 'lc-acbin=en_IN; i18n-prefs=INR',
+  'sec-ch-ua': '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Windows"',
+};
+
 /**
- * Live Scraper for Amazon Product Pages
+ * Live Scraper for Amazon Product Pages:
+ * Targets the active Amazon Buy Box container (handling regional pin-code pricing
+ * variations and Buy Box seller selection) rather than secondary seller list prices.
  */
 export const scrapeAmazon = async (
   directUrl: string,
@@ -260,7 +272,7 @@ export const scrapeAmazon = async (
     const timer = setTimeout(() => controller.abort(), 6000);
 
     const res = await fetch(directUrl, {
-      headers: BROWSER_HEADERS,
+      headers: AMAZON_BUYBOX_HEADERS,
       signal: controller.signal,
     });
     clearTimeout(timer);
@@ -303,20 +315,44 @@ export const scrapeAmazon = async (
       stock = { availability: 'In Stock', stockStatus: StockStatus.IN_STOCK, inStock: true };
     }
 
-    // Main Product Core Price ONLY (Do NOT match carousel accessories or phone cases)
-    const corePriceSection =
-      html.match(/id="corePriceDisplay_desktop_feature_div"[\s\S]*?<\/div>\s*<\/div>/i) ||
-      html.match(/id="corePrice_desktop"[\s\S]*?<\/div>/i) ||
-      html.match(/id="apex_desktop"[\s\S]*?<\/div>/i) ||
-      html.match(/id="desktop_buybox"[\s\S]*?<\/div>/i);
+    // Target active Amazon Buy Box container (avoiding secondary third-party seller list prices)
+    const buyBoxSection =
+      html.match(/id="corePriceDisplay_desktop_feature_div"[\s\S]*?(?:id="desktop_buybox"|id="featurebullets_feature_div"|id="productDescription"|<\/div>\s*<\/div>\s*<\/div>)/i)?.[0] ||
+      html.match(/id="desktop_buybox"[\s\S]*?<\/form>/i)?.[0] ||
+      html.match(/id="apex_desktop"[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/i)?.[0] ||
+      html.match(/id="corePrice_desktop"[\s\S]*?<\/div>\s*<\/div>/i)?.[0] ||
+      '';
 
-    const priceScope = corePriceSection ? corePriceSection[0] : '';
-    const priceWhole =
-      priceScope.match(/class="a-price-whole">([0-9,]+)/i) ||
-      html.match(/id="priceblock_ourprice"[^>]*>₹?([0-9,]+)/i) ||
-      html.match(/id="priceblock_dealprice"[^>]*>₹?([0-9,]+)/i);
+    // Priority 1: .priceToPay / .apexPriceToPay (active Buy Box winner price)
+    const priceToPayMatch =
+      buyBoxSection.match(/class="[^"]*(?:priceToPay|apexPriceToPay)[^"]*"[\s\S]*?class="a-offscreen">([^<]+)<\/span>/i) ||
+      buyBoxSection.match(/class="[^"]*(?:priceToPay|apexPriceToPay)[^"]*"[\s\S]*?class="a-price-whole">([0-9,]+)/i);
 
-    let price = parsePrice(priceWhole ? priceWhole[1] : 0);
+    // Priority 2: .a-price-whole inside Buy Box
+    const buyBoxPriceWhole = buyBoxSection.match(/class="a-price-whole">([0-9,]+)/i);
+    const buyBoxOffscreen = buyBoxSection.match(/class="a-offscreen">₹?([0-9,.]+)/i);
+
+    // Priority 3: legacy price blocks (only if Buy Box container is missing)
+    const legacyPriceMatch =
+      html.match(/id="priceblock_dealprice"[^>]*>₹?([0-9,]+)/i) ||
+      html.match(/id="priceblock_ourprice"[^>]*>₹?([0-9,]+)/i);
+
+    const priceRaw = priceToPayMatch
+      ? priceToPayMatch[1]
+      : buyBoxPriceWhole
+      ? buyBoxPriceWhole[1]
+      : buyBoxOffscreen
+      ? buyBoxOffscreen[1]
+      : legacyPriceMatch?.[1];
+
+    let price = parsePrice(priceRaw);
+
+    // Extract MRP from basisPrice inside Buy Box if present
+    const mrpMatch =
+      buyBoxSection.match(/class="[^"]*basisPrice[^"]*"[\s\S]*?class="a-offscreen">([^<]+)<\/span>/i) ||
+      buyBoxSection.match(/class="a-price a-text-price"[^>]*>[\s\S]*?class="a-offscreen">([^<]+)<\/span>/i);
+    let mrp = mrpMatch ? parsePrice(mrpMatch[1]) : null;
+    if (mrp && price && mrp <= price) mrp = null;
 
     // Reject phone covers, accessories, or erroneous sub-prices (< 40% of phone price)
     const minThreshold = Math.max(3000, (basePrice || 15000) * 0.4);
@@ -327,16 +363,22 @@ export const scrapeAmazon = async (
     if (stock.stockStatus === StockStatus.OUT_OF_STOCK) {
       return {
         price: price || 0,
+        mrp: mrp ?? undefined,
         stockStatus: StockStatus.OUT_OF_STOCK,
         availability: 'Out of Stock',
+        storeName: 'Amazon',
+        storeSlug: 'amazon',
       };
     }
 
     if (price && price > 0) {
       return {
         price,
+        mrp: mrp ?? undefined,
         stockStatus: stock.stockStatus,
         availability: stock.availability,
+        storeName: 'Amazon',
+        storeSlug: 'amazon',
       };
     }
 

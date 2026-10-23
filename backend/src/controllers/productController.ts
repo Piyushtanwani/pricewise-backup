@@ -111,7 +111,11 @@ const productDetailCache = new Map<string, { data: any; expiry: number }>();
 export const getProduct = async (req: Request, res: Response): Promise<void> => {
   const productId = String(req.params.id);
   const now = Date.now();
-  const forceRefresh = req.query.refresh === 'true';
+  const forceRefresh = req.query.refresh === 'true' || req.query.forceRefresh === 'true';
+
+  if (forceRefresh) {
+    productDetailCache.delete(productId);
+  }
 
   const cached = forceRefresh ? null : productDetailCache.get(productId);
   let baseData = cached && cached.expiry > now ? cached.data : null;
@@ -241,9 +245,66 @@ export function extractProductSpecs(product: {
   return { ram, storage };
 }
 
+async function persistLiveRatesToPostgres(productId: string, stores: StorePriceRow[]): Promise<void> {
+  try {
+    const dbStores = await prisma.store.findMany();
+    const storeMap = new Map<string, string>();
+    for (const s of dbStores) {
+      storeMap.set(s.slug.toLowerCase(), s.id);
+      storeMap.set(s.name.toLowerCase(), s.id);
+    }
+
+    const now = new Date();
+    for (const item of stores) {
+      if (!item.price || item.price <= 0) continue;
+      const slug = (item.storeSlug || item.store || '').toLowerCase();
+      let storeDbId = storeMap.get(slug);
+      if (!storeDbId) {
+        const matched = dbStores.find(
+          (s) => slug.includes(s.slug.toLowerCase()) || s.slug.toLowerCase().includes(slug),
+        );
+        if (matched) storeDbId = matched.id;
+      }
+      if (!storeDbId) continue;
+
+      const existing = await prisma.productStore.findUnique({
+        where: { productId_storeId: { productId, storeId: storeDbId } },
+      });
+
+      if (existing) {
+        const priceChanged = Math.abs(existing.currentPrice - item.price) > 1;
+        await prisma.productStore.update({
+          where: { id: existing.id },
+          data: {
+            currentPrice: item.price,
+            ...(item.mrp ? { mrp: item.mrp } : {}),
+            stockStatus: item.stockStatus,
+            lastCheckedAt: now,
+          },
+        });
+
+        if (priceChanged) {
+          await prisma.priceHistory.create({
+            data: {
+              productStoreId: existing.id,
+              price: item.price,
+              timestamp: now,
+            },
+          });
+        }
+      }
+    }
+
+    await refreshProductAggregates(productId);
+    productDetailCache.delete(productId);
+  } catch (err: any) {
+    console.warn(`[LiveStore] Failed to persist live rates for product ${productId}:`, err?.message || err);
+  }
+}
+
 export const getProductLiveStores = async (req: Request, res: Response): Promise<void> => {
   const productId = String(req.params.id);
-  const forceRefresh = req.query.refresh !== 'false';
+  const forceRefresh = req.query.refresh === 'true' || req.query.forceRefresh === 'true';
   const product = await findProductOr404(productId);
   const targetSpecs = extractProductSpecs(product);
 
@@ -316,6 +377,10 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
 
     const bestInStock = finalStores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK) || finalStores[0];
 
+    if (forceRefresh) {
+      await persistLiveRatesToPostgres(productId, finalStores);
+    }
+
     res.json({
       stores: finalStores,
       bestDealUrl: bestInStock?.url || null,
@@ -386,6 +451,10 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   }));
 
   const bestInStock = finalStores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK) || finalStores[0];
+
+  if (forceRefresh) {
+    await persistLiveRatesToPostgres(productId, finalStores);
+  }
 
   res.json({
     stores: finalStores,

@@ -132,6 +132,11 @@ class RedisCacheService {
     }
   }
 
+  /** Explicit cache-eviction alias for forced real-time refreshes */
+  async evict(key: string): Promise<void> {
+    return this.del(key);
+  }
+
   async invalidatePattern(pattern: string): Promise<void> {
     this.memoryFallback.clear();
     try {
