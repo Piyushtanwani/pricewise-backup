@@ -8,7 +8,7 @@
     "build": "tsc -p . && node -e \"const fs = require('fs'); fs.cpSync('src/generated','dist/src/generated',{recursive:true,filter:(src,dest)=>!(dest.endsWith('.dll.node')&&fs.existsSync(dest))})\"",
     "start": "node dist/src/server.js",
     "typecheck": "tsc --noEmit -p .",
-    "test": "node --import tsx --test tests/productMatcherAndUrlSanitization.test.ts tests/storeRedirection.test.ts tests/priceNormalizer.test.ts tests/priceAnalytics.test.ts tests/stores.test.ts tests/assistant.test.ts tests/matching.test.ts tests/smartprix.test.ts tests/auth.test.ts tests/security.test.ts tests/searchAndCatalog.test.ts tests/storesAndExternal.test.ts tests/alertsAndNotifications.test.ts tests/predictionAndMlIntegration.test.ts tests/emailNotificationPipeline.test.ts tests/marketIntelligence.test.ts tests/authOtpAndTracking.test.ts",
+    "test": "node --import tsx --test tests/chatSessionScoping.test.ts tests/productMatcherAndUrlSanitization.test.ts tests/storeRedirection.test.ts tests/priceNormalizer.test.ts tests/priceAnalytics.test.ts tests/stores.test.ts tests/assistant.test.ts tests/matching.test.ts tests/smartprix.test.ts tests/auth.test.ts tests/security.test.ts tests/searchAndCatalog.test.ts tests/storesAndExternal.test.ts tests/alertsAndNotifications.test.ts tests/predictionAndMlIntegration.test.ts tests/emailNotificationPipeline.test.ts tests/marketIntelligence.test.ts tests/authOtpAndTracking.test.ts",
     "seed": "tsx prisma/seed.ts",
     "sync": "tsx scripts/sync.ts",
     "verify:smartprix": "tsx scripts/verifySmartprix.ts",

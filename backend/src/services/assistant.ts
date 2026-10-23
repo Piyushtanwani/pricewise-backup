@@ -18,6 +18,8 @@ export interface AssistantReply {
   products: ProductCard[];
   insights: { label: string; value: string }[];
   parsed: { intent: Intent; budget: number | null; category: string | null };
+  sessionId?: string;
+  userId?: string;
   source?: string;
 }
 
@@ -268,7 +270,10 @@ const localAnswer = async (message: string, context: { productIds?: string[] } =
   };
 };
 
-export const answer = async (message: string, context: { productIds?: string[] } = {}): Promise<AssistantReply> => {
+export const answer = async (
+  message: string,
+  context: { productIds?: string[]; userId?: string; sessionId?: string } = {},
+): Promise<AssistantReply> => {
   if (env.mlServiceUrl) {
     try {
       const controller = new AbortController();
@@ -276,14 +281,25 @@ export const answer = async (message: string, context: { productIds?: string[] }
       const res = await fetch(`${env.mlServiceUrl}/assistant/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, product_ids: context.productIds || [] }),
+        body: JSON.stringify({
+          message,
+          product_ids: context.productIds || [],
+          user_context: {
+            user_id: context.userId,
+            session_id: context.sessionId,
+          },
+        }),
         signal: controller.signal,
       });
       clearTimeout(timer);
       if (res.ok) {
         const data = (await res.json()) as AssistantReply;
         if (data && data.content && Array.isArray(data.products)) {
-          return data;
+          return {
+            ...data,
+            userId: context.userId,
+            sessionId: context.sessionId,
+          };
         }
       }
     } catch {
@@ -292,5 +308,10 @@ export const answer = async (message: string, context: { productIds?: string[] }
   }
 
   const localRes = await localAnswer(message, context);
-  return { ...localRes, source: 'rule-based-fallback' };
+  return {
+    ...localRes,
+    userId: context.userId,
+    sessionId: context.sessionId,
+    source: 'rule-based-fallback',
+  };
 };

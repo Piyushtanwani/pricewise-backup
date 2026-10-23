@@ -196,10 +196,11 @@ export const api = {
     return res.data;
   },
 
-  async askAI(message: string, productIds?: string[]): Promise<AIChatResponse> {
+  async askAI(message: string, productIds?: string[], sessionId?: string): Promise<AIChatResponse> {
     const res = await apiClient.post<AIChatResponse>('/intelligence/ai', {
       message,
       productIds,
+      sessionId,
     });
     return res.data;
   },

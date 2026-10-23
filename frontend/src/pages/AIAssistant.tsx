@@ -1,13 +1,15 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useNavigate } from "react-router"
-import { Send, ExternalLink, Bot, Loader2, RotateCcw } from "lucide-react"
+import { Send, ExternalLink, Bot, Loader2, RotateCcw, UserCheck, Shield } from "lucide-react"
 import Badge from "../components/ui/Badge"
 import { api } from "../services/api"
+import { useAuth } from "../context/AuthContext"
 import type { Product } from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
 
-const CHAT_STORAGE_KEY = "pricewise_shopping_assistant_history"
+// Legacy global key permanently purged to prevent cross-account leaks
+const LEGACY_STORAGE_KEY = "pricewise_shopping_assistant_history"
 
 const quickPrompts = [
   "Best phone under ₹30,000",
@@ -35,46 +37,101 @@ const INITIAL_MESSAGES: Message[] = [
   },
 ]
 
+const getScopedStorageKey = (userId?: string | null) => {
+  if (!userId) return null
+  return `pricewise_chat_history_user_${userId}`
+}
+
+const createSessionId = (userId?: string | null) => {
+  const prefix = userId ? `user_${userId.slice(0, 8)}` : "guest"
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+}
+
 export default function AIAssistant() {
   const navigate = useNavigate()
-  const [messages, setMessages] = useState<Message[]>(() => {
-    try {
-      const saved = localStorage.getItem(CHAT_STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed
-        }
-      }
-    } catch (err) {
-      console.warn("Failed to load saved chat history from localStorage:", err)
-    }
-    return INITIAL_MESSAGES
-  })
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
+
+  const currentUserId = user?.id || null
+  const [activeUserId, setActiveUserId] = useState<string | null>(() => currentUserId)
+  const [sessionId, setSessionId] = useState<string>(() => createSessionId(currentUserId))
+  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const hasInitializedRef = useRef(false)
 
+  // 1. Immediately purge legacy global storage key to prevent cross-user leakage
   useEffect(() => {
     try {
-      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages))
-    } catch (err) {
-      console.warn("Failed to persist chat history to localStorage:", err)
+      localStorage.removeItem(LEGACY_STORAGE_KEY)
+    } catch {
+      // Ignore storage errors
     }
-  }, [messages])
+  }, [])
+
+  // 2. Load or reset session when user identity changes or on initial auth resolution
+  useEffect(() => {
+    if (authLoading) return
+
+    // Re-initialize session strictly when the user ID changes or upon initial mount
+    if (!hasInitializedRef.current || activeUserId !== currentUserId) {
+      hasInitializedRef.current = true
+      setActiveUserId(currentUserId)
+      setSessionId(createSessionId(currentUserId))
+
+      if (currentUserId) {
+        // Scoped strictly to the authenticated user ID
+        const key = getScopedStorageKey(currentUserId)
+        try {
+          const saved = key ? localStorage.getItem(key) : null
+          if (saved) {
+            const parsed = JSON.parse(saved)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setMessages(parsed)
+              return
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to load user-scoped chat history:", err)
+        }
+      }
+
+      // If no history exists for this user or session is unauthenticated, start with empty initial state
+      setMessages(INITIAL_MESSAGES)
+    }
+  }, [authLoading, currentUserId, activeUserId])
+
+  // 3. Persist messages strictly scoped to current authenticated user ID
+  useEffect(() => {
+    if (authLoading || !hasInitializedRef.current) return
+
+    const key = getScopedStorageKey(currentUserId)
+    if (key) {
+      try {
+        localStorage.setItem(key, JSON.stringify(messages))
+      } catch (err) {
+        console.warn("Failed to persist user-scoped chat history:", err)
+      }
+    }
+  }, [messages, currentUserId, authLoading])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  const handleClearChat = () => {
-    try {
-      localStorage.removeItem(CHAT_STORAGE_KEY)
-    } catch (err) {
-      console.warn("Failed to clear chat history from localStorage:", err)
+  // 4. Reset conversation: wipes user-scoped storage and mints a brand new session token
+  const handleClearChat = useCallback(() => {
+    const key = getScopedStorageKey(currentUserId)
+    if (key) {
+      try {
+        localStorage.removeItem(key)
+      } catch (err) {
+        console.warn("Failed to clear user chat history:", err)
+      }
     }
+    setSessionId(createSessionId(currentUserId))
     setMessages(INITIAL_MESSAGES)
-  }
+  }, [currentUserId])
 
   const handleSend = async (text: string) => {
     if (!text.trim() || loading) return
@@ -85,7 +142,7 @@ export default function AIAssistant() {
     setLoading(true)
 
     try {
-      const res = await api.askAI(text)
+      const res = await api.askAI(text, undefined, sessionId)
       setMessages((prev) => [
         ...prev,
         {
@@ -127,8 +184,24 @@ export default function AIAssistant() {
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold text-slate-900">PriceWise Shopping Assistant</h1>
                 <Badge variant="primary">AI</Badge>
+                {isAuthenticated && user && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <UserCheck size={11} />
+                    <span>{user.name.split(' ')[0]}'s Session</span>
+                  </span>
+                )}
+                {!isAuthenticated && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                    <Shield size={11} />
+                    <span>Private Session</span>
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-slate-500">Smart shopping assistant powered by PriceWise catalogue intelligence & rule-based engine</p>
+              <p className="text-xs text-slate-500">
+                {isAuthenticated
+                  ? "Chat history strictly scoped and secured to your authenticated account"
+                  : "Private session - chat is isolated and not stored or shared across accounts"}
+              </p>
             </div>
           </div>
           {messages.length > 1 && (

@@ -58,5 +58,7 @@ export const getPriceIntelligence = async (req: Request, res: Response): Promise
 export const getAIAssistantChat = async (req: Request, res: Response): Promise<void> => {
   const message = requireString(req.body, 'message', { max: 500 });
   const productIds = queryList(req.body?.productIds);
-  res.json(await answer(message, { productIds }));
+  const sessionId = typeof req.body?.sessionId === 'string' ? req.body.sessionId.slice(0, 120) : undefined;
+  const userId = req.user?.id;
+  res.json(await answer(message, { productIds, userId, sessionId }));
 };

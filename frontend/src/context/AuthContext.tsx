@@ -119,6 +119,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     api.logout();
+    try {
+      localStorage.removeItem('pricewise_shopping_assistant_history');
+      sessionStorage.removeItem('pricewise_guest_chat_session');
+    } catch {
+      // Ignore storage errors
+    }
     setUser(null);
     setWishlistIds(new Set());
     setWatchlistIds(new Set());

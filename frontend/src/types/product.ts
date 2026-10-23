@@ -123,6 +123,8 @@ export interface AIChatResponse {
   content: string
   products?: Product[]
   insights?: { label: string; value: string }[]
+  sessionId?: string
+  userId?: string
 }
 
 export interface MarketPriceDirection {
