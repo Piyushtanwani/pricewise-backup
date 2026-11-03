@@ -24,6 +24,7 @@ export default function Wishlist() {
   })
   const [loading, setLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const { isAuthenticated, loading: authLoading, toggleWishlist } = useAuth()
   const navigate = useNavigate()
@@ -75,7 +76,7 @@ export default function Wishlist() {
       }))
     } catch (err: any) {
       console.error("Failed to remove item from wishlist:", err)
-      alert("Failed to remove item from wishlist: " + (err.response?.data?.message || err.message))
+      setActionError("Failed to remove item from wishlist: " + (err.response?.data?.message || err.message))
     } finally {
       setActionLoadingId(null)
     }
@@ -138,6 +139,13 @@ export default function Wishlist() {
             <p className="text-sm text-slate-500">{items.length} saved products in your account</p>
           </div>
         </div>
+
+        {actionError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+            <span>{actionError}</span>
+            <button type="button" onClick={() => setActionError(null)} className="text-red-500 hover:text-red-700 font-semibold ml-2">✕</button>
+          </div>
+        )}
 
         {/* Summary */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

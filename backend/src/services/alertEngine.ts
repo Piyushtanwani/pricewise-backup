@@ -94,11 +94,6 @@ export const evaluatePriceChange = async (
         continue;
       }
 
-      // Suppress alert triggering when no genuine price reduction occurred
-      if (!isGenuinePriceReduction) {
-        continue;
-      }
-
       await prisma.alert.update({ where: { id: alert.id }, data: { triggeredAt: new Date() } });
 
       const prefs = readPrefs(alert.user.notificationPrefs);
@@ -119,9 +114,9 @@ export const evaluatePriceChange = async (
         created++;
       }
 
-      // Send email alert only if a genuine price reduction occurred and user enabled target email
+      // Send email alert only if genuine price reduction occurred or first observation, and user enabled target email
       if (alert.notifyEmail && alert.user?.email && prefs.targetEmail) {
-        if (isGenuinePriceReduction) {
+        if (isGenuinePriceReduction || previousBest === null) {
           sendPriceDropAlertEmail({
             email: alert.user.email,
             userName: alert.user.name || undefined,
@@ -130,7 +125,7 @@ export const evaluatePriceChange = async (
             previousPrice: previousBest,
             currentPrice: newBest,
             targetPrice: alert.targetPrice,
-            dropAmount: previousBest - newBest,
+            dropAmount: isGenuinePriceReduction && previousBest !== null ? previousBest - newBest : 0,
             bestStore: bestStoreName,
             productUrl: directProductUrl,
             imageUrl: product.imageUrl || undefined,

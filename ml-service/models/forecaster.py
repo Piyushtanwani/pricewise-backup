@@ -67,8 +67,8 @@ def linear_trend_forecast(df: pd.DataFrame, horizons: List[int] = [7, 14, 30]) -
     for h in horizons:
         future_x = n - 1 + h
         pred = max(0.0, float(slope * future_x + intercept))
-        # Uncertainty grows with sqrt of horizon
-        spread = 1.96 * std_err * math.sqrt(h / 7.0)
+        # 90% confidence interval standard error (Z = 1.645) aligned with Prophet interval_width=0.90
+        spread = 1.645 * std_err * math.sqrt(1.0 + (h / 30.0) * 0.5)
         predictions[h] = round(pred, 2)
         intervals[h] = (round(max(0.0, pred - spread), 2), round(pred + spread, 2))
 
@@ -78,11 +78,11 @@ def fit_predict_xgboost(df: pd.DataFrame, horizons: List[int] = [7, 14, 30]) -> 
     """XGBoost autoregressive forecaster with lag and calendar features."""
     import xgboost as xgb
 
-    if len(df) < 14:
+    if len(df) < 30:
         return linear_trend_forecast(df, horizons)
 
     df_feat = df.copy()
-    df_feat['day_of_week'] = df_feat['ds'].dt.dayofweek
+    df_feat['day_of_week'] = df_feat['ds'].dt.day_of_week
     df_feat['day_of_month'] = df_feat['ds'].dt.day
     df_feat['month'] = df_feat['ds'].dt.month
 
@@ -145,7 +145,8 @@ def fit_predict_xgboost(df: pd.DataFrame, horizons: List[int] = [7, 14, 30]) -> 
     intervals = {}
     for h in horizons:
         val = step_preds.get(h, float(df['y'].iloc[-1]))
-        spread = 1.96 * residual_std * math.sqrt(h / 7.0)
+        # 90% confidence interval standard error (Z = 1.645) aligned with Prophet interval_width=0.90
+        spread = 1.645 * residual_std * math.sqrt(1.0 + (h / 30.0) * 0.5)
         intervals[h] = (round(max(0.0, val - spread), 2), round(val + spread, 2))
 
     return step_preds, intervals
@@ -209,7 +210,21 @@ def generate_full_forecast(
     Returns multi-horizon forecasts, trend, uncertainty intervals, and metadata.
     """
     df = clean_series(history_points)
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(timezone.utc)
+    today_str = now.strftime('%Y-%m-%d')
+    now_iso = now.isoformat()
+
+    # Anchor time-series to today's current price if provided so forecasts project from today
+    if current_price and current_price > 0:
+        if len(df) > 0:
+            last_date_str = str(df['ds'].iloc[-1])[:10]
+            if last_date_str < today_str:
+                new_row = pd.DataFrame([{'ds': pd.to_datetime(today_str), 'y': float(current_price)}])
+                df = pd.concat([df, new_row], ignore_index=True)
+            elif last_date_str == today_str:
+                df.iloc[-1, df.columns.get_loc('y')] = float(current_price)
+        else:
+            df = pd.DataFrame([{'ds': pd.to_datetime(today_str), 'y': float(current_price)}])
 
     # Edge Case: Completely empty history
     if len(df) == 0:

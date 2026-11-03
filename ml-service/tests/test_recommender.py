@@ -71,3 +71,32 @@ def test_scale_sensitivity_and_price_banding(recommender):
             alt_price = alt_p.get('bestPrice') or alt_p.get('mrp') or 0
             assert alt_price <= p_price * 1.5, f"Alternative price {alt_price} exceeded price band for base price {p_price}"
 
+def test_ram_storage_combo_parsing(recommender):
+    p = {
+        "name": "OnePlus Nord CE4 5G (8GB RAM + 128GB)",
+        "specs": ["8GB RAM", "128GB inbuilt storage", "5500 mAh"],
+        "techSpecs": {"RAM": "8 GB", "Storage": "128 GB"},
+        "bestPrice": 24999.0,
+        "mrp": 26999.0,
+        "category": "Mobiles"
+    }
+    feats = recommender._parse_product_features(p)
+    assert feats["ram"] == 8.0, f"Expected 8.0GB RAM, got {feats['ram']}"
+    assert feats["storage"] == 128.0, f"Expected 128.0GB storage, got {feats['storage']}"
+
+def test_inductive_recommendation_for_new_product(recommender):
+    # Product NOT in catalog index
+    new_scraped_product = {
+        "id": "new-unseen-phone-9999",
+        "name": "Motorola Edge 60 Ultra (12GB RAM + 256GB)",
+        "brand": "Motorola",
+        "category": "Mobiles",
+        "bestPrice": 39999.0,
+        "mrp": 44999.0,
+        "specs": ["12GB RAM", "256GB Storage", "5000 mAh", "5G"],
+        "techSpecs": {}
+    }
+    alts = recommender.find_alternatives("new-unseen-phone-9999", limit=3, candidate_product=new_scraped_product)
+    assert len(alts) > 0, "Expected alternatives for new inductive candidate product"
+    assert alts[0]["product_id"] != "new-unseen-phone-9999"
+

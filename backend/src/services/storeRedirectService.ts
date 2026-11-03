@@ -1,4 +1,3 @@
-import { execSync } from 'child_process';
 import prisma from '../utils/prisma';
 import { sanitizeRetailerUrl } from '../utils/urlSanitizer';
 
@@ -648,10 +647,15 @@ export const resolveDirectStoreUrl = async (
       }
     } catch {
       try {
-        const head = execSync(`curl -s -I "${rawUrl}"`, { maxBuffer: 1024 * 1024, timeout: 8000 }).toString('utf-8');
-        const locMatch = head.match(/location:\s*([^\r\n]+)/i);
-        if (locMatch) {
-          let dest = cleanDestinationUrl(locMatch[1].trim(), productName);
+        const headResp = await fetch(rawUrl, {
+          method: 'GET',
+          redirect: 'manual',
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          signal: AbortSignal.timeout(8000),
+        });
+        const loc = headResp.headers.get('location');
+        if (loc) {
+          let dest = cleanDestinationUrl(loc.trim(), productName);
           const modelCheck = checkProductUrlModelMismatch(dest, productName);
           if (modelCheck.isMismatch) {
             if (storeTarget.includes('flipkart') && productName) {
@@ -678,10 +682,11 @@ export const resolveDirectStoreUrl = async (
   // 5. If a Smartprix product page (e.g. smartprix.com/mobiles/...)
   if (rawUrl.includes('smartprix.com')) {
     try {
-      const html = execSync(
-        `curl -s -L "${rawUrl}" -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"`,
-        { maxBuffer: 10 * 1024 * 1024, timeout: 10000 },
-      ).toString('utf-8');
+      const smartprixResp = await fetch(rawUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: AbortSignal.timeout(10000),
+      });
+      const html = smartprixResp.ok ? await smartprixResp.text() : '';
 
       const trackingMatches = [...html.matchAll(/"trackingLink":"([^"]+)"/g)];
 

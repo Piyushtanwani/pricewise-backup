@@ -17,13 +17,9 @@ import {
 import { requireAdminKey } from '../middlewares/auth';
 
 export const integrationRouter = Router();
+// Public status indicator only
 integrationRouter.get('/status', getPublicStatus);
 integrationRouter.get('/smartprix/status', getSmartprixStatus);
-integrationRouter.get('/smartprix/search', smartprixSearch);
-integrationRouter.get('/smartprix/details', smartprixDetails);
-integrationRouter.get('/smartprix/price-history', smartprixPriceHistory);
-integrationRouter.get('/smartprix/brands', smartprixBrands);
-integrationRouter.post('/smartprix/normalize', smartprixNormalize);
 
 // Operator-only endpoints: they spend store API quota and write catalogue data.
 export const adminRouter = Router();

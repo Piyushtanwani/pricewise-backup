@@ -7,6 +7,14 @@ from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../backend/.env'))
 
+STOPWORDS = {
+    "what", "is", "the", "best", "phone", "phones", "mobile", "smartphones", "smartphone",
+    "for", "me", "under", "below", "less", "than", "within", "budget", "show", "tell",
+    "recommend", "suggest", "find", "good", "great", "top", "looking", "want", "need",
+    "which", "should", "buy", "price", "prices", "in", "with", "and", "or", "to", "at",
+    "about", "please", "can", "you", "a", "an", "of"
+}
+
 class ShoppingAssistantEngine:
     def __init__(self, catalog_path: str, recommender=None):
         with open(catalog_path, 'r', encoding='utf-8') as f:
@@ -26,10 +34,14 @@ class ShoppingAssistantEngine:
         brand: Optional[str] = None,
         limit: int = 4
     ) -> List[Dict[str, Any]]:
-        """Tool 1: Controlled product search in catalogue."""
+        """Tool 1: Controlled product search in catalogue with NLP stopword filtering."""
         q_lower = query.lower().strip()
         brand_lower = brand.lower().strip() if brand else ""
         results = []
+
+        # Filter conversational stopwords
+        raw_words = [w for w in re.split(r'\W+', q_lower) if len(w) > 2]
+        content_words = [w for w in raw_words if w not in STOPWORDS]
 
         for p in self.products:
             p_name = p.get('name', '').lower()
@@ -46,9 +58,8 @@ class ShoppingAssistantEngine:
                 continue
 
             score = 0
-            if q_lower:
-                words = [w for w in re.split(r'\W+', q_lower) if len(w) > 2]
-                for w in words:
+            if content_words:
+                for w in content_words:
                     if w in p_name:
                         score += 3
                     elif w in p_brand:
@@ -83,10 +94,23 @@ class ShoppingAssistantEngine:
         return found
 
     def format_product_card(self, p: Dict[str, Any]) -> Dict[str, Any]:
-        """Formats catalog product into the frontend ProductCard shape."""
+        """Formats catalog product into the frontend ProductCard shape using verified data."""
         price = p.get('bestPrice') or p.get('mrp') or 0.0
         mrp = p.get('mrp') or round(price * 1.15)
         discount = round(((mrp - price) / mrp) * 100) if mrp > price else 0
+
+        # Verified store attribution: read bestStore or first store name rather than hardcoding Amazon
+        best_store = p.get('bestStore')
+        if not best_store and p.get('stores') and isinstance(p['stores'], list) and len(p['stores']) > 0:
+            first = p['stores'][0]
+            best_store = first.get('name') if isinstance(first, dict) else str(first)
+        if not best_store or best_store == 'Retail Store':
+            best_store = "Amazon" if "amazon" in p.get('name', '').lower() else "Verified Store"
+
+        # Grounded price history: do not fabricate synthetic price drops
+        history = p.get('priceHistory')
+        if not history or not isinstance(history, list) or len(history) < 2:
+            history = [price, price, price]
 
         return {
             "id": p['id'],
@@ -99,13 +123,13 @@ class ShoppingAssistantEngine:
             "bestPrice": price,
             "mrp": mrp,
             "discount": discount,
-            "bestStore": "Amazon",
-            "stores": 2,
+            "bestStore": best_store,
+            "stores": len(p.get('stores', [])) if isinstance(p.get('stores'), list) and p.get('stores') else 1,
             "trend": "falling" if discount > 10 else "stable",
             "category": p.get('category', 'Mobiles'),
             "aiVerdict": "Great Value" if discount >= 15 else "Fair Price",
             "verdictColor": "green" if discount >= 15 else "amber",
-            "priceHistory": [round(price * 1.05), round(price * 1.02), price]
+            "priceHistory": history
         }
 
     # ---------------- Parse Intent and Budget ----------------
@@ -126,7 +150,7 @@ class ShoppingAssistantEngine:
 
         # Detect intent
         intent = "recommend"
-        if any(w in msg for w in ["compare", "versus", " vs ", "difference"]):
+        if any(w in msg for w in ["compare", "versus", " vs ", "difference", "better than"]):
             intent = "compare"
         elif any(w in msg for w in ["cheaper", "alternative", "similar", "instead of"]):
             intent = "alternatives"
@@ -149,13 +173,26 @@ class ShoppingAssistantEngine:
         parsed = self.parse_user_query(user_message)
         matched_products = []
 
-        # Tool 1: Catalog Search with parsed budget and brand
-        matched_products = self.search_products(
-            query=user_message,
-            max_price=parsed['budget'],
-            brand=parsed['brand'],
-            limit=4
-        )
+        # Intent 1: Comparison Intent
+        if parsed['intent'] == 'compare':
+            # Find specific products mentioned in query
+            mentioned = [p for p in self.products if p.get('name', '').lower() in user_message.lower()]
+            if len(mentioned) >= 2:
+                matched_products = mentioned[:3]
+            elif len(mentioned) == 1 and self.recommender:
+                # Compare mentioned product with its top alternative
+                alts = self.recommender.find_alternatives(mentioned[0]['id'], limit=1)
+                alt_products = [self.product_map[a['product_id']] for a in alts if a['product_id'] in self.product_map]
+                matched_products = mentioned + alt_products
+
+        # Intent 2: Standard Search / Recommendation
+        if not matched_products:
+            matched_products = self.search_products(
+                query=user_message,
+                max_price=parsed['budget'],
+                brand=parsed['brand'],
+                limit=4
+            )
 
         # Fallback if strict search returned nothing
         if not matched_products and parsed['budget']:
@@ -220,17 +257,25 @@ class ShoppingAssistantEngine:
                         "parsed": parsed,
                         "source": f"groq-{self.groq_model}"
                     }
-            except Exception as e:
+            except Exception:
                 # Fall back gracefully to rule-based generation
                 pass
 
         # Deterministic Grounded Fallback
         top = formatted_cards[0]
-        content = (
-            f"Based on our catalog, the top option matching your request is the {top['name']} "
-            f"currently available at ₹{int(top['bestPrice']):,} (a {top['discount']}% savings from ₹{int(top['mrp']):,}). "
-            f"Key highlights include {', '.join(top['specs'][:2])}."
-        )
+        if parsed['intent'] == 'compare' and len(formatted_cards) >= 2:
+            second = formatted_cards[1]
+            content = (
+                f"Comparing {top['name']} (₹{int(top['bestPrice']):,}) versus {second['name']} (₹{int(second['bestPrice']):,}). "
+                f"The {top['name']} is available at ₹{int(top['bestPrice']):,} with {', '.join(top['specs'][:2])}, "
+                f"while the {second['name']} features {', '.join(second['specs'][:2])}."
+            )
+        else:
+            content = (
+                f"Based on our catalog, the top option matching your request is the {top['name']} "
+                f"currently available at ₹{int(top['bestPrice']):,} (a {top['discount']}% savings from ₹{int(top['mrp']):,}). "
+                f"Key highlights include {', '.join(top['specs'][:2])}."
+            )
 
         return {
             "role": "assistant",

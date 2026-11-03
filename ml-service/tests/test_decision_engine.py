@@ -121,3 +121,31 @@ def test_zero_or_negative_price_boundary():
     )
     assert dec["recommendation"] == "MONITOR"
     assert dec["confidence"] == "Insufficient Data"
+
+def test_all_time_low_with_high_uncertainty_still_buys():
+    # At all-time low (48,000), even if 30d forecast uncertainty band is wide (₹20,000 > 25%),
+    # the verified historical record low should still recommend BUY!
+    dec = evaluate_decision(
+        current_price=48000,
+        predicted_7d=48200,
+        predicted_30d=48100,
+        stats={"lowestEver": 48000, "average90": 55000, "highest90": 60000},
+        observation_count=60,
+        uncertainty_width=20000.0
+    )
+    assert dec["recommendation"] == "BUY"
+    assert "lowest recorded price" in dec["explanation"].lower()
+
+def test_14d_horizon_drop_detected():
+    # Drop occurs at 14-day horizon (e.g., festival sale in 2 weeks)
+    dec = evaluate_decision(
+        current_price=50000,
+        predicted_7d=49500,
+        predicted_30d=49000,
+        predicted_14d=44000, # -12% drop at Day 14
+        stats={"lowestEver": 48000, "average90": 52000, "highest90": 56000},
+        observation_count=60
+    )
+    assert dec["recommendation"] == "WAIT"
+    assert dec["horizon"] == "14 Days"
+    assert dec["potential_saving"] == 6000.0

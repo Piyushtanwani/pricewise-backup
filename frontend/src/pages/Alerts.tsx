@@ -26,6 +26,7 @@ export default function Alerts() {
   })
   const [loading, setLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const loadAlerts = useCallback(async () => {
     if (!isAuthenticated) {
@@ -82,7 +83,7 @@ export default function Alerts() {
       }))
     } catch (err: any) {
       console.error("Failed to update alert state:", err)
-      alert("Failed to update alert: " + (err.response?.data?.message || err.message))
+      setActionError("Failed to update alert: " + (err.response?.data?.message || err.message))
     } finally {
       setActionLoadingId(null)
     }
@@ -99,7 +100,7 @@ export default function Alerts() {
       }))
     } catch (err: any) {
       console.error("Failed to delete alert:", err)
-      alert("Failed to delete alert: " + (err.response?.data?.message || err.message))
+      setActionError("Failed to delete alert: " + (err.response?.data?.message || err.message))
     } finally {
       setActionLoadingId(null)
     }
@@ -155,6 +156,13 @@ export default function Alerts() {
             <p className="text-sm text-slate-500">Track when your tracked smartphones hit your target price</p>
           </div>
         </div>
+
+        {actionError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+            <span>{actionError}</span>
+            <button type="button" onClick={() => setActionError(null)} className="text-red-500 hover:text-red-700 font-semibold ml-2">✕</button>
+          </div>
+        )}
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

@@ -10,7 +10,7 @@ import {
   PREDICTION_DISCLAIMER,
 } from './priceAnalytics';
 
-const ML_TIMEOUT_MS = 3500;
+const ML_TIMEOUT_MS = 6000;
 
 const RECOMMENDATION_MAP: Record<string, Recommendation> = {
   'BUY NOW': 'BUY',
@@ -73,7 +73,10 @@ export const predictPrices = async (
 
   const payload = {
     product_id: productId,
-    historical_prices: series.slice(-90).map((p) => p.price),
+    historical_prices: series.slice(-90).map((p) => ({
+      price: p.price,
+      date: p.day instanceof Date ? p.day.toISOString().slice(0, 10) : String(p.day).slice(0, 10),
+    })),
     current_price: currentPrice ?? local.points[0]?.price ?? undefined,
     store_id: storeId,
   };

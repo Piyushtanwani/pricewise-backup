@@ -70,9 +70,18 @@ export const env = {
   },
 
   serpApiKey: str('SERPAPI_API_KEY') || str('SERPAPI_KEY', ''),
+  
+
   google: {
     clientId: str('GOOGLE_CLIENT_ID') || str('Client_ID', ''),
     clientSecret: str('GOOGLE_CLIENT_SECRET') || str('Client_secret', ''),
+  },
+
+  gemini: {
+    apiKey: str('GEMINI_API_KEY'),
+    model: str('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
+    maxToolRounds: num('GEMINI_MAX_TOOL_ROUNDS', 5),
+    timeoutMs: num('GEMINI_TIMEOUT_MS', 30000),
   },
 };
 

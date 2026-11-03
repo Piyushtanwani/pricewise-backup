@@ -279,6 +279,7 @@ async function persistLiveRatesToPostgres(productId: string, stores: StorePriceR
             currentPrice: item.price,
             ...(item.mrp ? { mrp: item.mrp } : {}),
             stockStatus: item.stockStatus,
+            ...(item.url ? { productUrl: item.url } : {}),
             lastCheckedAt: now,
           },
         });
@@ -292,6 +293,28 @@ async function persistLiveRatesToPostgres(productId: string, stores: StorePriceR
             },
           });
         }
+      } else if (item.url && item.url.trim().length > 0) {
+        // Discovered a new verified store listing for this product
+        const newProductStore = await prisma.productStore.create({
+          data: {
+            productId,
+            storeId: storeDbId,
+            currentPrice: item.price,
+            mrp: item.mrp || null,
+            stockStatus: item.stockStatus || 'IN_STOCK',
+            shippingCost: item.shippingCost || 0,
+            productUrl: item.url.trim(),
+            lastCheckedAt: now,
+          },
+        });
+
+        await prisma.priceHistory.create({
+          data: {
+            productStoreId: newProductStore.id,
+            price: item.price,
+            timestamp: now,
+          },
+        });
       }
     }
 
@@ -485,7 +508,20 @@ export const getAlternatives = async (req: Request, res: Response): Promise<void
       const mlRes = await fetch(`${env.mlServiceUrl}/recommend/alternatives`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: product.id, limit }),
+        body: JSON.stringify({
+          product_id: product.id,
+          limit,
+          candidate_product: {
+            id: product.id,
+            name: product.name,
+            brand: product.brand,
+            category: product.category,
+            bestPrice: product.bestPrice,
+            mrp: product.mrp,
+            specs: product.specs,
+            techSpecs: product.techSpecs,
+          },
+        }),
         signal: controller.signal,
       });
       clearTimeout(timer);

@@ -34,9 +34,17 @@ export async function verifyGoogleIdToken(idToken: string): Promise<GoogleUserIn
     throw new HttpError(401, 'Google account has no associated email address.');
   }
 
-  // Verify audience if client ID is configured
-  if (env.google.clientId && payload.aud && payload.aud !== env.google.clientId && payload.azp !== env.google.clientId) {
-    console.warn(`[GoogleAuth] Token aud (${payload.aud}) does not match configured clientId (${env.google.clientId})`);
+  // Strictly verify audience if client ID is configured
+  if (env.google.clientId) {
+    const isMatchingAudience = payload.aud === env.google.clientId || payload.azp === env.google.clientId;
+    if (!isMatchingAudience) {
+      throw new HttpError(401, 'Unauthorized: Google ID token audience does not match server Client ID.');
+    }
+  }
+
+  // Reject unverified email addresses from Google
+  if (payload.email_verified === 'false' || payload.email_verified === false) {
+    throw new HttpError(401, 'Unauthorized: Google account email address is not verified.');
   }
 
   return {

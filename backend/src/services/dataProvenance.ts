@@ -46,8 +46,31 @@ export interface ProvenanceProduct {
 /**
  * Checks whether a product originates from synthetic/seed data rather than live scraping.
  */
+const isDirectProductUrl = (url: string | null | undefined): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url.trim());
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    const lower = parsed.href.toLowerCase();
+    if (lower.includes('/s?k=') || lower.includes('/search?q=') || lower.includes('/searchb?q=')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const isSyntheticProduct = (product: ProvenanceProduct | null | undefined): boolean => {
   if (!product) return false;
+
+  const stores = product.stores || [];
+  const hasVerifiedStoreListing = stores.some(
+    (s) => Boolean(s.externalId && s.externalId.trim().length > 0) || isDirectProductUrl(s.productUrl),
+  );
+
+  // If the product has at least one verified live store listing, it is genuine regardless of seed name or id
+  if (hasVerifiedStoreListing) {
+    return false;
+  }
 
   if (product.id && SYNTHETIC_PRODUCT_IDS.has(product.id)) {
     return true;
@@ -55,20 +78,15 @@ export const isSyntheticProduct = (product: ProvenanceProduct | null | undefined
 
   const nameLower = (product.name || '').toLowerCase().trim();
   if (nameLower && SYNTHETIC_PRODUCT_TITLES.some((title) => nameLower.includes(title))) {
-    // If it has no stores or all stores lack an external ID, treat as synthetic seed
-    const stores = product.stores || [];
-    const hasVerifiedStoreListing = stores.some((s) => Boolean(s.externalId));
-    if (!hasVerifiedStoreListing) {
-      return true;
-    }
+    return true;
   }
 
   // If stores exist, check if all of them are mock seed listings (no externalId and search URL)
-  if (product.stores && product.stores.length > 0) {
-    const allLackExternalId = product.stores.every((s) => !s.externalId);
-    const allSearchUrls = product.stores.every((s) => {
+  if (stores.length > 0) {
+    const allLackExternalId = stores.every((s) => !s.externalId);
+    const allSearchUrls = stores.every((s) => {
       const url = s.productUrl || '';
-      return url.includes('/s?k=') || url.includes('/search?q=') || url.includes('/searchB?q=');
+      return !url || url.includes('/s?k=') || url.includes('/search?q=') || url.includes('/searchB?q=');
     });
     if (allLackExternalId && allSearchUrls) {
       return true;

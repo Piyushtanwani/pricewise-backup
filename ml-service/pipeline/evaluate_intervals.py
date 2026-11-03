@@ -4,7 +4,7 @@ import json
 import math
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models.forecaster import clean_series, linear_trend_forecast, fit_predict_xgboost, fit_predict_prophet, naive_baseline_forecast
@@ -76,7 +76,7 @@ def evaluate():
                 interval_stats[m][h]['pred'].append(preds[h])
 
     summary = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "sample_size": evaluated_count,
         "results": {}
     }

@@ -1,10 +1,11 @@
 import './setup';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { signToken, optionalAuth } from '../src/middlewares/auth';
+import { signToken, authenticateToken, optionalAuth } from '../src/middlewares/auth';
+import { getAIAssistantChat } from '../src/controllers/intelligenceController';
 import type { Request, Response } from 'express';
 
-test('Chat Session Management: optionalAuth extracts user identity for AI chat endpoint', () => {
+test('Chat Session Management: authenticateToken enforces user identity for AI chat endpoint', () => {
   const user = { id: 'usr-alice-1234', email: 'alice@example.com' };
   const token = signToken(user);
 
@@ -15,7 +16,7 @@ test('Chat Session Management: optionalAuth extracts user identity for AI chat e
   let nextCalled = false;
   const mockNext = () => { nextCalled = true; };
 
-  optionalAuth(mockReq as Request, mockRes as Response, mockNext);
+  authenticateToken(mockReq as Request, mockRes as Response, mockNext);
 
   assert.equal(nextCalled, true);
   assert.ok(mockReq.user);
@@ -23,16 +24,50 @@ test('Chat Session Management: optionalAuth extracts user identity for AI chat e
   assert.equal(mockReq.user?.email, 'alice@example.com');
 });
 
-test('Chat Session Management: unauthenticated requests run as isolated guest sessions', () => {
+test('Chat Session Management: authenticateToken rejects unauthenticated requests with 401', () => {
   const mockReq: Partial<Request> = { headers: {} };
-  const mockRes: Partial<Response> = {};
+  let statusCode = 0;
+  let jsonBody: any = null;
+  const mockRes: Partial<Response> = {
+    status: (code: number) => {
+      statusCode = code;
+      return mockRes as Response;
+    },
+    json: (body: any) => {
+      jsonBody = body;
+      return mockRes as Response;
+    },
+  };
   let nextCalled = false;
   const mockNext = () => { nextCalled = true; };
 
-  optionalAuth(mockReq as Request, mockRes as Response, mockNext);
+  authenticateToken(mockReq as Request, mockRes as Response, mockNext);
 
-  assert.equal(nextCalled, true);
-  assert.equal(mockReq.user, undefined);
+  assert.equal(nextCalled, false);
+  assert.equal(statusCode, 401);
+});
+
+test('Chat Session Management: getAIAssistantChat rejects unauthenticated requests with 401', async () => {
+  const mockReq: Partial<Request> = {
+    body: { message: 'Hello' },
+    user: undefined,
+  };
+  let statusCode = 0;
+  let jsonBody: any = null;
+  const mockRes: Partial<Response> = {
+    status: (code: number) => {
+      statusCode = code;
+      return mockRes as Response;
+    },
+    json: (body: any) => {
+      jsonBody = body;
+      return mockRes as Response;
+    },
+  };
+
+  await getAIAssistantChat(mockReq as Request, mockRes as Response);
+  assert.equal(statusCode, 401);
+  assert.ok(jsonBody?.message?.includes('Authentication required'));
 });
 
 test('Chat Session Management: user-scoped storage keys prevent cross-account history leaks', () => {

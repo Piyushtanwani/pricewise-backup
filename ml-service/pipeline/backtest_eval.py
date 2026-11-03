@@ -4,7 +4,7 @@ import json
 import math
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional, Tuple
 
 # Import forecasters
@@ -103,14 +103,16 @@ def run_backtest():
         train_df = df.iloc[:-30].copy()
         test_df = df.iloc[-30:].copy()
 
-        # Actual values at Day +7, Day +14, Day +30
+        cutoff_date = train_df['ds'].iloc[-1]
         actuals = {}
-        if len(test_df) >= 7:
-            actuals[7] = float(test_df['y'].iloc[6])
-        if len(test_df) >= 14:
-            actuals[14] = float(test_df['y'].iloc[13])
-        if len(test_df) >= 30:
-            actuals[30] = float(test_df['y'].iloc[29])
+        for h in horizons:
+            target_date = cutoff_date + timedelta(days=h)
+            deltas = (test_df['ds'] - target_date).abs()
+            min_idx = deltas.idxmin()
+            if deltas[min_idx].days <= 2:
+                actuals[h] = float(test_df.loc[min_idx, 'y'])
+            elif len(test_df) >= h:
+                actuals[h] = float(test_df['y'].iloc[h - 1])
 
         # 1. Naive Baseline
         naive_preds = naive_baseline_forecast(train_df, horizons)
@@ -157,7 +159,7 @@ def run_backtest():
 
     # Compile Final Report
     report = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "evaluated_products_count": evaluated_products,
         "metrics_by_horizon": {},
         "metrics_by_history_length": {},

@@ -13,7 +13,7 @@ import Badge from "../components/ui/Badge"
 import ProductCard from "../components/ui/ProductCard"
 import CompareButton from "../components/ui/CompareButton"
 import PriceAlertModal from "../components/ui/PriceAlertModal"
-import { api } from "../services/api"
+import { api, apiClient } from "../services/api"
 import { useAuth } from "../context/AuthContext"
 import type { Product, ProductDetailResponse, StorePriceRow, PricePoint, PredictionPoint, ProductPredictionResult } from "../types/product"
 
@@ -462,14 +462,16 @@ export default function ProductDetail() {
       if (isDirectProductUrl(finalUrl)) {
         return finalUrl
       }
+      const apiBase = apiClient.defaults.baseURL || '/api'
       if (finalUrl.includes("smartprix.com") || finalUrl.includes("linkredirect.in")) {
         const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
-        return `http://localhost:5000/api/products/${product.id}/buy${storeParam}`
+        return `${apiBase}/products/${product.id}/buy${storeParam}`
       }
       return finalUrl
     }
+    const apiBase = apiClient.defaults.baseURL || '/api'
     const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
-    return `http://localhost:5000/api/products/${product.id}/buy${storeParam}`
+    return `${apiBase}/products/${product.id}/buy${storeParam}`
   }
 
   const currentModalItem = modalProduct || product

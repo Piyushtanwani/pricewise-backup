@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { HttpError } from '../utils/http';
 import { env } from '../config/env';
+import { livePriceCache } from '../utils/cache';
 
 export interface PendingRegistration {
   name: string;
@@ -19,6 +20,18 @@ const RESEND_COOLDOWN_MS = 60 * 1000; // 60 seconds
 
 // In-memory pending registrations keyed by normalized lowercase email
 const pendingRegistrations = new Map<string, PendingRegistration>();
+
+const getPendingRecord = async (email: string): Promise<PendingRegistration | undefined> => {
+  let record = pendingRegistrations.get(email);
+  if (!record) {
+    const cached = await livePriceCache.get<PendingRegistration>(`otp:${email}`);
+    if (cached) {
+      record = cached;
+      pendingRegistrations.set(email, record);
+    }
+  }
+  return record;
+};
 
 // Periodic cleanup of expired records every 5 minutes
 const cleanupInterval = setInterval(() => {
@@ -60,7 +73,7 @@ export const createPendingRegistration = async (params: {
   const otpHash = hashOtp(otp);
   const now = Date.now();
 
-  pendingRegistrations.set(normalizedEmail, {
+  const newRecord: PendingRegistration = {
     name: params.name.trim(),
     email: normalizedEmail,
     passwordHash,
@@ -68,7 +81,9 @@ export const createPendingRegistration = async (params: {
     expiresAt: now + OTP_EXPIRY_MS,
     attempts: 0,
     lastSentAt: now,
-  });
+  };
+  pendingRegistrations.set(normalizedEmail, newRecord);
+  await livePriceCache.set(`otp:${normalizedEmail}`, newRecord, Math.ceil(OTP_EXPIRY_MS / 1000));
 
   return {
     otp,
@@ -81,7 +96,7 @@ export const createPendingRegistration = async (params: {
  */
 export const resendRegistrationOtp = async (email: string): Promise<{ otp: string; expiresAt: Date }> => {
   const normalizedEmail = email.trim().toLowerCase();
-  const existing = pendingRegistrations.get(normalizedEmail);
+  const existing = await getPendingRecord(normalizedEmail);
 
   if (!existing) {
     throw new HttpError(404, 'No pending registration found for this email. Please sign up again.');
@@ -99,6 +114,8 @@ export const resendRegistrationOtp = async (email: string): Promise<{ otp: strin
   existing.expiresAt = now + OTP_EXPIRY_MS;
   existing.attempts = 0;
   existing.lastSentAt = now;
+  pendingRegistrations.set(normalizedEmail, existing);
+  await livePriceCache.set(`otp:${normalizedEmail}`, existing, Math.ceil(OTP_EXPIRY_MS / 1000));
 
   return {
     otp,
@@ -115,7 +132,7 @@ export const verifyRegistrationOtp = async (
   submittedOtp: string,
 ): Promise<{ name: string; email: string; passwordHash: string }> => {
   const normalizedEmail = email.trim().toLowerCase();
-  const record = pendingRegistrations.get(normalizedEmail);
+  const record = await getPendingRecord(normalizedEmail);
 
   if (!record) {
     throw new HttpError(400, 'No pending registration found or the verification code has expired. Please sign up again.');
@@ -152,6 +169,7 @@ export const verifyRegistrationOtp = async (
 
   // Verification successful: consume and clear single-use OTP
   pendingRegistrations.delete(normalizedEmail);
+  await livePriceCache.del(`otp:${normalizedEmail}`);
 
   return {
     name: record.name,

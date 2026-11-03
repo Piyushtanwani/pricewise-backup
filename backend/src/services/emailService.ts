@@ -55,7 +55,7 @@ const getGmailTransporter = (): Transporter | null => {
     service: 'gmail',
     auth: { user, pass },
     tls: {
-      rejectUnauthorized: false,
+      rejectUnauthorized: true,
     },
     connectionTimeout: 25000,
     greetingTimeout: 25000,

@@ -113,6 +113,7 @@ class PredictionResponse(BaseModel):
 class AlternativesRequest(BaseModel):
     product_id: str
     limit: int = 4
+    candidate_product: Optional[Dict[str, Any]] = None
 
 class InvalidateCacheRequest(BaseModel):
     product_id: Optional[str] = None
@@ -180,12 +181,15 @@ def predict_price(req: PredictionRequest):
         elif isinstance(item, dict):
             norm_points.append(item)
 
+    # For dynamic real-time inference, use fast XGBoost (or linear regression if small series)
+    # This responds in ~20ms instead of 10s Prophet blocking. Prophet is used for offline batch caching.
+    model_choice = "xgboost" if len(norm_points) >= 30 else "linear"
     fc = generate_full_forecast(
         product_id=req.product_id,
         history_points=norm_points,
         current_price=req.current_price,
         mrp=req.mrp,
-        model_choice="prophet"
+        model_choice=model_choice
     )
 
     prices = [p['price'] for p in norm_points if p.get('price')]
@@ -245,7 +249,7 @@ def recommend_alternatives(req: AlternativesRequest):
     if not recommender:
         raise HTTPException(status_code=503, detail="Recommender model is not initialized.")
 
-    alts = recommender.find_alternatives(req.product_id, limit=req.limit)
+    alts = recommender.find_alternatives(req.product_id, limit=req.limit, candidate_product=req.candidate_product)
     return {
         "product_id": req.product_id,
         "count": len(alts),

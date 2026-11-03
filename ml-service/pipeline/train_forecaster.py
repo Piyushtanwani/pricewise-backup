@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models.forecaster import generate_full_forecast, MODEL_VERSION
@@ -26,7 +26,7 @@ def precompute_all_forecasts():
     print(f"Precomputing production forecasts for {len(products)} products...", flush=True)
 
     cache = {
-        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "model_version": MODEL_VERSION,
         "ttl_hours": 24,
         "by_product": {},

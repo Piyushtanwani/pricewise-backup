@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
+import { supabase } from '../services/supabase';
 import type { User } from '../types/user';
 
 interface AuthContextType {
@@ -64,7 +65,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+    let token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+
+    // Check if returning from Supabase OAuth redirect flow
+    if (!token && supabase) {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data?.session) {
+          const providerToken = data.session.provider_token;
+          const accessToken = data.session.access_token;
+          const res = await api.googleAuth({
+            accessToken: providerToken || accessToken,
+            credential: (data.session as any).provider_id_token || undefined,
+          });
+          if (res?.token) {
+            token = res.token;
+            setUser(res.user);
+            await refreshSavedState();
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to restore Supabase session:', err);
+      }
+    }
+
     if (!token) {
       setUser(null);
       setWishlistIds(new Set());

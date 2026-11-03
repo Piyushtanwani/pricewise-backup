@@ -138,6 +138,7 @@ export interface AIChatResponse {
   content: string
   products?: Product[]
   insights?: { label: string; value: string }[]
+  suggestedFollowUps?: string[]
   sessionId?: string
   userId?: string
 }

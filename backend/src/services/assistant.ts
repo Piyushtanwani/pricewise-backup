@@ -1,16 +1,16 @@
 /**
- * Rule-based shopping assistant behind POST /api/intelligence/ai. It parses budget, category,
- * intent and product mentions from the message and answers from live catalogue data. It does
- * not call an LLM; the response shape matches the Message type in frontend/src/pages/AIAssistant.tsx.
+ * PriceWise AI Shopping Assistant service.
+ * Supports primary execution via Google Gemini AI Orchestrator with native function calling,
+ * fallback to ML service proxy, and local deterministic catalogue analysis.
  */
 import prisma from '../utils/prisma';
 import { titleTokens } from './matching';
 import { computeTrend, computeVerdict, predictLinear, sliceByDays, percentChange, withCurrentPrice } from './priceAnalytics';
 import { ProductCard, ProductWithStores, loadDailySeries, productInclude, toProductCard } from './productService';
-
 import { env } from '../config/env';
+import { AIOrchestrator } from './gemini/aiOrchestrator';
 
-export type Intent = 'buy_now' | 'alternatives' | 'compare' | 'recommend';
+export type Intent = 'buy_now' | 'alternatives' | 'compare' | 'recommend' | 'technical_qa' | 'general_shopping';
 
 export interface AssistantReply {
   role: 'assistant';
@@ -18,6 +18,7 @@ export interface AssistantReply {
   products: ProductCard[];
   insights: { label: string; value: string }[];
   parsed: { intent: Intent; budget: number | null; category: string | null };
+  suggestedFollowUps?: string[];
   sessionId?: string;
   userId?: string;
   source?: string;
@@ -124,7 +125,6 @@ const localAnswer = async (message: string, context: { productIds?: string[] } =
 
   const contextProducts = context.productIds?.length ? all.filter((p) => context.productIds!.includes(p.id)) : [];
   const mentioned = [...findMentioned(message, all), ...contextProducts];
-  // "Which laptop should I buy under ₹1,00,000?" asks for picks, not a verdict on one product.
   if (intent === 'buy_now' && mentioned.length === 0 && (category || budget)) intent = 'recommend';
   const parsed = { intent, budget, category };
 
@@ -230,7 +230,6 @@ const localAnswer = async (message: string, context: { productIds?: string[] } =
   const noun = category ? category.toLowerCase() : 'products';
   const picks = ranked.slice(0, 3).map((r) => r.card);
   if (picks.length === 0) {
-    // Nothing fits the budget: offer the cheapest option in the category instead of a dead end.
     const closest = all
       .filter((p) => (!category || p.category.toLowerCase() === category.toLowerCase()) && p.bestPrice !== null)
       .sort((a, b) => (a.bestPrice ?? 0) - (b.bestPrice ?? 0))[0];
@@ -274,10 +273,21 @@ export const answer = async (
   message: string,
   context: { productIds?: string[]; userId?: string; sessionId?: string } = {},
 ): Promise<AssistantReply> => {
+  // 1. Primary: Advanced Gemini-Powered AI Shopping Intelligence Agent
+  if (env.gemini.apiKey) {
+    try {
+      const geminiReply = await AIOrchestrator.answer(message, context);
+      return geminiReply;
+    } catch (err) {
+      console.error('[Assistant] Gemini AI Orchestrator error, falling back:', err);
+    }
+  }
+
+  // 2. Secondary: ML Service proxy if available
   if (env.mlServiceUrl) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 4500);
+      const timer = setTimeout(() => controller.abort(), 7500);
       const res = await fetch(`${env.mlServiceUrl}/assistant/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -307,6 +317,7 @@ export const answer = async (
     }
   }
 
+  // 3. Fallback: Local deterministic catalogue engine
   const localRes = await localAnswer(message, context);
   return {
     ...localRes,

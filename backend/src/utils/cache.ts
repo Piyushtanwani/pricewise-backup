@@ -141,9 +141,24 @@ class RedisCacheService {
     this.memoryFallback.clear();
     try {
       if (this.isConnected && this.redis) {
-        const keys = await this.redis.keys(pattern);
-        if (keys.length > 0) {
-          await this.redis.del(...keys);
+        const stream = this.redis.scanStream({ match: pattern, count: 100 });
+        const keysToDelete: string[] = [];
+
+        await new Promise<void>((resolve, reject) => {
+          stream.on('data', (resultKeys: string[]) => {
+            for (const k of resultKeys) {
+              keysToDelete.push(k);
+            }
+          });
+          stream.on('end', () => resolve());
+          stream.on('error', (err) => reject(err));
+        });
+
+        if (keysToDelete.length > 0) {
+          for (let i = 0; i < keysToDelete.length; i += 50) {
+            const batch = keysToDelete.slice(i, i + 50);
+            await this.redis.del(...batch);
+          }
         }
       }
     } catch {

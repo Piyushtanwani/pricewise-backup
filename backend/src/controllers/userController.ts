@@ -73,14 +73,21 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
 };
 
 export const changePassword = async (req: Request, res: Response): Promise<void> => {
-  const currentPassword = requireString(req.body, 'currentPassword');
   const newPassword = requireString(req.body, 'newPassword', { min: 8, max: 128 });
   const userId = currentUserId(req);
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
-    throw new HttpError(400, 'Current password is incorrect');
+  if (!user) throw notFound('User not found');
+
+  const isOauthPlaceholder = user.password === 'GUEST_NO_PASSWORD' || user.password.startsWith('GOOGLE_SSO_');
+
+  if (!isOauthPlaceholder) {
+    const currentPassword = requireString(req.body, 'currentPassword');
+    if (!(await bcrypt.compare(currentPassword, user.password))) {
+      throw new HttpError(400, 'Current password is incorrect');
+    }
   }
+
   await prisma.user.update({ where: { id: userId }, data: { password: await bcrypt.hash(newPassword, 10) } });
   res.status(204).end();
 };

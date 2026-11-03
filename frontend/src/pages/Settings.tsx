@@ -66,6 +66,7 @@ export default function Settings() {
   // Account Deletion Confirmation
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) {
@@ -163,11 +164,12 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     try {
       setDeleting(true)
+      setDeleteError(null)
       await api.deleteAccount()
       logout()
       navigate("/")
     } catch (err: any) {
-      alert("Failed to delete account: " + (err.response?.data?.message || err.message))
+      setDeleteError("Failed to delete account: " + (err.response?.data?.message || err.message))
       setDeleting(false)
     }
   }
@@ -480,6 +482,11 @@ export default function Settings() {
             <p className="text-sm text-slate-600 leading-relaxed mb-6">
               Are you sure you want to delete your account? All your tracked products, wishlist items, and price alerts will be permanently removed. This action cannot be undone.
             </p>
+            {deleteError && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs">
+                {deleteError}
+              </div>
+            )}
             <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
