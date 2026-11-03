@@ -1,10 +1,10 @@
 {
-  "total_products": 80,
-  "genuine_count": 80,
+  "total_products": 119,
+  "genuine_count": 119,
   "synthetic_count": 0,
   "products": [
     {
-      "product_id": "c9269e82-cf20-4690-a41f-a09545aa76c6",
+      "product_id": "e5ce6f42-736d-45a3-b0cd-1a6e8be265a5",
       "name": "Apple iPhone 13",
       "brand": "Apple",
       "category": "Mobiles",
@@ -14,8 +14,8 @@
       "store_count": 3,
       "history_rows": 2,
       "unique_dates": 2,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:47.210000",
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:36.516000",
       "stores": [
         "Amazon",
         "Croma",
@@ -23,45 +23,43 @@
       ]
     },
     {
-      "product_id": "c823adf8-af02-4094-808e-68fa2361b258",
+      "product_id": "7d6a6f08-8a2e-4aab-8af4-032ceca50d82",
       "name": "Apple iPhone 15",
       "brand": "Apple",
       "category": "Mobiles",
-      "mrp": 78199.0,
-      "best_price": 50990.0,
+      "mrp": 61000.0,
+      "best_price": 67999.0,
       "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:49.123000",
+      "store_count": 2,
+      "history_rows": 181,
+      "unique_dates": 181,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 08:12:46.368000",
       "stores": [
         "Amazon",
-        "Croma",
         "Flipkart"
       ]
     },
     {
-      "product_id": "acf8ea59-c957-4531-bac5-d7930edbca78",
+      "product_id": "85453d8d-446a-4b31-ab53-a1eacb9c7479",
       "name": "Apple iPhone 15 (256GB)",
       "brand": "Apple",
       "category": "Mobiles",
       "mrp": 80385.0,
       "best_price": 64900.0,
       "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 164,
-      "unique_dates": 164,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:37.521000",
+      "store_count": 2,
+      "history_rows": 158,
+      "unique_dates": 158,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:45.451000",
       "stores": [
         "Amazon",
-        "Croma",
-        "Flipkart"
+        "Croma"
       ]
     },
     {
-      "product_id": "fde4933f-9157-431e-bb99-04912f356fe5",
+      "product_id": "a1d90c5c-b2e0-4470-ac04-c4ba3f061bc7",
       "name": "Apple iPhone 15 Plus",
       "brand": "Apple",
       "category": "Mobiles",
@@ -69,10 +67,10 @@
       "best_price": 59994.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 16,
-      "unique_dates": 16,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:53.623000",
+      "history_rows": 10,
+      "unique_dates": 10,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:42.909000",
       "stores": [
         "Amazon",
         "Croma",
@@ -80,18 +78,18 @@
       ]
     },
     {
-      "product_id": "d20df69f-d1a1-496d-8fb7-c4c50c0c3a46",
+      "product_id": "85fde620-3ec1-4707-8f2f-e20dd6d80123",
       "name": "Apple iPhone 16",
       "brand": "Apple",
       "category": "Mobiles",
-      "mrp": 88549.0,
+      "mrp": 80385.0,
       "best_price": 56999.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:31.989000",
+      "history_rows": 180,
+      "unique_dates": 180,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:19.755000",
       "stores": [
         "Amazon",
         "Croma",
@@ -99,7 +97,7 @@
       ]
     },
     {
-      "product_id": "17b4749c-8f3b-40a7-b6dd-02be195d80ce",
+      "product_id": "646d0271-991c-4b4b-9f12-4bb5d1c16e7a",
       "name": "Apple iPhone 16 Plus",
       "brand": "Apple",
       "category": "Mobiles",
@@ -107,10 +105,10 @@
       "best_price": 79900.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 148,
-      "unique_dates": 148,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:00.690000",
+      "history_rows": 142,
+      "unique_dates": 142,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:50.396000",
       "stores": [
         "Amazon",
         "Croma",
@@ -118,7 +116,7 @@
       ]
     },
     {
-      "product_id": "070f3b5d-804a-4389-80c3-b21a1947aad2",
+      "product_id": "9f351f0c-6184-4e29-8199-f1f5f731e2ba",
       "name": "Apple iPhone 16 Pro Max",
       "brand": "Apple",
       "category": "Mobiles",
@@ -126,10 +124,10 @@
       "best_price": 134900.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 60,
-      "unique_dates": 60,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:51.078000",
+      "history_rows": 54,
+      "unique_dates": 54,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:39.030000",
       "stores": [
         "Amazon",
         "Croma",
@@ -137,37 +135,36 @@
       ]
     },
     {
-      "product_id": "e732686d-45a4-4da4-84d9-e9f39a2708ed",
+      "product_id": "28e93f8d-d91c-4109-98fc-1ad20b5637ae",
       "name": "Apple iPhone 16e",
       "brand": "Apple",
       "category": "Mobiles",
       "mrp": 68885.0,
       "best_price": 59900.0,
       "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 149,
-      "unique_dates": 149,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:03.171000",
+      "store_count": 2,
+      "history_rows": 143,
+      "unique_dates": 143,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:03.779000",
       "stores": [
         "Amazon",
-        "Croma",
         "Flipkart"
       ]
     },
     {
-      "product_id": "79820bb5-b9a7-4da6-adee-b709551eaa20",
+      "product_id": "f84b853e-e539-4335-a399-ffe4b1402115",
       "name": "Apple iPhone 17",
       "brand": "Apple",
       "category": "Mobiles",
-      "mrp": 100049.0,
+      "mrp": 102349.0,
       "best_price": 82900.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 181,
-      "unique_dates": 181,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:30.048000",
+      "history_rows": 182,
+      "unique_dates": 182,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:17.194000",
       "stores": [
         "Amazon",
         "Croma",
@@ -175,36 +172,71 @@
       ]
     },
     {
-      "product_id": "af32fe62-288c-4653-9545-eebc76a998ee",
+      "product_id": "64a5dcc3-c094-43cd-bb6e-0583c8c65844",
+      "name": "Apple iPhone 17 (512GB)",
+      "brand": "Apple",
+      "category": "Mobiles",
+      "mrp": 131099.0,
+      "best_price": 102900.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 182,
+      "unique_dates": 182,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:58.459000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "c262dcde-309b-498f-b850-23e5dc79d479",
       "name": "Apple iPhone 17 Pro",
       "brand": "Apple",
       "category": "Mobiles",
-      "mrp": 150064.0,
-      "best_price": 129990.0,
+      "mrp": 149385.0,
+      "best_price": 129900.0,
       "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 276,
-      "unique_dates": 189,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-22 14:49:16.751000",
+      "store_count": 1,
+      "history_rows": 181,
+      "unique_dates": 181,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:24.589000",
       "stores": [
-        "Amazon",
-        "Flipkart"
+        "Amazon"
       ]
     },
     {
-      "product_id": "1fe52ca5-ef0e-42e3-a5a2-9510bf257434",
+      "product_id": "3674fe30-0cdc-49fe-b06d-68e3af1e1f32",
       "name": "Apple iPhone 17 Pro Max",
       "brand": "Apple",
       "category": "Mobiles",
-      "mrp": 160989.0,
-      "best_price": 139990.0,
+      "mrp": 166635.0,
+      "best_price": 144900.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 181,
+      "unique_dates": 181,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:29.497000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "63baf396-f2d7-48e3-b572-03c4ac1301a8",
+      "name": "Apple iPhone 17e",
+      "brand": "Apple",
+      "category": "Mobiles",
+      "mrp": 82799.0,
+      "best_price": 64900.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 267,
-      "unique_dates": 189,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-22 14:49:15.297000",
+      "history_rows": 170,
+      "unique_dates": 170,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:01.161000",
       "stores": [
         "Amazon",
         "Croma",
@@ -212,7 +244,7 @@
       ]
     },
     {
-      "product_id": "c5c85c78-b5c7-4bfe-bc7e-4dc8f4a1e156",
+      "product_id": "9168dfa7-7f24-4f5f-80c9-aa9105f3b0b1",
       "name": "Apple iPhone 18",
       "brand": "Apple",
       "category": "Mobiles",
@@ -222,14 +254,14 @@
       "store_count": 1,
       "history_rows": 1,
       "unique_dates": 1,
-      "min_date": "2026-10-17 14:57:57.611000",
-      "max_date": "2026-10-17 14:57:57.611000",
+      "min_date": "2026-10-22 23:04:41.562000",
+      "max_date": "2026-10-22 23:04:41.562000",
       "stores": [
         "Smartprix"
       ]
     },
     {
-      "product_id": "094f1e96-f4a0-452b-b70e-25989d649644",
+      "product_id": "a9a4a10e-b1cc-46ad-bfa8-66a52bdc1323",
       "name": "Apple iPhone 18 Pro",
       "brand": "Apple",
       "category": "Mobiles",
@@ -240,13 +272,13 @@
       "history_rows": 2,
       "unique_dates": 2,
       "min_date": "2026-09-12 00:00:00",
-      "max_date": "2026-10-17 14:57:44.999000",
+      "max_date": "2026-10-22 23:04:34.348000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "5632ab1f-d6da-4de0-82d4-3f96541b40b9",
+      "product_id": "4f7f3333-9327-4db1-8978-3f85c54b1958",
       "name": "Apple iPhone 18 Pro Max",
       "brand": "Apple",
       "category": "Mobiles",
@@ -257,48 +289,30 @@
       "history_rows": 2,
       "unique_dates": 2,
       "min_date": "2026-09-12 00:00:00",
-      "max_date": "2026-10-17 14:57:35.675000",
+      "max_date": "2026-10-22 23:04:22.305000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "fafa2b66-cd70-499d-a919-172bf4dbc7ec",
-      "name": "Apple iPhone 18 Pro Max (1TB)",
-      "brand": "Apple",
-      "category": "Mobiles",
-      "mrp": 293135.0,
-      "best_price": 254900.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 2,
-      "unique_dates": 2,
-      "min_date": "2026-09-14 00:00:00",
-      "max_date": "2026-10-17 14:58:05.183000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "3bf11e39-0497-4ad8-9f24-1cfea885ec23",
+      "product_id": "2191d882-564d-45cb-8216-3ecd3a340267",
       "name": "Apple iPhone 18 Pro Max (512GB)",
       "brand": "Apple",
       "category": "Mobiles",
       "mrp": 235635.0,
       "best_price": 204900.0,
       "provenance": "genuine_scraped",
-      "store_count": 2,
+      "store_count": 1,
       "history_rows": 2,
       "unique_dates": 2,
       "min_date": "2026-09-12 00:00:00",
-      "max_date": "2026-10-17 14:58:09.141000",
+      "max_date": "2026-10-22 23:04:55.766000",
       "stores": [
-        "Amazon",
-        "Croma"
+        "Amazon"
       ]
     },
     {
-      "product_id": "f3f588ce-257b-43d7-9621-48e763f37edd",
+      "product_id": "ff4040c3-becc-4d04-a963-aa58ffa5d9be",
       "name": "Apple iPhone Air",
       "brand": "Apple",
       "category": "Mobiles",
@@ -306,17 +320,17 @@
       "best_price": 99900.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 179,
-      "unique_dates": 179,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:57:58.865000",
+      "history_rows": 183,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:04:47.964000",
       "stores": [
         "Amazon",
         "Flipkart"
       ]
     },
     {
-      "product_id": "d960662e-29d5-4eb0-a8ad-5871ae2071c1",
+      "product_id": "42f5fd2f-d49b-471b-8163-c57e7799b73b",
       "name": "Apple iPhone Duo",
       "brand": "Apple",
       "category": "Mobiles",
@@ -327,7 +341,7 @@
       "history_rows": 2,
       "unique_dates": 2,
       "min_date": "2026-10-16 00:00:00",
-      "max_date": "2026-10-17 14:57:55.673000",
+      "max_date": "2026-10-22 23:04:52.962000",
       "stores": [
         "Amazon",
         "Croma",
@@ -335,26 +349,7 @@
       ]
     },
     {
-      "product_id": "049a4b15-c110-429c-94f3-7b6169f36958",
-      "name": "Apple iPhone Duo (1TB)",
-      "brand": "Apple",
-      "category": "Mobiles",
-      "mrp": 431135.0,
-      "best_price": 374900.0,
-      "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 2,
-      "unique_dates": 2,
-      "min_date": "2026-10-16 00:00:00",
-      "max_date": "2026-10-17 14:58:07.104000",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "b38bf541-6097-4854-adbc-19c869282f2a",
+      "product_id": "1134c11c-9923-40eb-a2e2-f483ed40bca1",
       "name": "Apple iPhone Duo (2TB)",
       "brand": "Apple",
       "category": "Mobiles",
@@ -365,7 +360,7 @@
       "history_rows": 2,
       "unique_dates": 2,
       "min_date": "2026-10-16 00:00:00",
-      "max_date": "2026-10-17 14:57:40.142000",
+      "max_date": "2026-10-22 23:04:31.760000",
       "stores": [
         "Amazon",
         "Croma",
@@ -373,37 +368,36 @@
       ]
     },
     {
-      "product_id": "af55fc27-1b14-4a3b-9547-a5b41434873b",
-      "name": "OnePlus 13s (12GB RAM + 512GB)",
-      "brand": "OnePlus",
+      "product_id": "c048d9cc-b94f-40ea-9bb1-a2f015109dea",
+      "name": "Google Pixel 10 5G",
+      "brand": "Google Pixel",
       "category": "Mobiles",
-      "mrp": 72334.0,
-      "best_price": 57999.0,
+      "mrp": 80489.0,
+      "best_price": 69990.0,
       "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 179,
-      "unique_dates": 179,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:46.993000",
+      "store_count": 2,
+      "history_rows": 185,
+      "unique_dates": 184,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
       "stores": [
         "Amazon",
-        "Croma",
         "Flipkart"
       ]
     },
     {
-      "product_id": "3cb7895d-b8d3-416e-8e19-871dd57bf3ac",
-      "name": "OnePlus 13s 5G",
-      "brand": "OnePlus",
+      "product_id": "a6d18f25-1cb3-469d-853b-d91ae733db39",
+      "name": "Google Pixel 10A",
+      "brand": "Google Pixel",
       "category": "Mobiles",
-      "mrp": 66699.0,
-      "best_price": 52999.0,
+      "mrp": 57943.0,
+      "best_price": 50385.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
       "history_rows": 185,
       "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:27.274000",
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
       "stores": [
         "Amazon",
         "Croma",
@@ -411,26 +405,385 @@
       ]
     },
     {
-      "product_id": "732b4ac9-7ef4-407c-a2ed-21ac22b90530",
+      "product_id": "c2892d99-9051-4d50-bef4-e962b3930c5d",
+      "name": "Google Pixel 11",
+      "brand": "Google Pixel",
+      "category": "Mobiles",
+      "mrp": 88777.0,
+      "best_price": 77197.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 73,
+      "unique_dates": 72,
+      "min_date": "2026-08-12 00:00:00",
+      "max_date": "2026-10-22 23:37:05.365000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "511af7f4-5254-4bcd-8474-128cb6066fa2",
+      "name": "Google Pixel 11 Pro",
+      "brand": "Google Pixel",
+      "category": "Mobiles",
+      "mrp": 137999.0,
+      "best_price": 119999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 51,
+      "unique_dates": 51,
+      "min_date": "2026-08-12 00:00:00",
+      "max_date": "2026-10-22 23:37:12.746000",
+      "stores": [
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "e31c9f2f-d9ae-4bfe-be30-d56740c29d7b",
+      "name": "Google Pixel 11 Pro XL",
+      "brand": "Google Pixel",
+      "category": "Mobiles",
+      "mrp": 146049.0,
+      "best_price": 126999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 69,
+      "unique_dates": 69,
+      "min_date": "2026-08-12 00:00:00",
+      "max_date": "2026-10-22 23:37:26.882000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "4afad290-5cf7-4d11-9244-2f75f9a68eda",
+      "name": "Google Pixel 7A",
+      "brand": "Google Pixel",
+      "category": "Mobiles",
+      "mrp": 34499.0,
+      "best_price": 29999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:37:24.655000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "076e8b6b-f0d7-4cfd-ba15-d9c345deff5f",
+      "name": "Google Pixel 8 5G",
+      "brand": "Google Pixel",
+      "category": "Mobiles",
+      "mrp": 42549.0,
+      "best_price": 36999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 175,
+      "unique_dates": 175,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:37:10.268000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "34fc0183-492c-4a7b-a9f0-2bd62eca612e",
+      "name": "Google Pixel 8 Pro",
+      "brand": "Google Pixel",
+      "category": "Mobiles",
+      "mrp": 57499.0,
+      "best_price": 43999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:37:17.841000",
+      "max_date": "2026-10-22 23:37:17.841000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "81cff107-f3f6-4f2d-88f5-a49f972c1ebd",
+      "name": "Google Pixel 8A",
+      "brand": "Google Pixel",
+      "category": "Mobiles",
+      "mrp": 42549.0,
+      "best_price": 36999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:37:19.803000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "6953e89c-9c60-45e3-b79e-7ca2153d6aa3",
+      "name": "Google Pixel 9A",
+      "brand": "Google Pixel",
+      "category": "Mobiles",
+      "mrp": 57499.0,
+      "best_price": 39999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 175,
+      "unique_dates": 175,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:37:22.249000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "f84623eb-da61-485e-b799-3ebd944c1c17",
+      "name": "Motorola Edge 50 Fusion (12GB RAM + 256GB)",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 26208.0,
+      "best_price": 22790.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 77,
+      "unique_dates": 77,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:36:43.527000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "79df82d4-8101-41da-a5f0-3eec182ebd8d",
+      "name": "Motorola Edge 60 Fusion 5G (12GB RAM + 256GB)",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 32808.0,
+      "best_price": 28529.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:36:53.231000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "4486074a-1ef5-4fd0-87c6-e3247c107411",
+      "name": "Motorola Edge 60 Pro",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 34719.0,
+      "best_price": 30190.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 163,
+      "unique_dates": 163,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:36:50.687000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "ecce761c-e0c0-46de-a6af-145b67a1c55a",
+      "name": "Motorola Edge 60 Stylus",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 23644.0,
+      "best_price": 20560.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 106,
+      "unique_dates": 106,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:36:38.366000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "82c555cf-4042-48d0-917e-88c3c4850937",
+      "name": "Motorola Edge 70 Fusion",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 33924.0,
+      "best_price": 29499.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 185,
+      "unique_dates": 184,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "026b3ce7-08ee-40f1-9c54-07365470fae5",
+      "name": "Motorola Edge 70 Fusion 5G (12GB RAM + 256 GB)",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 38985.0,
+      "best_price": 33900.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 185,
+      "unique_dates": 184,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "b933c64f-4c51-453b-8253-3aec8784823c",
+      "name": "Motorola Edge 70 Pro",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 44153.0,
+      "best_price": 38394.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 179,
+      "unique_dates": 178,
+      "min_date": "2026-04-29 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "b04d17c6-e9e4-466f-8259-63098942359e",
+      "name": "Motorola Moto G34 5G (8GB RAM + 128GB)",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 17249.0,
+      "best_price": 11999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 113,
+      "unique_dates": 113,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:36:40.864000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "fdc0d185-b54c-4984-ba2e-5857e9cb34e4",
+      "name": "Motorola Moto G37 Power (8GB RAM + 128GB)",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 24150.0,
+      "best_price": 21000.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 151,
+      "unique_dates": 151,
+      "min_date": "2026-05-25 00:00:00",
+      "max_date": "2026-10-22 23:36:57.651000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "4b9be5da-e63e-490d-b9e3-712541eaed45",
+      "name": "Motorola Signature",
+      "brand": "Motorola",
+      "category": "Mobiles",
+      "mrp": 67849.0,
+      "best_price": 58999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:36:55.600000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "11e29438-0ba0-4a99-b8f4-0ccab39afac4",
+      "name": "OnePlus 13s (12GB RAM + 512GB)",
+      "brand": "OnePlus",
+      "category": "Mobiles",
+      "mrp": 66699.0,
+      "best_price": 53499.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 173,
+      "unique_dates": 173,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:57.484000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "d9d85c8c-1333-43be-aac9-fa873bf235c1",
+      "name": "OnePlus 13s 5G",
+      "brand": "OnePlus",
+      "category": "Mobiles",
+      "mrp": 60949.0,
+      "best_price": 43518.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 180,
+      "unique_dates": 180,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:21.716000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "bfb9641b-b79a-4e52-ab46-4d69e4bc815b",
       "name": "OnePlus 15",
       "brand": "OnePlus",
       "category": "Mobiles",
       "mrp": 97749.0,
       "best_price": 84999.0,
       "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 176,
-      "unique_dates": 176,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:31.281000",
+      "store_count": 2,
+      "history_rows": 170,
+      "unique_dates": 170,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:32.502000",
       "stores": [
         "Amazon",
-        "Croma",
         "Flipkart"
       ]
     },
     {
-      "product_id": "7e608282-c6f3-459a-ac83-ce2cc844ea16",
+      "product_id": "cafb8f2b-b9b7-4748-904c-bcc59f1d50a4",
       "name": "OnePlus 15 5G (16GB RAM + 512GB)",
       "brand": "OnePlus",
       "category": "Mobiles",
@@ -438,10 +791,10 @@
       "best_price": 79998.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 176,
-      "unique_dates": 176,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:48.762000",
+      "history_rows": 170,
+      "unique_dates": 170,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:53.579000",
       "stores": [
         "Amazon",
         "Croma",
@@ -449,76 +802,41 @@
       ]
     },
     {
-      "product_id": "595b6ebf-7c35-4b16-a9e4-190b0471b72e",
-      "name": "OnePlus 15R (16GB RAM + 512GB)",
+      "product_id": "9289e97a-bfca-4511-9ab2-760d9b5894eb",
+      "name": "OnePlus 15R 5G",
       "brand": "OnePlus",
       "category": "Mobiles",
-      "mrp": 73599.0,
-      "best_price": 63999.0,
+      "mrp": 68999.0,
+      "best_price": 59999.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
-      "history_rows": 117,
-      "unique_dates": 117,
-      "min_date": "2026-06-15 00:00:00",
-      "max_date": "2026-10-17 14:58:50.678000",
+      "history_rows": 183,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:28.192000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "b13cc0e8-13f9-494e-9ce6-db7e0842a47a",
-      "name": "OnePlus 15R 5G",
+      "product_id": "5a5bbadf-2685-4fff-8c89-ad006579b0a5",
+      "name": "OnePlus 7 Pro",
       "brand": "OnePlus",
       "category": "Mobiles",
-      "mrp": 65549.0,
-      "best_price": 56999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 176,
-      "unique_dates": 176,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:29.116000",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "749bc051-06c1-4a28-8ae0-45501b0ce40a",
-      "name": "OnePlus 16",
-      "brand": "OnePlus",
-      "category": "Mobiles",
-      "mrp": 114988.0,
-      "best_price": 99990.0,
+      "mrp": 103488.0,
+      "best_price": 89990.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
       "history_rows": 1,
       "unique_dates": 1,
-      "min_date": "2026-10-17 14:58:20.899000",
-      "max_date": "2026-10-17 14:58:20.899000",
+      "min_date": "2026-10-22 23:06:56.190000",
+      "max_date": "2026-10-22 23:06:56.190000",
       "stores": [
         "Smartprix"
       ]
     },
     {
-      "product_id": "1baca923-d62e-4e51-a1fa-94537a5c7962",
-      "name": "OnePlus 16R 5G",
-      "brand": "OnePlus",
-      "category": "Mobiles",
-      "mrp": 80499.0,
-      "best_price": 69999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 1,
-      "unique_dates": 1,
-      "min_date": "2026-10-17 14:58:42.746000",
-      "max_date": "2026-10-17 14:58:42.746000",
-      "stores": [
-        "Smartprix"
-      ]
-    },
-    {
-      "product_id": "24b6dc85-24eb-4f94-a949-fa3315c354bd",
+      "product_id": "21bf3312-8a12-47a5-8c9f-0ac531432d1a",
       "name": "OnePlus N6",
       "brand": "OnePlus",
       "category": "Mobiles",
@@ -529,13 +847,13 @@
       "history_rows": 98,
       "unique_dates": 98,
       "min_date": "2026-07-04 00:00:00",
-      "max_date": "2026-10-17 14:58:23.783000",
+      "max_date": "2026-10-22 23:06:19.343000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "194abad0-5140-4fa6-bae7-8e5cee9f0422",
+      "product_id": "dc220b57-cc0f-4430-aaaf-d22ef705e436",
       "name": "OnePlus N6 5G (6GB RAM + 128GB)",
       "brand": "OnePlus",
       "category": "Mobiles",
@@ -546,31 +864,13 @@
       "history_rows": 98,
       "unique_dates": 98,
       "min_date": "2026-07-04 00:00:00",
-      "max_date": "2026-10-17 14:58:33.315000",
+      "max_date": "2026-10-22 23:06:30.389000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "7aa3df44-b9ac-4dfa-9cc0-b188f86a40af",
-      "name": "OnePlus N6 Lite",
-      "brand": "OnePlus",
-      "category": "Mobiles",
-      "mrp": 18399.0,
-      "best_price": 15999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 18,
-      "unique_dates": 18,
-      "min_date": "2026-09-22 00:00:00",
-      "max_date": "2026-10-17 14:58:43.866000",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "ef3cd5a2-1122-4710-8ad8-a0752737a7cd",
+      "product_id": "22902641-a86b-4e6b-8c2b-faf86e0ce90b",
       "name": "OnePlus N6x (6GB RAM + 128GB)",
       "brand": "OnePlus",
       "category": "Mobiles",
@@ -581,24 +881,24 @@
       "history_rows": 3,
       "unique_dates": 3,
       "min_date": "2026-10-07 00:00:00",
-      "max_date": "2026-10-17 14:58:40.608000",
+      "max_date": "2026-10-22 23:06:46.141000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "950506d2-0a99-48c4-9566-e9bf9ca02978",
+      "product_id": "494d72c9-839d-470e-991a-4a3789b0a4a1",
       "name": "OnePlus Nord 4 5G (8GB RAM + 256GB)",
       "brand": "OnePlus",
       "category": "Mobiles",
-      "mrp": 49449.0,
+      "mrp": 34499.0,
       "best_price": 29249.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:36.804000",
+      "history_rows": 180,
+      "unique_dates": 180,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:34.762000",
       "stores": [
         "Amazon",
         "Croma",
@@ -606,7 +906,43 @@
       ]
     },
     {
-      "product_id": "82743309-47fc-4f80-8ce2-ff1e4f72702a",
+      "product_id": "88fc7aaf-6e3a-4e6f-a384-58695675f4ec",
+      "name": "OnePlus Nord 5 5G",
+      "brand": "OnePlus",
+      "category": "Mobiles",
+      "mrp": 52888.0,
+      "best_price": 31999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:42.740000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "7e3fdd63-d5a2-45d2-bcb6-0c0e856644b5",
+      "name": "OnePlus Nord 6",
+      "brand": "OnePlus",
+      "category": "Mobiles",
+      "mrp": 34499.0,
+      "best_price": 29999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:06:50.020000",
+      "max_date": "2026-10-22 23:06:50.020000",
+      "stores": [
+        "Smartprix"
+      ]
+    },
+    {
+      "product_id": "aece4343-2054-4ea4-b583-dccfa2a1222b",
       "name": "OnePlus Nord 6",
       "brand": "OnePlus",
       "category": "Mobiles",
@@ -614,16 +950,16 @@
       "best_price": 44999.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
-      "history_rows": 176,
-      "unique_dates": 176,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:19.288000",
+      "history_rows": 170,
+      "unique_dates": 170,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:08.260000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "f4262dcf-9e1d-4d48-afe7-0d53938a10a2",
+      "product_id": "9d7a7f56-76aa-47dc-ac3e-00847ecd2235",
       "name": "OnePlus Nord 6 5G (12GB RAM +256GB)",
       "brand": "OnePlus",
       "category": "Mobiles",
@@ -631,17 +967,53 @@
       "best_price": 50999.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 176,
-      "unique_dates": 176,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:58:38.686000",
+      "history_rows": 170,
+      "unique_dates": 170,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:06:37.257000",
       "stores": [
         "Amazon",
         "Flipkart"
       ]
     },
     {
-      "product_id": "a78007af-099f-46f0-9836-9d1069ad0309",
+      "product_id": "4670fdae-289d-49ce-90a2-e7bb194d8e58",
+      "name": "OnePlus Nord CE 5 5G",
+      "brand": "OnePlus",
+      "category": "Mobiles",
+      "mrp": 42484.0,
+      "best_price": 24996.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 3,
+      "unique_dates": 2,
+      "min_date": "2026-10-22 23:33:12.534000",
+      "max_date": "2026-10-23 08:45:39.769000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "962a967e-3bef-4c7b-9190-734b79223f31",
+      "name": "OnePlus Nord CE 5 Lite 5G",
+      "brand": "OnePlus",
+      "category": "Mobiles",
+      "mrp": 26438.0,
+      "best_price": 22990.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:33:14.704000",
+      "max_date": "2026-10-22 23:33:14.704000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "035cbb44-6e57-4a3c-8000-2c6b56eb2b4b",
       "name": "OnePlus Nord CE 6 5G",
       "brand": "OnePlus",
       "category": "Mobiles",
@@ -652,42 +1024,42 @@
       "history_rows": 162,
       "unique_dates": 162,
       "min_date": "2026-05-08 00:00:00",
-      "max_date": "2026-10-17 14:58:21.942000",
+      "max_date": "2026-10-22 23:06:15.410000",
       "stores": [
         "Amazon",
         "Croma"
       ]
     },
     {
-      "product_id": "80672e4e-fe85-4513-a130-a6c4b70dce35",
+      "product_id": "1376740d-7230-427f-b68a-cffc88ebc9ef",
       "name": "OnePlus Nord CE 6 5G (8GB RAM + 256GB)",
       "brand": "OnePlus",
       "category": "Mobiles",
-      "mrp": 44849.0,
-      "best_price": 38999.0,
+      "mrp": 45999.0,
+      "best_price": 39999.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
-      "history_rows": 155,
-      "unique_dates": 155,
+      "history_rows": 169,
+      "unique_dates": 168,
       "min_date": "2026-05-08 00:00:00",
-      "max_date": "2026-10-17 14:58:25.470000",
+      "max_date": "2026-10-22 23:06:25.177000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "a5999c69-f58c-4bd1-a066-6d608541257f",
+      "product_id": "14357b8c-7975-40f2-9225-14412f14d67f",
       "name": "OnePlus Nord CE 6 Lite",
       "brand": "OnePlus",
       "category": "Mobiles",
-      "mrp": 31624.0,
-      "best_price": 27499.0,
+      "mrp": 31539.0,
+      "best_price": 27425.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 152,
-      "unique_dates": 152,
+      "history_rows": 166,
+      "unique_dates": 165,
       "min_date": "2026-05-12 00:00:00",
-      "max_date": "2026-10-17 14:58:35.058000",
+      "max_date": "2026-10-23 00:00:00",
       "stores": [
         "Amazon",
         "Croma",
@@ -695,52 +1067,197 @@
       ]
     },
     {
-      "product_id": "e38def9e-59d9-4e52-94d7-fdfbee69d016",
-      "name": "OnePlus Nord CE 6 Lite 5G (8GB RAM + 256GB)",
+      "product_id": "a67ed810-44f6-449b-a3dd-e6de7ddaa9ea",
+      "name": "OnePlus Nord CE 6 Lite 5G (8GB RAM + 128GB)",
       "brand": "OnePlus",
       "category": "Mobiles",
-      "mrp": 37948.0,
-      "best_price": 32998.0,
+      "mrp": 32774.0,
+      "best_price": 28499.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
-      "history_rows": 158,
-      "unique_dates": 158,
+      "history_rows": 151,
+      "unique_dates": 151,
       "min_date": "2026-05-12 00:00:00",
-      "max_date": "2026-10-17 14:58:52.589000",
+      "max_date": "2026-10-22 23:06:51.351000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "0ea99113-b45e-46e9-99d2-dc3abf512162",
-      "name": "OnePlus Turbo 6",
-      "brand": "OnePlus",
+      "product_id": "951721f0-ba85-44fd-86f0-588092f5336e",
+      "name": "OPPO A6x",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 22999.0,
+      "best_price": 13999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 175,
+      "unique_dates": 175,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:27:52.189000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "dc77a7d2-ce2a-49ce-8d7e-871ae07cfd65",
+      "name": "OPPO F29 (8GB RAM + 256GB)",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 27599.0,
+      "best_price": 18931.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 170,
+      "unique_dates": 170,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:27:31.744000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "bb988499-ea86-4afa-97be-6b5775957e9a",
+      "name": "OPPO F31 Pro 5G (12GB RAM + 256GB)",
+      "brand": "OPPO",
       "category": "Mobiles",
       "mrp": 34499.0,
       "best_price": 29999.0,
       "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 79,
+      "unique_dates": 79,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:27:46.102000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "b1d147ef-4a6e-4d0e-9c75-10efce24c575",
+      "name": "OPPO F35",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 44849.0,
+      "best_price": 38999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 16,
+      "unique_dates": 16,
+      "min_date": "2026-10-05 00:00:00",
+      "max_date": "2026-10-22 23:27:36.827000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "877fc205-a4af-450c-b255-129ca909c0d5",
+      "name": "OPPO F35 Pro",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 52899.0,
+      "best_price": 45999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 16,
+      "unique_dates": 16,
+      "min_date": "2026-10-05 00:00:00",
+      "max_date": "2026-10-22 23:27:22.968000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "351a5670-241e-42f2-8f2c-615107ffdbb0",
+      "name": "OPPO Find X10",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 160999.0,
+      "best_price": 139999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 2,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 00:00:00",
+      "max_date": "2026-10-22 23:27:13.886000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "63a21446-d37c-470a-a98a-18bcbb975c0d",
+      "name": "OPPO Find X10 Pro 5G",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 137989.0,
+      "best_price": 119990.0,
+      "provenance": "genuine_scraped",
       "store_count": 1,
       "history_rows": 1,
       "unique_dates": 1,
-      "min_date": "2026-10-17 14:58:45.844000",
-      "max_date": "2026-10-17 14:58:45.844000",
+      "min_date": "2026-10-22 23:27:30.365000",
+      "max_date": "2026-10-22 23:27:30.365000",
       "stores": [
         "Smartprix"
       ]
     },
     {
-      "product_id": "6d0491ad-6985-45ca-8ba8-5da7691d66c3",
-      "name": "Samsung Galaxy A16 5G (6GB RAM + 128GB)",
-      "brand": "Samsung",
+      "product_id": "bf039b18-558e-49fd-b404-d9cf33c40276",
+      "name": "OPPO Find X10 Pro Max",
+      "brand": "OPPO",
       "category": "Mobiles",
-      "mrp": 26450.0,
-      "best_price": 15999.0,
+      "mrp": 229999.0,
+      "best_price": 199999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 2,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 00:00:00",
+      "max_date": "2026-10-22 23:27:16.181000",
+      "stores": [
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "71ff33fa-f354-4156-a59d-c2319e377532",
+      "name": "OPPO Find X9",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 90825.0,
+      "best_price": 79999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 183,
+      "unique_dates": 181,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 08:45:44.954000",
+      "stores": [
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "32050465-3a0f-427f-8709-169da4dfaf5a",
+      "name": "OPPO K13",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 25241.0,
+      "best_price": 21949.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:58.010000",
+      "history_rows": 179,
+      "unique_dates": 179,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:27:43.663000",
       "stores": [
         "Amazon",
         "Croma",
@@ -748,60 +1265,244 @@
       ]
     },
     {
-      "product_id": "82a5e214-c484-4370-a6a3-9c29e835bb2b",
+      "product_id": "6bf62a14-2de1-41e6-be44-7d505c7b9443",
+      "name": "OPPO K13 (8GB RAM + 256GB)",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 27484.0,
+      "best_price": 19999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 179,
+      "unique_dates": 179,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:27:20.538000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "2ef3e8eb-31b7-4c38-87a4-e8f955a04ad0",
+      "name": "OPPO K13x (6GB RAM +128GB)",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 19549.0,
+      "best_price": 13999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 126,
+      "unique_dates": 126,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:27:25.315000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "88aa9995-067e-45a0-bb33-211c3ec1fd52",
+      "name": "OPPO K14 Plus",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 35649.0,
+      "best_price": 30999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 11,
+      "unique_dates": 11,
+      "min_date": "2026-09-29 00:00:00",
+      "max_date": "2026-10-22 23:27:18.495000",
+      "stores": [
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "85cf0516-42e9-4023-baed-3530755ac16d",
+      "name": "OPPO K14 Plus (8GB RAM + 256GB)",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 44268.0,
+      "best_price": 38494.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 11,
+      "unique_dates": 11,
+      "min_date": "2026-09-29 00:00:00",
+      "max_date": "2026-10-22 23:27:39.074000",
+      "stores": [
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "963878d7-be87-49d7-876e-e33a562504ac",
+      "name": "OPPO K14x",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 21729.0,
+      "best_price": 18895.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 185,
+      "unique_dates": 184,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "5480ec95-41cf-44cb-94f4-3fbcd062907f",
+      "name": "OPPO Reno 14",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 44563.0,
+      "best_price": 38750.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 185,
+      "unique_dates": 184,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "43f04a78-f2ae-4496-a54b-724c9aaa4090",
+      "name": "OPPO Reno 14 Pro 5G",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 60949.0,
+      "best_price": 52999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:27:57.124000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "0a2375d9-67f8-4a84-b920-c197362a95fe",
+      "name": "OPPO Reno 15 5G",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 55199.0,
+      "best_price": 45499.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 63,
+      "unique_dates": 63,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:27:54.589000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "a24c7f32-da53-4719-970d-213813d3aca3",
+      "name": "OPPO Reno 16",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 77049.0,
+      "best_price": 66999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 110,
+      "unique_dates": 110,
+      "min_date": "2026-07-02 00:00:00",
+      "max_date": "2026-10-22 23:27:34.237000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "4c48fc13-9e48-4024-bf21-ded3925798ff",
+      "name": "OPPO Reno 17",
+      "brand": "OPPO",
+      "category": "Mobiles",
+      "mrp": 80499.0,
+      "best_price": 69999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:27:50.789000",
+      "max_date": "2026-10-22 23:27:50.789000",
+      "stores": [
+        "Smartprix"
+      ]
+    },
+    {
+      "product_id": "02bc901b-e2e3-462a-9736-dd7b401aa0ac",
       "name": "Samsung Galaxy A17 5G",
       "brand": "Samsung",
       "category": "Mobiles",
-      "mrp": 25839.0,
-      "best_price": 22469.0,
+      "mrp": 25931.0,
+      "best_price": 22549.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:49.425000",
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:42.447000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "fc9dd050-bd04-4d34-92fb-75719a206860",
+      "product_id": "9c6b0f14-7acc-4794-a0bf-aa004ae85902",
       "name": "Samsung Galaxy A36 5G",
       "brand": "Samsung",
       "category": "Mobiles",
-      "mrp": 29808.0,
-      "best_price": 25920.0,
+      "mrp": 29865.0,
+      "best_price": 25970.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:15.704000",
+      "stores": [
+        "Amazon",
+        "Croma"
+      ]
+    },
+    {
+      "product_id": "f5afb1cc-3add-4e5f-a99a-3af65aa40b4a",
+      "name": "Samsung Galaxy A36 5G (8GB RAM + 256GB)",
+      "brand": "Samsung",
+      "category": "Mobiles",
+      "mrp": 35994.0,
+      "best_price": 31299.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
       "history_rows": 185,
       "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:27.936000",
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
       "stores": [
         "Amazon",
         "Croma"
       ]
     },
     {
-      "product_id": "74c7ed5f-db83-4e75-a873-e55dc9b97d16",
-      "name": "Samsung Galaxy A36 5G (8GB RAM + 256GB)",
-      "brand": "Samsung",
-      "category": "Mobiles",
-      "mrp": 36100.0,
-      "best_price": 31391.0,
-      "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 184,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:51.125000",
-      "stores": [
-        "Amazon",
-        "Croma"
-      ]
-    },
-    {
-      "product_id": "fc20f5e3-ca29-4981-8043-cb6a6be498a8",
+      "product_id": "3efae457-3fcb-4a29-a94f-d06fa35c8393",
       "name": "Samsung Galaxy A56 5G",
       "brand": "Samsung",
       "category": "Mobiles",
@@ -809,35 +1510,35 @@
       "best_price": 32999.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:35.626000",
+      "history_rows": 181,
+      "unique_dates": 181,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:27.773000",
       "stores": [
         "Amazon",
         "Croma"
       ]
     },
     {
-      "product_id": "f66fa514-974f-45b9-b317-ce0f7590e255",
-      "name": "Samsung Galaxy A56 5G (8GB RAM + 256GB)",
+      "product_id": "10d80d7c-4b8d-4d81-ae29-f8e1dda32b57",
+      "name": "Samsung Galaxy F05",
       "brand": "Samsung",
       "category": "Mobiles",
-      "mrp": 42549.0,
-      "best_price": 36999.0,
+      "mrp": 7474.0,
+      "best_price": 6499.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:56.352000",
+      "history_rows": 2,
+      "unique_dates": 2,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:35.681000",
       "stores": [
         "Amazon",
-        "Croma"
+        "Flipkart"
       ]
     },
     {
-      "product_id": "956348e6-943a-467e-9ff3-6a9d8fba5176",
+      "product_id": "4f0f725e-9fee-45ed-8d62-3f4f5314ceed",
       "name": "Samsung Galaxy F16 5G",
       "brand": "Samsung",
       "category": "Mobiles",
@@ -845,10 +1546,10 @@
       "best_price": 12499.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
-      "history_rows": 31,
-      "unique_dates": 31,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:40.926000",
+      "history_rows": 25,
+      "unique_dates": 25,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:49.489000",
       "stores": [
         "Amazon",
         "Croma",
@@ -856,7 +1557,7 @@
       ]
     },
     {
-      "product_id": "d2d9f2c2-1e09-4caf-a220-40232d941c2c",
+      "product_id": "70f2718b-bf7b-4410-a9bd-c5c1d9c574da",
       "name": "Samsung Galaxy F16 5G (6GB RAM + 128GB)",
       "brand": "Samsung",
       "category": "Mobiles",
@@ -864,17 +1565,17 @@
       "best_price": 13499.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 14,
-      "unique_dates": 14,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:31.994000",
+      "history_rows": 8,
+      "unique_dates": 8,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:22.776000",
       "stores": [
         "Amazon",
         "Flipkart"
       ]
     },
     {
-      "product_id": "15e41aef-31e7-4a43-ab4f-6138a407914a",
+      "product_id": "a799e71d-7f69-41ba-a6d7-4be56bb5d703",
       "name": "Samsung Galaxy F16 5G (8GB RAM + 128GB)",
       "brand": "Samsung",
       "category": "Mobiles",
@@ -884,50 +1585,83 @@
       "store_count": 2,
       "history_rows": 2,
       "unique_dates": 2,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:54.538000",
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:51.920000",
       "stores": [
         "Amazon",
         "Flipkart"
       ]
     },
     {
-      "product_id": "12c16c74-656f-4b04-9340-cc23dfd3b468",
+      "product_id": "8d835eb9-59c1-4352-953c-02e970b7622a",
+      "name": "Samsung Galaxy F70",
+      "brand": "Samsung",
+      "category": "Mobiles",
+      "mrp": 22999.0,
+      "best_price": 19999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 2,
+      "unique_dates": 2,
+      "min_date": "2026-10-20 00:00:00",
+      "max_date": "2026-10-22 23:05:18.094000",
+      "stores": [
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "b5798ca5-9656-4123-833f-689a2eee6763",
+      "name": "Samsung Galaxy F70 (6GB RAM + 128GB)",
+      "brand": "Samsung",
+      "category": "Mobiles",
+      "mrp": 26449.0,
+      "best_price": 22999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 2,
+      "unique_dates": 2,
+      "min_date": "2026-10-20 00:00:00",
+      "max_date": "2026-10-22 23:05:40.247000",
+      "stores": [
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "2aaeb647-b71a-43ed-bb93-c061f8e3a7a1",
+      "name": "Samsung Galaxy F70 (8GB RAM + 128GB)",
+      "brand": "Samsung",
+      "category": "Mobiles",
+      "mrp": 27024.0,
+      "best_price": 23499.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:05:54.742000",
+      "max_date": "2026-10-22 23:05:54.742000",
+      "stores": [
+        "Smartprix"
+      ]
+    },
+    {
+      "product_id": "c30dbed8-3896-4644-9cf9-91700b7da35e",
       "name": "Samsung Galaxy F70 Pro 5G",
       "brand": "Samsung",
       "category": "Mobiles",
-      "mrp": 29210.0,
-      "best_price": 25400.0,
+      "mrp": 28864.0,
+      "best_price": 25099.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
-      "history_rows": 77,
-      "unique_dates": 76,
+      "history_rows": 83,
+      "unique_dates": 82,
       "min_date": "2026-08-03 00:00:00",
-      "max_date": "2026-10-17 14:56:39.124000",
+      "max_date": "2026-10-23 00:00:00",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "e3b53336-0ae7-4013-985f-be8cbbaa55af",
-      "name": "Samsung Galaxy F70e 5G (6GB RAM + 128GB)",
-      "brand": "Samsung",
-      "category": "Mobiles",
-      "mrp": 21218.0,
-      "best_price": 18450.0,
-      "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:47.779000",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "2728955f-3ee6-49cf-954e-5b8da27df54e",
+      "product_id": "913e96cf-3c2a-4857-bf4f-d32cfba03be0",
       "name": "Samsung Galaxy M47 5G",
       "brand": "Samsung",
       "category": "Mobiles",
@@ -938,137 +1672,121 @@
       "history_rows": 100,
       "unique_dates": 100,
       "min_date": "2026-07-02 00:00:00",
-      "max_date": "2026-10-17 14:56:37.365000",
+      "max_date": "2026-10-22 23:05:38.019000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "e7a89591-ea12-434f-8a78-f2b048fdbf27",
+      "product_id": "2b9313e0-14e8-47a9-b782-8cc367bd3267",
       "name": "Samsung Galaxy S24 FE 5G",
       "brand": "Samsung",
       "category": "Mobiles",
-      "mrp": 45999.0,
-      "best_price": 39999.0,
+      "mrp": 43699.0,
+      "best_price": 37999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:58.753000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "26e3840f-7536-4037-a9e4-41c073e72fd5",
+      "name": "Samsung Galaxy S25 5G",
+      "brand": "Samsung",
+      "category": "Mobiles",
+      "mrp": 74624.0,
+      "best_price": 64890.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 184,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:52.784000",
+      "history_rows": 182,
+      "unique_dates": 182,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:25.217000",
       "stores": [
         "Amazon",
         "Croma"
       ]
     },
     {
-      "product_id": "f0ffde83-16a1-4767-9a8e-74597dfe23b6",
-      "name": "Samsung Galaxy S25 5G",
+      "product_id": "e8a7c215-c24c-4a22-86ef-070e7dfc9d3d",
+      "name": "Samsung Galaxy S25 FE",
       "brand": "Samsung",
       "category": "Mobiles",
-      "mrp": 75209.0,
-      "best_price": 65399.0,
+      "mrp": 52899.0,
+      "best_price": 45999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 183,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:20.237000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "e710f544-106d-4ed6-9702-992aceb63858",
+      "name": "Samsung Galaxy S25 FE (8GB RAM + 256GB)",
+      "brand": "Samsung",
+      "category": "Mobiles",
+      "mrp": 64974.0,
+      "best_price": 56499.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
       "history_rows": 185,
       "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:33.948000",
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-23 00:00:00",
       "stores": [
         "Amazon",
         "Croma"
       ]
     },
     {
-      "product_id": "ed83b4a4-8923-4f68-a85b-abe497b92e2f",
-      "name": "Samsung Galaxy S25 FE",
-      "brand": "Samsung",
-      "category": "Mobiles",
-      "mrp": 51749.0,
-      "best_price": 44999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 184,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:29.741000",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "d9373cc6-b3db-4dfc-a185-67e77bfe4805",
-      "name": "Samsung Galaxy S25 FE (8GB RAM + 256GB)",
-      "brand": "Samsung",
-      "category": "Mobiles",
-      "mrp": 58649.0,
-      "best_price": 50999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 184,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:44.391000",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "196e689f-c7af-41e8-9c4e-5093e473ce81",
+      "product_id": "bdb3aea5-3f3f-420b-8130-abdbeaa5400f",
       "name": "Samsung Galaxy S25 Ultra",
       "brand": "Samsung",
       "category": "Mobiles",
-      "mrp": 109249.0,
-      "best_price": 94999.0,
+      "mrp": 111549.0,
+      "best_price": 96999.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 177,
-      "unique_dates": 177,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:24.958000",
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:13.193000",
       "stores": [
         "Amazon",
         "Croma"
       ]
     },
     {
-      "product_id": "911a1275-b78d-4109-ba94-4c3fd974a3da",
-      "name": "Samsung Galaxy S26 5G",
-      "brand": "Samsung",
-      "category": "Mobiles",
-      "mrp": 101199.0,
-      "best_price": 87999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 183,
-      "unique_dates": 183,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:59.767000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "35b761a0-23e0-4406-80c6-212d3dfe882c",
+      "product_id": "e021de5d-ec05-4330-bc3a-21fb274c76cc",
       "name": "Samsung Galaxy S26 FE",
       "brand": "Samsung",
       "category": "Mobiles",
-      "mrp": 83949.0,
-      "best_price": 72999.0,
+      "mrp": 80499.0,
+      "best_price": 69999.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
-      "history_rows": 7,
-      "unique_dates": 7,
+      "history_rows": 15,
+      "unique_dates": 14,
       "min_date": "2026-10-09 00:00:00",
-      "max_date": "2026-10-17 14:56:46.147000",
+      "max_date": "2026-10-22 23:05:56.595000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "94c28da0-8e30-4754-9e6d-d8c42a9c2d00",
+      "product_id": "ed8aa5c4-9fcb-4e3e-b17f-8098c5e1656c",
       "name": "Samsung Galaxy S26 Ultra 5G",
       "brand": "Samsung",
       "category": "Mobiles",
@@ -1076,63 +1794,168 @@
       "best_price": 125999.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:56:42.750000",
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:05:33.288000",
       "stores": [
         "Amazon",
         "Flipkart"
       ]
     },
     {
-      "product_id": "15aeb08b-3746-45c1-8327-2b6f3e8a1d26",
-      "name": "Xiaomi 17 5G",
-      "brand": "Xiaomi",
+      "product_id": "11759a79-088c-4b89-9f1d-41d7f9652cce",
+      "name": "Vivo S2 5G",
+      "brand": "Vivo",
       "category": "Mobiles",
-      "mrp": 79349.0,
-      "best_price": 68999.0,
+      "mrp": 40986.0,
+      "best_price": 35640.0,
       "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 177,
-      "unique_dates": 177,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:01.197000",
+      "store_count": 3,
+      "history_rows": 80,
+      "unique_dates": 79,
+      "min_date": "2026-08-06 00:00:00",
+      "max_date": "2026-10-23 07:43:22.344000",
       "stores": [
         "Amazon",
-        "Croma"
+        "Croma",
+        "Flipkart"
       ]
     },
     {
-      "product_id": "0db54315-e9d4-4bec-bcb4-6687c9571f6e",
-      "name": "Xiaomi 18 Pro Max",
-      "brand": "Xiaomi",
+      "product_id": "e04ec09f-18b0-4f75-9b63-ff090ceccdd5",
+      "name": "Vivo S2 FE",
+      "brand": "Vivo",
       "category": "Mobiles",
-      "mrp": 114999.0,
-      "best_price": 99999.0,
+      "mrp": 44264.0,
+      "best_price": 38490.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 18,
+      "unique_dates": 17,
+      "min_date": "2026-10-06 00:00:00",
+      "max_date": "2026-10-22 23:28:08.308000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "f3fc91fa-7701-4147-aaec-2472652ac356",
+      "name": "Vivo S2 FE (8GB RAM + 128GB)",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 48863.0,
+      "best_price": 42490.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 10,
+      "unique_dates": 9,
+      "min_date": "2026-10-14 00:00:00",
+      "max_date": "2026-10-22 23:28:44.298000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "91c69692-af9f-4d4b-a3cd-ce13012b68af",
+      "name": "Vivo T5 5G",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 40249.0,
+      "best_price": 34999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 2,
+      "unique_dates": 2,
+      "min_date": "2026-09-09 00:00:00",
+      "max_date": "2026-10-22 23:28:18.906000",
+      "stores": [
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "cc0e8d01-7638-422f-a4f2-eedbffbf1c3b",
+      "name": "Vivo T5 Lite 5G",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 22826.0,
+      "best_price": 19849.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 100,
+      "unique_dates": 99,
+      "min_date": "2026-07-16 00:00:00",
+      "max_date": "2026-10-22 23:28:40.726000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "db370cc4-45ba-4b98-a596-4559c41f4fa1",
+      "name": "Vivo T5 Pro",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 44849.0,
+      "best_price": 38999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 181,
+      "unique_dates": 181,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:28:27.430000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "8f3b7ba1-df03-43fa-ac18-120ba8e45ac5",
+      "name": "Vivo T5 Ultra",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 56338.0,
+      "best_price": 48990.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
       "history_rows": 1,
       "unique_dates": 1,
-      "min_date": "2026-10-17 14:59:02.950000",
-      "max_date": "2026-10-17 14:59:02.950000",
+      "min_date": "2026-10-22 23:28:22.346000",
+      "max_date": "2026-10-22 23:28:22.346000",
       "stores": [
         "Smartprix"
       ]
     },
     {
-      "product_id": "4a494574-5a0e-4b4d-bca7-bae54e7afda0",
-      "name": "Xiaomi Redmi 13C (8GB RAM + 256GB)",
-      "brand": "Xiaomi",
+      "product_id": "f262dccd-e2fa-4aa6-ab79-8d051b3df1b5",
+      "name": "Vivo T5x 5G",
+      "brand": "Vivo",
       "category": "Mobiles",
-      "mrp": 17197.0,
-      "best_price": 10998.0,
+      "mrp": 30969.0,
+      "best_price": 26930.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 184,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:28:10.414000",
+      "stores": [
+        "Amazon"
+      ]
+    },
+    {
+      "product_id": "945bcad4-86a3-4bf4-b0dc-7fb9fb0cc6fd",
+      "name": "Vivo V70 5G",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 60949.0,
+      "best_price": 45999.0,
       "provenance": "genuine_scraped",
       "store_count": 3,
       "history_rows": 182,
       "unique_dates": 182,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:33.714000",
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:28:14.980000",
       "stores": [
         "Amazon",
         "Croma",
@@ -1140,307 +1963,179 @@
       ]
     },
     {
-      "product_id": "af6bf254-ead6-48c5-937e-7134d9c0efcf",
-      "name": "Xiaomi Redmi 14C 5G (6GB RAM + 128GB)",
-      "brand": "Xiaomi",
+      "product_id": "f18b9a95-39b6-4a8d-a1ef-2e582c5d95cc",
+      "name": "Vivo V70 Elite",
+      "brand": "Vivo",
       "category": "Mobiles",
-      "mrp": 16631.0,
-      "best_price": 11499.0,
-      "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 181,
-      "unique_dates": 181,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:19.956000",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "71dd33ab-faa1-4454-a6ea-ffdd891658f7",
-      "name": "Xiaomi Redmi 15 5G",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 24724.0,
-      "best_price": 20350.0,
-      "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 177,
-      "unique_dates": 177,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:30.369000",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "49ab2c07-4971-44c5-a2e0-54530b3d64ba",
-      "name": "Xiaomi Redmi 15C 5G",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 18399.0,
-      "best_price": 15999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 176,
-      "unique_dates": 176,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:06.106000",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "7d915c2d-4d54-4d85-9c70-4ba7b66e3571",
-      "name": "Xiaomi Redmi 15C 5G (6GB RAM + 128GB)",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 20699.0,
-      "best_price": 17999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 176,
-      "unique_dates": 176,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:23.392000",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "4b76d9f8-a6de-4c8f-a654-103080bd70fe",
-      "name": "Xiaomi Redmi 17 5G",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 27598.0,
-      "best_price": 23998.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 29,
-      "unique_dates": 29,
-      "min_date": "2026-09-10 00:00:00",
-      "max_date": "2026-10-17 14:59:08.061000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "8f786211-9040-4065-b387-5f7c625ff820",
-      "name": "Xiaomi Redmi 17C 5G",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 24149.0,
-      "best_price": 20999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 2,
-      "unique_dates": 2,
-      "min_date": "2026-10-07 00:00:00",
-      "max_date": "2026-10-17 14:59:32.083000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "de5c9892-4919-4de8-b283-e43e0532d972",
-      "name": "Xiaomi Redmi A7 Pro 5G",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 16672.0,
-      "best_price": 14497.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 176,
-      "unique_dates": 176,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:21.665000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "8eae2be1-c31d-4e9f-b1f1-18b9c336ea69",
-      "name": "Xiaomi Redmi Note 14",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 18974.0,
-      "best_price": 14548.0,
-      "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 56,
-      "unique_dates": 56,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:03.925000",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "6ced0b58-278c-4602-bb2f-a3c0b8826cbd",
-      "name": "Xiaomi Redmi Note 14 Pro Plus (8GB RAM + 256GB)",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 33971.0,
-      "best_price": 29540.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:14.874000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "3fba5bc6-3c4b-4527-8f6e-b45562da3020",
-      "name": "Xiaomi Redmi Note 15 5G Special Edition",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 28508.0,
-      "best_price": 24790.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 185,
-      "unique_dates": 184,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:28.762000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "3d702bb6-0e0f-46ac-9cce-f0572272f3ca",
-      "name": "Xiaomi Redmi Note 15 Pro 5G",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 36799.0,
-      "best_price": 31999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 3,
-      "history_rows": 124,
-      "unique_dates": 124,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:16.511000",
-      "stores": [
-        "Amazon",
-        "Croma",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "21063038-7d26-46b1-aff1-06bf20044262",
-      "name": "Xiaomi Redmi Note 15 Pro Plus",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 44839.0,
-      "best_price": 38990.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 183,
-      "unique_dates": 183,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:27.094000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "9cb7a389-b0a9-40a4-803e-e2877aeba00f",
-      "name": "Xiaomi Redmi Note 15 SE 5G (8GB RAM + 128GB)",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 29543.0,
-      "best_price": 25690.0,
+      "mrp": 67849.0,
+      "best_price": 58999.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
       "history_rows": 183,
       "unique_dates": 183,
-      "min_date": "2026-04-17 00:00:00",
-      "max_date": "2026-10-17 14:59:11.508000",
-      "stores": [
-        "Amazon",
-        "Flipkart"
-      ]
-    },
-    {
-      "product_id": "d68fe5a4-db26-4cba-aa11-c57c8c29c7c3",
-      "name": "Xiaomi Redmi Note 17 5G",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 32199.0,
-      "best_price": 27999.0,
-      "provenance": "genuine_scraped",
-      "store_count": 1,
-      "history_rows": 52,
-      "unique_dates": 52,
-      "min_date": "2026-08-12 00:00:00",
-      "max_date": "2026-10-17 14:59:25.108000",
-      "stores": [
-        "Amazon"
-      ]
-    },
-    {
-      "product_id": "aa9c92f0-67e9-4ebc-b703-3a032e3fbad4",
-      "name": "Xiaomi Redmi Note 17 Pro",
-      "brand": "Xiaomi",
-      "category": "Mobiles",
-      "mrp": 42548.0,
-      "best_price": 36998.0,
-      "provenance": "genuine_scraped",
-      "store_count": 2,
-      "history_rows": 22,
-      "unique_dates": 22,
-      "min_date": "2026-09-17 00:00:00",
-      "max_date": "2026-10-17 14:59:18.236000",
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:28:35.776000",
       "stores": [
         "Amazon",
         "Croma"
       ]
     },
     {
-      "product_id": "9cfafad7-102d-4ed6-8de5-aa842a003f91",
-      "name": "Xiaomi Redmi Note 17 Pro Max",
-      "brand": "Xiaomi",
+      "product_id": "6a23ff9a-72ee-48ef-84e5-52100959df71",
+      "name": "Vivo V70 FE",
+      "brand": "Vivo",
       "category": "Mobiles",
-      "mrp": 57498.0,
-      "best_price": 49998.0,
+      "mrp": 51749.0,
+      "best_price": 44999.0,
       "provenance": "genuine_scraped",
       "store_count": 1,
-      "history_rows": 16,
-      "unique_dates": 16,
-      "min_date": "2026-09-23 00:00:00",
-      "max_date": "2026-10-17 14:59:13.182000",
+      "history_rows": 183,
+      "unique_dates": 183,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:28:32.197000",
       "stores": [
         "Amazon"
       ]
     },
     {
-      "product_id": "1aa2e72b-66c7-49e6-9946-db80698acb89",
-      "name": "Xiaomi Redmi Turbo 5",
-      "brand": "Xiaomi",
+      "product_id": "c0d31d46-3f6b-4044-b8d2-8588afd9524b",
+      "name": "Vivo V80 5G",
+      "brand": "Vivo",
       "category": "Mobiles",
-      "mrp": 47149.0,
-      "best_price": 40999.0,
+      "mrp": 67849.0,
+      "best_price": 58999.0,
       "provenance": "genuine_scraped",
       "store_count": 2,
-      "history_rows": 113,
-      "unique_dates": 113,
-      "min_date": "2026-06-19 00:00:00",
-      "max_date": "2026-10-17 14:59:09.661000",
+      "history_rows": 15,
+      "unique_dates": 15,
+      "min_date": "2026-10-06 00:00:00",
+      "max_date": "2026-10-22 23:28:06.069000",
       "stores": [
         "Amazon",
         "Flipkart"
+      ]
+    },
+    {
+      "product_id": "28511246-5973-466f-9388-f16b806302ad",
+      "name": "Vivo V80 5G (8GB RAM + 256GB)",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 71266.0,
+      "best_price": 61970.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 18,
+      "unique_dates": 17,
+      "min_date": "2026-10-06 00:00:00",
+      "max_date": "2026-10-22 23:28:12.668000",
+      "stores": [
+        "Amazon",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "24186dfd-57a4-4dc9-b10a-18b03471436c",
+      "name": "Vivo V80 Lite 5G",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 36799.0,
+      "best_price": 31999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:28:42.867000",
+      "max_date": "2026-10-22 23:28:42.867000",
+      "stores": [
+        "Smartprix"
+      ]
+    },
+    {
+      "product_id": "3c1630bd-6305-4f14-bb4d-c6243979a07d",
+      "name": "Vivo X300 (12GB RAM + 512GB)",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 94299.0,
+      "best_price": 81999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 3,
+      "history_rows": 39,
+      "unique_dates": 39,
+      "min_date": "2026-04-23 00:00:00",
+      "max_date": "2026-10-22 23:28:38.164000",
+      "stores": [
+        "Amazon",
+        "Croma",
+        "Flipkart"
+      ]
+    },
+    {
+      "product_id": "4cb788de-114f-43a7-8a0d-a65f2e1960cb",
+      "name": "Vivo X300 FE",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 103499.0,
+      "best_price": 89999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 2,
+      "history_rows": 150,
+      "unique_dates": 150,
+      "min_date": "2026-05-06 00:00:00",
+      "max_date": "2026-10-22 23:28:29.932000",
+      "stores": [
+        "Amazon",
+        "Croma"
+      ]
+    },
+    {
+      "product_id": "78bbc740-da40-4ff8-a2d6-48616a3038a3",
+      "name": "Vivo X500",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 91999.0,
+      "best_price": 79999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:28:25.982000",
+      "max_date": "2026-10-22 23:28:25.982000",
+      "stores": [
+        "Smartprix"
+      ]
+    },
+    {
+      "product_id": "a0fcec63-db81-4a38-a3d5-618de99630ed",
+      "name": "Vivo Y300t",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 16088.0,
+      "best_price": 13990.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:28:34.397000",
+      "max_date": "2026-10-22 23:28:34.397000",
+      "stores": [
+        "Smartprix"
+      ]
+    },
+    {
+      "product_id": "9427e90b-b271-4355-8fca-f1a7f1b9de36",
+      "name": "Vivo Y37c",
+      "brand": "Vivo",
+      "category": "Mobiles",
+      "mrp": 9199.0,
+      "best_price": 7999.0,
+      "provenance": "genuine_scraped",
+      "store_count": 1,
+      "history_rows": 1,
+      "unique_dates": 1,
+      "min_date": "2026-10-22 23:28:17.552000",
+      "max_date": "2026-10-22 23:28:17.552000",
+      "stores": [
+        "Smartprix"
       ]
     }
   ]
