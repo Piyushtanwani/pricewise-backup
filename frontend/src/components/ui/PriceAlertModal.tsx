@@ -26,6 +26,7 @@ export default function PriceAlertModal({
   const [testSending, setTestSending] = useState(false)
   const [notifySuccessMsg, setNotifySuccessMsg] = useState<string | null>(null)
   const [notifyErrorMsg, setNotifyErrorMsg] = useState<string | null>(null)
+  const [notifyStock, setNotifyStock] = useState(true)
 
   useEffect(() => {
     if (product) {
@@ -73,6 +74,7 @@ export default function PriceAlertModal({
         targetPrice,
         email: notifyEmail,
         userName: notifyName || undefined,
+        notifyStock,
       })
 
       onAlertActivated?.(product.id)
@@ -100,6 +102,7 @@ export default function PriceAlertModal({
         productId: product.id,
         email: notifyEmail,
         userName: notifyName || undefined,
+        notifyStock,
       })
 
       setNotifySuccessMsg(`✓ Test notification sent to ${notifyEmail} for ${product.name}! Check your inbox or spam.`)
@@ -262,10 +265,21 @@ export default function PriceAlertModal({
               value={notifyName}
               onChange={(e) => setNotifyName(e.target.value)}
               placeholder="e.g. Piyush"
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-sm text-slate-800"
             />
           </div>
 
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-indigo-50/60 border border-indigo-100">
+            <input
+              type="checkbox"
+              id="notify-stock-chk"
+              checked={notifyStock}
+              onChange={(e) => setNotifyStock(e.target.checked)}
+              className="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer shrink-0"
+            />
+            <label htmlFor="notify-stock-chk" className="text-xs text-slate-700 font-medium cursor-pointer leading-relaxed">
+              <strong>Notify me if back in stock</strong> — Send an email notification if this product transitions back into stock.
+            </label>
+          </div>
           {/* Status Messages */}
           {notifySuccessMsg && (
             <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5">

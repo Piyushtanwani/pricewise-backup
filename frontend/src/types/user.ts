@@ -22,6 +22,8 @@ export interface NotificationPrefs {
   priceDropPush: boolean;
   targetEmail: boolean;
   targetInApp: boolean;
+  stockEmail?: boolean;
+  stockInApp?: boolean;
   recommendationsInApp: boolean;
   weeklyDigest: boolean;
 }
@@ -76,7 +78,10 @@ export interface AlertItem {
     email: boolean;
     inApp: boolean;
     push: boolean;
+    stock?: boolean;
   };
+  notifyStock?: boolean;
+  lastStockStatus?: 'IN_STOCK' | 'OUT_OF_STOCK' | null;
   isActive: boolean;
   triggeredAt: string | null;
   createdAt: string;
@@ -90,7 +95,7 @@ export interface AlertEvent {
   dropPercent: number;
   target: number | null;
   date: string;
-  status: 'target' | 'drop';
+  status: 'target' | 'drop' | 'stock';
   read: boolean;
 }
 

@@ -272,6 +272,9 @@ test('7. Target price conditions work correctly', () => {
     triggeredAt: null,
     lastCheckedPrice: null,
     lastNotifiedPrice: null,
+    notifyStock: true,
+    lastStockStatus: null,
+    stockNotifiedAt: null,
     product: {} as any,
     user: {} as any,
   };
@@ -576,6 +579,179 @@ test('16. Multiple workers cannot claim the same notification simultaneously', a
     const totalSent = worker1Result.sent + worker2Result.sent;
     assert.equal(totalSent, 1, 'Exactly one worker must succeed in claiming and sending');
     assert.equal(mock.sentMails.length, 1, 'Only one email must be dispatched across concurrent workers');
+  } finally {
+    await prisma.notificationJob.deleteMany({ where: { alertId: alert.id } });
+    await prisma.alert.deleteMany({ where: { id: alert.id } });
+    await prisma.notification.deleteMany({ where: { userId: testUser.id } });
+    await prisma.productStore.deleteMany({ where: { productId: testProduct.id } });
+    await prisma.product.deleteMany({ where: { id: testProduct.id } });
+    await prisma.user.deleteMany({ where: { id: testUser.id } });
+  }
+});
+
+// -----------------------------------------------------------------------------------------
+// 17. Back-in-stock transition triggers stock alert email & in-app notification
+// -----------------------------------------------------------------------------------------
+test('17. Back-in-stock transition triggers stock alert email & in-app notification', async () => {
+  const { testUser, testProduct } = await createTestFixture();
+
+  // Set initial store to OUT_OF_STOCK
+  await prisma.productStore.updateMany({
+    where: { productId: testProduct.id },
+    data: { stockStatus: 'OUT_OF_STOCK' },
+  });
+
+  // User configured a restock alert (targetPrice 40000 is below 50000 so only restock triggers)
+  const alert = await prisma.alert.create({
+    data: {
+      userId: testUser.id,
+      productId: testProduct.id,
+      targetPrice: 40000,
+      notifyEmail: true,
+      notifyInApp: true,
+      notifyStock: true,
+      lastStockStatus: 'OUT_OF_STOCK',
+      stockNotifiedAt: null,
+      isActive: true,
+    },
+  });
+
+  try {
+    // 1. Initial cycle while out of stock -> No notification
+    const initialCycle = await checkActivePriceAlerts();
+    assert.equal(mock.sentMails.length, 0, 'No email while still out of stock');
+
+    // 2. Phone comes back in stock!
+    await prisma.productStore.updateMany({
+      where: { productId: testProduct.id },
+      data: { stockStatus: 'IN_STOCK' },
+    });
+
+    // 3. Next monitoring cycle detects restock
+    const restockCycle = await checkActivePriceAlerts();
+    assert.ok(restockCycle.eligible >= 1, 'Restock transition must be detected as eligible');
+    assert.equal(mock.sentMails.length, 1, 'Restock email must be dispatched');
+    assert.ok(
+      String(mock.sentMails[0].subject).includes('Back in Stock') ||
+      String(mock.sentMails[0].html).includes('Back in Stock') ||
+      String(mock.sentMails[0].html).includes('In Stock'),
+      'Email content must reflect back-in-stock event'
+    );
+
+    // 4. Verify in-app notification was created
+    const inAppNotif = await prisma.notification.findFirst({
+      where: { userId: testUser.id, productId: testProduct.id, type: 'BACK_IN_STOCK' },
+    });
+    assert.ok(inAppNotif, 'BACK_IN_STOCK notification record must exist');
+
+    // 5. Verify alert state updated
+    const updatedAlert = await prisma.alert.findUniqueOrThrow({ where: { id: alert.id } });
+    assert.equal(updatedAlert.lastStockStatus, 'IN_STOCK');
+    assert.ok(updatedAlert.stockNotifiedAt !== null, 'stockNotifiedAt must be recorded');
+  } finally {
+    await prisma.notificationJob.deleteMany({ where: { alertId: alert.id } });
+    await prisma.alert.deleteMany({ where: { id: alert.id } });
+    await prisma.notification.deleteMany({ where: { userId: testUser.id } });
+    await prisma.productStore.deleteMany({ where: { productId: testProduct.id } });
+    await prisma.product.deleteMany({ where: { id: testProduct.id } });
+    await prisma.user.deleteMany({ where: { id: testUser.id } });
+  }
+});
+
+// -----------------------------------------------------------------------------------------
+// 18. Product remaining in stock does not send duplicate stock alert emails
+// -----------------------------------------------------------------------------------------
+test('18. Product remaining in stock does not send duplicate stock alert emails', async () => {
+  const { testUser, testProduct } = await createTestFixture();
+
+  // Set initial store to OUT_OF_STOCK
+  await prisma.productStore.updateMany({
+    where: { productId: testProduct.id },
+    data: { stockStatus: 'OUT_OF_STOCK' },
+  });
+
+  const alert = await prisma.alert.create({
+    data: {
+      userId: testUser.id,
+      productId: testProduct.id,
+      targetPrice: 40000,
+      notifyEmail: true,
+      notifyInApp: true,
+      notifyStock: true,
+      lastStockStatus: 'OUT_OF_STOCK',
+      stockNotifiedAt: null,
+      isActive: true,
+    },
+  });
+
+  try {
+    // Restock product
+    await prisma.productStore.updateMany({
+      where: { productId: testProduct.id },
+      data: { stockStatus: 'IN_STOCK' },
+    });
+
+    // First cycle sends email
+    await checkActivePriceAlerts();
+    assert.equal(mock.sentMails.length, 1, 'First restock cycle sends exactly 1 email');
+
+    // Second cycle while remaining in stock must NOT send duplicate email
+    const secondCycle = await checkActivePriceAlerts();
+    assert.equal(mock.sentMails.length, 1, 'No duplicate email while product stays in stock');
+  } finally {
+    await prisma.notificationJob.deleteMany({ where: { alertId: alert.id } });
+    await prisma.alert.deleteMany({ where: { id: alert.id } });
+    await prisma.notification.deleteMany({ where: { userId: testUser.id } });
+    await prisma.productStore.deleteMany({ where: { productId: testProduct.id } });
+    await prisma.product.deleteMany({ where: { id: testProduct.id } });
+    await prisma.user.deleteMany({ where: { id: testUser.id } });
+  }
+});
+
+// -----------------------------------------------------------------------------------------
+// 19. Product going out of stock re-arms stock alert for next restock
+// -----------------------------------------------------------------------------------------
+test('19. Product going out of stock re-arms stock alert for next restock', async () => {
+  const { testUser, testProduct } = await createTestFixture();
+
+  // Alert is in IN_STOCK state after being notified previously
+  const alert = await prisma.alert.create({
+    data: {
+      userId: testUser.id,
+      productId: testProduct.id,
+      targetPrice: 40000,
+      notifyEmail: true,
+      notifyInApp: true,
+      notifyStock: true,
+      lastStockStatus: 'IN_STOCK',
+      stockNotifiedAt: new Date(),
+      isActive: true,
+    },
+  });
+
+  try {
+    // 1. Phone goes out of stock
+    await prisma.productStore.updateMany({
+      where: { productId: testProduct.id },
+      data: { stockStatus: 'OUT_OF_STOCK' },
+    });
+
+    // 2. Monitoring cycle detects out-of-stock and re-arms alert
+    await checkActivePriceAlerts();
+
+    const rearmedAlert = await prisma.alert.findUniqueOrThrow({ where: { id: alert.id } });
+    assert.equal(rearmedAlert.lastStockStatus, 'OUT_OF_STOCK', 'Alert must be re-armed to OUT_OF_STOCK');
+    assert.equal(rearmedAlert.stockNotifiedAt, null, 'stockNotifiedAt must be reset to null');
+
+    // 3. Phone comes back in stock again
+    await prisma.productStore.updateMany({
+      where: { productId: testProduct.id },
+      data: { stockStatus: 'IN_STOCK' },
+    });
+
+    // 4. Monitoring cycle sends second notification for the new restock event
+    await checkActivePriceAlerts();
+    assert.equal(mock.sentMails.length, 1, 'New restock event must trigger notification email');
   } finally {
     await prisma.notificationJob.deleteMany({ where: { alertId: alert.id } });
     await prisma.alert.deleteMany({ where: { id: alert.id } });

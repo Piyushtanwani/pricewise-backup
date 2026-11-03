@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Bell, TrendingDown, Trash2, Loader2, LogIn } from "lucide-react"
+import { Bell, TrendingDown, Trash2, Loader2, LogIn, CheckCircle2 } from "lucide-react"
 import { Link, useNavigate } from "react-router"
 import Badge from "../components/ui/Badge"
 import { api } from "../services/api"
@@ -239,6 +239,11 @@ export default function Alerts() {
                             {alert.product?.name}
                           </h3>
                           <div className="flex items-center gap-2 mt-1">
+                            {alert.notifyStock && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                                Restock Alert Active
+                              </span>
+                            )}
                             <span className="text-xs text-slate-500">Target:</span>
                             <span className="text-sm font-bold text-indigo-600 font-mono">
                               {fmt(alert.targetPrice)}
@@ -299,8 +304,8 @@ export default function Alerts() {
                       key={e.id}
                       className="bg-white rounded-xl border border-emerald-100 p-4 flex gap-4 shadow-2xs items-center"
                     >
-                      <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
-                        <TrendingDown size={18} className="text-emerald-600" />
+                      <div className={`w-10 h-10 ${e.status === 'stock' ? 'bg-sky-50 text-sky-600' : 'bg-emerald-50 text-emerald-600'} rounded-xl flex items-center justify-center shrink-0`}>
+                        {e.status === 'stock' ? <CheckCircle2 size={18} /> : <TrendingDown size={18} />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-slate-800 line-clamp-1">{e.product?.name}</p>
@@ -311,12 +316,16 @@ export default function Alerts() {
                             </span>
                           )}
                           <span className="text-sm font-bold text-emerald-700 font-mono">{fmt(e.newPrice)}</span>
-                          {e.dropPercent && (
+                          {e.status === 'stock' ? (
+                            <Badge variant="info">
+                              Back in Stock
+                            </Badge>
+                          ) : e.dropPercent ? (
                             <Badge variant="success">
                               <TrendingDown size={10} />
                               {e.dropPercent}% drop
                             </Badge>
-                          )}
+                          ) : null}
                           {e.target && (
                             <span className="text-xs text-indigo-600 font-medium">Target: {fmt(e.target)}</span>
                           )}

@@ -21,6 +21,7 @@ enum StockStatus {
 enum NotificationType {
   PRICE_DROP
   TARGET_REACHED
+  BACK_IN_STOCK
   RECOMMENDATION
   DIGEST
 }
@@ -154,6 +155,9 @@ model Alert {
   triggeredAt       DateTime?
   lastCheckedPrice  Float?
   lastNotifiedPrice Float?
+  notifyStock       Boolean           @default(true)
+  lastStockStatus   StockStatus?
+  stockNotifiedAt   DateTime?
   createdAt         DateTime          @default(now())
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   product           Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -175,9 +179,10 @@ model NotificationJob {
   alertId       String
   userId        String
   productId     String
-  triggerPrice  Float
+  jobType       NotificationType      @default(PRICE_DROP)
+  triggerPrice  Float?
   previousPrice Float?
-  targetPrice   Float
+  targetPrice   Float?
   status        NotificationJobStatus @default(PENDING)
   attempts      Int                   @default(0)
   maxAttempts   Int                   @default(3)
@@ -189,7 +194,7 @@ model NotificationJob {
   updatedAt     DateTime              @updatedAt
   alert         Alert                 @relation(fields: [alertId], references: [id], onDelete: Cascade)
 
-  @@unique([alertId, triggerPrice])
+  @@unique([alertId, triggerPrice, jobType])
   @@index([status, createdAt])
   @@index([alertId])
 }

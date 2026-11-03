@@ -547,3 +547,161 @@ export const sendRegistrationOtpEmail = async (
   });
 };
 
+
+
+export interface BackInStockNotificationParams {
+  email: string;
+  userName?: string;
+  productName: string;
+  brand?: string;
+  currentPrice: number;
+  bestStore: string;
+  productUrl: string;
+  imageUrl?: string;
+}
+
+/**
+ * Sends a Back In Stock notification email when a previously out-of-stock product is restocked
+ */
+export const sendBackInStockAlertEmail = async (params: BackInStockNotificationParams) => {
+  const {
+    email,
+    userName = 'Shopper',
+    productName,
+    brand,
+    currentPrice,
+    bestStore,
+    productUrl,
+    imageUrl,
+  } = params;
+
+  if (!isValidEmail(email)) {
+    console.warn('[Email Service] Rejected back-in-stock email: invalid recipient email address.');
+    return { success: false, error: 'Invalid recipient email address' };
+  }
+  if (!productName || typeof productName !== 'string' || !productName.trim()) {
+    console.warn('[Email Service] Rejected back-in-stock email: missing product name.');
+    return { success: false, error: 'Product name is required' };
+  }
+  if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
+    console.warn('[Email Service] Rejected back-in-stock email: invalid current price.');
+    return { success: false, error: 'Valid current price is required' };
+  }
+  if (!bestStore || typeof bestStore !== 'string' || !bestStore.trim() || bestStore.trim() === 'Retail Store') {
+    console.warn('[Email Service] Rejected back-in-stock email: verified retailer name is required.');
+    return { success: false, error: 'Verified retailer name is required' };
+  }
+  if (!isValidHttpUrl(productUrl)) {
+    console.warn('[Email Service] Rejected back-in-stock email: productUrl must be a valid HTTP/HTTPS link.');
+    return { success: false, error: 'Valid productUrl is required' };
+  }
+
+  const transporter = getGmailTransporter();
+  if (!transporter) {
+    console.warn('[Email Service] Gmail SMTP credentials not configured. Skipping back-in-stock alert email.');
+    return { success: false, error: 'Email service credentials not configured' };
+  }
+
+  const fromUser = (env.email?.user || process.env.GMAIL_USER || 'noreply@pricewise.io').trim();
+  const fromEmail = `PriceWise Alerts <${fromUser}>`;
+
+  const safeUserName = escapeHtml(userName.trim() || 'Shopper');
+  const safeProductName = escapeHtml(productName.trim());
+  const safeBrand = brand && brand.trim() ? escapeHtml(brand.trim()) : null;
+  const safeBestStore = escapeHtml(bestStore.trim());
+  const safeProductUrl = escapeHtml(productUrl.trim());
+  const safeImageUrl = imageUrl && isValidHttpUrl(imageUrl) ? escapeHtml(imageUrl.trim()) : null;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Back in Stock - PriceWise</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f8fafc;">
+  <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 30px auto; background-color: #1e293b; border: 1px solid #334155; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+    <tr>
+      <td style="padding: 28px 32px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); text-align: center;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="background-color: #ffffff; border-radius: 10px; padding: 6px 12px; font-weight: bold; color: #0284c7; font-size: 18px; display: inline-block;">
+              📦
+            </td>
+            <td style="padding-left: 12px; font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+              Back in Stock!
+            </td>
+          </tr>
+        </table>
+        <p style="margin: 8px 0 0 0; color: #e0f2fe; font-size: 13px; font-weight: 500;">The product you wanted is available again!</p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding: 32px;">
+        <h1 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 700; color: #ffffff; line-height: 1.3;">
+          Great news, ${safeUserName}!
+        </h1>
+        <p style="margin: 0 0 24px 0; font-size: 15px; color: #94a3b8; line-height: 1.6;">
+          <strong style="color: #f8fafc;">${safeProductName}</strong> was previously out of stock, but it is now back in stock at <strong style="color: #38bdf8;">${safeBestStore}</strong>!
+        </p>
+
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0f172a; border: 1px solid #334155; border-radius: 12px; margin-bottom: 24px;">
+          <tr>
+            ${safeImageUrl ? `
+            <td width="110" style="padding: 16px; text-align: center; vertical-align: middle;">
+              <img src="${safeImageUrl}" alt="${safeProductName}" width="90" height="90" style="object-fit: contain; border-radius: 8px; background-color: #1e293b; padding: 6px;" />
+            </td>
+            ` : ''}
+            <td style="padding: 16px; vertical-align: middle;">
+              ${safeBrand ? `<span style="font-size: 11px; font-weight: 700; color: #818cf8; text-transform: uppercase;">${safeBrand}</span>` : ''}
+              <h3 style="margin: 4px 0 10px 0; font-size: 15px; font-weight: 600; color: #f8fafc;">${safeProductName}</h3>
+              <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <span style="font-size: 11px; color: #38bdf8; display: block; font-weight: 600;">Current Price</span>
+                    <strong style="font-size: 20px; color: #38bdf8;">${inr(currentPrice)}</strong>
+                    <span style="font-size: 12px; color: #94a3b8;"> at ${safeBestStore}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" style="margin: 24px auto 8px auto;">
+          <tr>
+            <td align="center" style="background-color: #0284c7; border-radius: 10px;">
+              <a href="${safeProductUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px;">
+                Grab It at ${safeBestStore} &rarr;
+              </a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding: 20px 32px; background-color: #090d16; border-top: 1px solid #334155; text-align: center; font-size: 12px; color: #64748b; line-height: 1.5;">
+        <p style="margin: 0 0 6px 0;">Sent to <span style="color: #94a3b8;">${escapeHtml(email)}</span> based on your PriceWise restock alert subscription.</p>
+        <p style="margin: 0;">&copy; ${new Date().getFullYear()} PriceWise Intelligence Inc.</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+  const result = await sendWithRetry(transporter, {
+    from: fromEmail,
+    to: email,
+    subject: `⚡ Back in Stock! ${productName.trim()} is now available at ${bestStore.trim()}`,
+    html: htmlContent,
+  });
+
+  if (result.success) {
+    console.log(`[Email Service Success] Back-in-stock notification sent to ${email}. MessageId: ${result.messageId}`);
+  }
+  return result;
+};

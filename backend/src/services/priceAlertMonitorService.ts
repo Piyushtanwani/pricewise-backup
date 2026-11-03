@@ -1,8 +1,8 @@
 import prisma from '../utils/prisma';
 import { env } from '../config/env';
 import { readPrefs } from './notificationPrefs';
-import { sendPriceDropAlertEmail, isValidHttpUrl } from './emailService';
-import { NotificationJobStatus } from '../generated/prisma';
+import { sendPriceDropAlertEmail, sendBackInStockAlertEmail, isValidHttpUrl } from './emailService';
+import { NotificationJobStatus, NotificationType, StockStatus } from '../generated/prisma';
 
 const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
 
@@ -24,10 +24,13 @@ export interface AlertWithRelations {
   notifyEmail: boolean;
   notifyInApp: boolean;
   notifyPush: boolean;
+  notifyStock: boolean;
   isActive: boolean;
   triggeredAt: Date | null;
   lastCheckedPrice: number | null;
   lastNotifiedPrice: number | null;
+  lastStockStatus: StockStatus | null;
+  stockNotifiedAt: Date | null;
   product: {
     id: string;
     name: string;
@@ -54,7 +57,7 @@ export interface AlertWithRelations {
 }
 
 /**
- * Resolves the latest genuine price and best store listing for a product.
+ * Resolves the latest genuine price, aggregate stock status, and best store listing for a product.
  * Compares Product.bestPrice with active store listings to ensure manual database
  * updates to either Product or ProductStore are immediately reflected.
  */
@@ -62,9 +65,11 @@ export const resolveProductCurrentPrice = (product: AlertWithRelations['product'
   currentPrice: number | null;
   bestListing: AlertWithRelations['product']['stores'][0] | null;
   bestStoreName: string;
+  currentStockStatus: StockStatus;
 } => {
   const inStockListings = product.stores.filter((s) => s.stockStatus !== 'OUT_OF_STOCK');
   const availableListings = inStockListings.length > 0 ? inStockListings : product.stores;
+  const currentStockStatus: StockStatus = inStockListings.length > 0 ? StockStatus.IN_STOCK : StockStatus.OUT_OF_STOCK;
 
   let lowestListing: AlertWithRelations['product']['stores'][0] | null = null;
   for (const listing of availableListings) {
@@ -97,7 +102,7 @@ export const resolveProductCurrentPrice = (product: AlertWithRelations['product'
     matchingListing?.store?.name ||
     'Verified Store';
 
-  return { currentPrice, bestListing: matchingListing, bestStoreName };
+  return { currentPrice, bestListing: matchingListing, bestStoreName, currentStockStatus };
 };
 
 /**
@@ -176,7 +181,7 @@ export const evaluateAlertEligibility = (
 
 /**
  * Main monitoring cycle function.
- * Evaluates all active alerts in the database, queues jobs for newly eligible alerts,
+ * Evaluates all active alerts in the database, queues jobs for newly eligible price drops and restocks,
  * and atomically claims and processes pending/retryable notification jobs.
  */
 export const checkActivePriceAlerts = async (options?: {
@@ -230,14 +235,73 @@ export const checkActivePriceAlerts = async (options?: {
 
   // 2. Evaluate each alert
   for (const alert of alerts as unknown as AlertWithRelations[]) {
-    const { currentPrice, bestListing, bestStoreName } = resolveProductCurrentPrice(alert.product);
+    const { currentPrice, bestListing, bestStoreName, currentStockStatus } = resolveProductCurrentPrice(alert.product);
+
+    // --- 2A. Restock Evaluation (Phone Out-of-Stock -> In-Stock) ---
+    if (alert.notifyStock !== false) {
+      if (currentStockStatus === StockStatus.OUT_OF_STOCK) {
+        // Product is out of stock. If it was previously marked IN_STOCK, re-arm for restock notification!
+        if (alert.lastStockStatus !== StockStatus.OUT_OF_STOCK) {
+          await prisma.alert.update({
+            where: { id: alert.id },
+            data: {
+              lastStockStatus: StockStatus.OUT_OF_STOCK,
+              stockNotifiedAt: null,
+            },
+          });
+          console.log(`[PRICE ALERT MONITOR] Alert ${alert.id} stock re-armed: product is OUT_OF_STOCK`);
+        }
+      } else if (currentStockStatus === StockStatus.IN_STOCK) {
+        // Product is currently IN_STOCK. Did it just transition from OUT_OF_STOCK?
+        if (alert.lastStockStatus === StockStatus.OUT_OF_STOCK && !alert.stockNotifiedAt) {
+          // RESTOCK EVENT DETECTED!
+          summary.eligible++;
+          try {
+            await prisma.notificationJob.upsert({
+              where: {
+                alertId_triggerPrice_jobType: {
+                  alertId: alert.id,
+                  triggerPrice: currentPrice || 0,
+                  jobType: NotificationType.BACK_IN_STOCK,
+                },
+              },
+              create: {
+                alertId: alert.id,
+                userId: alert.userId,
+                productId: alert.productId,
+                jobType: NotificationType.BACK_IN_STOCK,
+                triggerPrice: currentPrice || 0,
+                previousPrice: null,
+                targetPrice: alert.targetPrice,
+                status: NotificationJobStatus.PENDING,
+              },
+              update: {},
+            });
+            summary.queued++;
+            console.log(`[PRICE ALERT MONITOR] Back-in-stock notification queued for alert ${alert.id} at ${currentPrice}`);
+          } catch (err) {
+            console.warn(`[PRICE ALERT MONITOR] Notice: Restock job queue upsert handled:`, err);
+          }
+        } else if (!alert.lastStockStatus) {
+          // Initialize baseline stock status
+          await prisma.alert.update({
+            where: { id: alert.id },
+            data: { lastStockStatus: StockStatus.IN_STOCK },
+          });
+        }
+      }
+    }
+
+    // If product is out of stock, do not evaluate price drops
+    if (currentStockStatus === StockStatus.OUT_OF_STOCK) {
+      continue;
+    }
 
     if (currentPrice === null || currentPrice <= 0) {
       continue;
     }
 
-    // Determine previous price:
-    // Priority: alert.lastCheckedPrice > recent price from PriceHistory > product.mrp > currentPrice
+    // --- 2B. Price Drop Evaluation ---
     let previousPrice: number | null = null;
     if (alert.lastCheckedPrice !== null && alert.lastCheckedPrice !== currentPrice) {
       previousPrice = alert.lastCheckedPrice;
@@ -274,7 +338,6 @@ export const checkActivePriceAlerts = async (options?: {
     if (evalResult.isDuplicate) {
       summary.skippedDuplicates++;
       console.log(`[PRICE ALERT MONITOR] Duplicate notification skipped: ${evalResult.reason}`);
-      // Keep lastCheckedPrice updated
       if (alert.lastCheckedPrice !== currentPrice) {
         await prisma.alert.update({
           where: { id: alert.id },
@@ -285,7 +348,6 @@ export const checkActivePriceAlerts = async (options?: {
     }
 
     if (!evalResult.isEligible) {
-      // Not eligible (e.g. price still above target)
       if (alert.lastCheckedPrice !== currentPrice) {
         await prisma.alert.update({
           where: { id: alert.id },
@@ -295,38 +357,38 @@ export const checkActivePriceAlerts = async (options?: {
       continue;
     }
 
-    // Eligible!
+    // Eligible price drop!
     summary.eligible++;
 
-    // 3. Persistently queue notification job with unique constraint (alertId, triggerPrice)
     try {
       await prisma.notificationJob.upsert({
         where: {
-          alertId_triggerPrice: {
+          alertId_triggerPrice_jobType: {
             alertId: alert.id,
             triggerPrice: currentPrice,
+            jobType: NotificationType.PRICE_DROP,
           },
         },
         create: {
           alertId: alert.id,
           userId: alert.userId,
           productId: alert.productId,
+          jobType: NotificationType.PRICE_DROP,
           triggerPrice: currentPrice,
           previousPrice: previousPrice && previousPrice > currentPrice ? previousPrice : null,
           targetPrice: alert.targetPrice,
           status: NotificationJobStatus.PENDING,
         },
-        update: {}, // do not overwrite existing state
+        update: {},
       });
       summary.queued++;
       console.log(`[PRICE ALERT MONITOR] Notification queued for alert ${alert.id} at ${currentPrice}`);
     } catch (err) {
-      // If concurrent insert occurred, unique constraint handles it safely
       console.warn(`[PRICE ALERT MONITOR] Notice: Job queue upsert handled by constraint:`, err);
     }
   }
 
-  // 4. Process pending and retryable notification jobs
+  // 3. Process pending and retryable notification jobs
   if (!options?.skipProcessing) {
     const jobResult = await processNotificationJobs({ workerId });
     summary.sent = jobResult.sent;
@@ -413,7 +475,6 @@ export const processNotificationJobs = async (options?: {
     });
 
     if (claim.count === 0) {
-      // Job claimed by another worker simultaneously — skip!
       continue;
     }
 
@@ -435,7 +496,80 @@ export const processNotificationJobs = async (options?: {
     let emailSuccess = true;
     let errorMessage: string | null = null;
 
-    // Send email alert if enabled on alert and user preferences
+    // --- CASE A: BACK_IN_STOCK NOTIFICATION ---
+    if (job.jobType === NotificationType.BACK_IN_STOCK) {
+      const effectivePrice = job.triggerPrice || product.bestPrice || 0;
+
+      if (alert.notifyEmail && user?.email && prefs.stockEmail) {
+        const emailParams = {
+          email: user.email,
+          userName: user.name || undefined,
+          productName: product.name,
+          brand: product.brand,
+          currentPrice: effectivePrice,
+          bestStore: bestStoreName,
+          productUrl: directProductUrl,
+          imageUrl: product.imageUrl || undefined,
+        };
+
+        try {
+          const sendResult = await sendBackInStockAlertEmail(emailParams);
+          if (!sendResult.success) {
+            emailSuccess = false;
+            errorMessage = sendResult.error || 'Back in stock email dispatch failed';
+          }
+        } catch (err: any) {
+          emailSuccess = false;
+          errorMessage = err?.message || String(err);
+        }
+      }
+
+      if (emailSuccess) {
+        if (alert.notifyInApp && prefs.stockInApp) {
+          try {
+            await prisma.notification.create({
+              data: {
+                userId: alert.userId,
+                productId: alert.productId,
+                type: NotificationType.BACK_IN_STOCK,
+                title: 'Back in Stock!',
+                body: `${product.name} is now back in stock at ${bestStoreName} for ${inr(effectivePrice)}!`,
+                prevPrice: null,
+                newPrice: effectivePrice,
+                targetPrice: alert.targetPrice,
+              },
+            });
+          } catch (inAppErr) {
+            console.warn('[PRICE ALERT MONITOR] In-app back-in-stock notification warning:', inAppErr);
+          }
+        }
+
+        await prisma.notificationJob.update({
+          where: { id: job.id },
+          data: {
+            status: NotificationJobStatus.SENT,
+            processedAt: new Date(),
+            lockedAt: null,
+            lockedBy: null,
+            lastError: null,
+          },
+        });
+
+        await prisma.alert.update({
+          where: { id: alert.id },
+          data: {
+            lastStockStatus: StockStatus.IN_STOCK,
+            stockNotifiedAt: new Date(),
+          },
+        });
+
+        result.sent++;
+        console.log(`[PRICE ALERT MONITOR] Back-in-stock notification sent successfully to ${user.email} for ${product.name}`);
+        continue;
+      }
+    }
+
+    // --- CASE B: PRICE DROP / TARGET REACHED NOTIFICATION ---
     if (alert.notifyEmail && user?.email && prefs.targetEmail) {
       const emailParams = {
         email: user.email,
@@ -443,9 +577,9 @@ export const processNotificationJobs = async (options?: {
         productName: product.name,
         brand: product.brand,
         previousPrice: job.previousPrice,
-        currentPrice: job.triggerPrice,
+        currentPrice: job.triggerPrice || 0,
         targetPrice: job.targetPrice,
-        dropAmount: job.previousPrice && job.previousPrice > job.triggerPrice ? job.previousPrice - job.triggerPrice : undefined,
+        dropAmount: job.previousPrice && job.triggerPrice && job.previousPrice > job.triggerPrice ? job.previousPrice - job.triggerPrice : undefined,
         bestStore: bestStoreName,
         productUrl: directProductUrl,
         imageUrl: product.imageUrl || undefined,
@@ -473,7 +607,7 @@ export const processNotificationJobs = async (options?: {
               productId: alert.productId,
               type: 'TARGET_REACHED',
               title: 'Target price reached!',
-              body: `${product.name} is now at ${inr(job.triggerPrice)} at ${bestStoreName} — your target was ${inr(alert.targetPrice)}`,
+              body: `${product.name} is now at ${inr(job.triggerPrice || 0)} at ${bestStoreName} — your target was ${inr(alert.targetPrice || 0)}`,
               prevPrice: job.previousPrice,
               newPrice: job.triggerPrice,
               targetPrice: alert.targetPrice,

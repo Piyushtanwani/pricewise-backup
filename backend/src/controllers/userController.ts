@@ -17,7 +17,7 @@ import { currentUserId } from '../middlewares/auth';
 import { publicUser } from './authController';
 import { PREF_KEYS, readPrefs } from '../services/notificationPrefs';
 import { ProductCard, ProductWithStores, presentCards, productInclude } from '../services/productService';
-import { sendPriceAlertConfirmationEmail, sendPriceDropAlertEmail, isValidHttpUrl } from '../services/emailService';
+import { sendPriceAlertConfirmationEmail, sendPriceDropAlertEmail, sendBackInStockAlertEmail, isValidHttpUrl } from '../services/emailService';
 import { isSyntheticProduct } from '../services/dataProvenance';
 import { env } from '../config/env';
 
@@ -223,12 +223,22 @@ const upsertAlert = async (
   userId: string,
   productId: string,
   targetPrice: number,
-  channels: { notifyEmail?: boolean; notifyInApp?: boolean; notifyPush?: boolean },
+  channels: { notifyEmail?: boolean; notifyInApp?: boolean; notifyPush?: boolean; notifyStock?: boolean },
+  initialStockStatus?: 'IN_STOCK' | 'OUT_OF_STOCK',
 ) => {
   const existing = await prisma.alert.findFirst({ where: { userId, productId, isActive: true } });
+  const alertData: Record<string, unknown> = {
+    targetPrice,
+    triggeredAt: null,
+    lastNotifiedPrice: null,
+    ...channels,
+  };
+  if (initialStockStatus !== undefined) {
+    alertData.lastStockStatus = initialStockStatus;
+  }
   const alert = existing
-    ? await prisma.alert.update({ where: { id: existing.id }, data: { targetPrice, triggeredAt: null, lastNotifiedPrice: null, ...channels } })
-    : await prisma.alert.create({ data: { userId, productId, targetPrice, ...channels } });
+    ? await prisma.alert.update({ where: { id: existing.id }, data: alertData })
+    : await prisma.alert.create({ data: { userId, productId, ...alertData } as any });
   return { alert, created: !existing };
 };
 
@@ -262,7 +272,7 @@ export const removeFromWatchlist = async (req: Request, res: Response): Promise<
 
 // ---------------------------------------------------------------- Alerts
 
-const EVENT_TYPES: NotificationType[] = ['PRICE_DROP', 'TARGET_REACHED'];
+const EVENT_TYPES: NotificationType[] = ['PRICE_DROP', 'TARGET_REACHED', 'BACK_IN_STOCK'];
 
 export const getAlerts = async (req: Request, res: Response): Promise<void> => {
   const userId = currentUserId(req);
@@ -293,7 +303,7 @@ export const getAlerts = async (req: Request, res: Response): Promise<void> => {
       dropPercent: prev ? Number((((prev - next) / prev) * 100).toFixed(1)) : 0,
       target: e.targetPrice === null ? null : round(e.targetPrice),
       date: e.createdAt.toISOString(),
-      status: e.type === 'TARGET_REACHED' ? 'target' : 'drop',
+      status: e.type === 'TARGET_REACHED' ? 'target' : e.type === 'BACK_IN_STOCK' ? 'stock' : 'drop',
       read: e.read,
     };
   });
@@ -314,7 +324,10 @@ export const getAlerts = async (req: Request, res: Response): Promise<void> => {
         targetPrice: round(a.targetPrice),
         currentPrice: card.bestPrice,
         distance: Math.max(0, card.bestPrice - round(a.targetPrice)),
-        channels: { email: a.notifyEmail, inApp: a.notifyInApp, push: a.notifyPush },
+        channels: { email: a.notifyEmail, inApp: a.notifyInApp, push: a.notifyPush, stock: a.notifyStock },
+        notifyStock: a.notifyStock,
+        lastStockStatus: a.lastStockStatus,
+        stockNotifiedAt: a.stockNotifiedAt?.toISOString() ?? null,
         isActive: a.isActive,
         triggeredAt: a.triggeredAt?.toISOString() ?? null,
         createdAt: a.createdAt.toISOString(),
@@ -328,6 +341,7 @@ const channelInput = (body: Record<string, unknown> | undefined) => ({
   notifyEmail: optionalBoolean(body, 'notifyEmail'),
   notifyInApp: optionalBoolean(body, 'notifyInApp'),
   notifyPush: optionalBoolean(body, 'notifyPush'),
+  notifyStock: optionalBoolean(body, 'notifyStock'),
 });
 
 const withoutUndefined = <T extends Record<string, unknown>>(obj: T) =>
@@ -338,7 +352,11 @@ export const addAlert = async (req: Request, res: Response): Promise<void> => {
   const product = await requireProduct(req.body?.productId);
   const targetPrice = requirePositiveNumber(req.body, 'targetPrice');
 
-  const { alert, created } = await upsertAlert(userId, product.id, targetPrice, withoutUndefined(channelInput(req.body)));
+  const stores = product.stores ?? [];
+  const hasInStock = stores.some((s) => s.stockStatus === 'IN_STOCK');
+  const initialStockStatus = hasInStock ? 'IN_STOCK' : 'OUT_OF_STOCK';
+
+  const { alert, created } = await upsertAlert(userId, product.id, targetPrice, withoutUndefined(channelInput(req.body)), initialStockStatus);
   // Setting an alert implies tracking the product.
   await prisma.watchlist.upsert({
     where: { userId_productId: { userId, productId: product.id } },
@@ -375,7 +393,9 @@ export const addAlert = async (req: Request, res: Response): Promise<void> => {
     id: fresh.id,
     productId: fresh.productId,
     targetPrice: round(fresh.targetPrice),
-    channels: { email: fresh.notifyEmail, inApp: fresh.notifyInApp, push: fresh.notifyPush },
+    channels: { email: fresh.notifyEmail, inApp: fresh.notifyInApp, push: fresh.notifyPush, stock: fresh.notifyStock },
+    notifyStock: fresh.notifyStock,
+    lastStockStatus: fresh.lastStockStatus,
     isActive: fresh.isActive,
     triggeredAt: fresh.triggeredAt?.toISOString() ?? null,
   });
@@ -402,7 +422,9 @@ export const updateAlert = async (req: Request, res: Response): Promise<void> =>
     id: alert.id,
     productId: alert.productId,
     targetPrice: round(alert.targetPrice),
-    channels: { email: alert.notifyEmail, inApp: alert.notifyInApp, push: alert.notifyPush },
+    channels: { email: alert.notifyEmail, inApp: alert.notifyInApp, push: alert.notifyPush, stock: alert.notifyStock },
+    notifyStock: alert.notifyStock,
+    lastStockStatus: alert.lastStockStatus,
     isActive: alert.isActive,
     triggeredAt: alert.triggeredAt?.toISOString() ?? null,
   });
@@ -524,12 +546,18 @@ export const setPriceNotification = async (req: Request, res: Response): Promise
   const product = await requireProduct(req.body?.productId);
   const userName = optionalString(req.body, 'userName') || user.name || 'Shopper';
 
+  const stores = product.stores ?? [];
+  const hasInStock = stores.some((s) => s.stockStatus === 'IN_STOCK');
+  const initialStockStatus = hasInStock ? 'IN_STOCK' : 'OUT_OF_STOCK';
+  const notifyStock = optionalBoolean(req.body, 'notifyStock') ?? true;
+
   // Create or update alert in database
   const { alert } = await upsertAlert(userId, product.id, targetPrice, {
     notifyEmail: true,
     notifyInApp: true,
     notifyPush: false,
-  });
+    notifyStock,
+  }, initialStockStatus);
 
   // Track product
   await prisma.watchlist.upsert({
@@ -627,3 +655,74 @@ export const testPriceAlertEmail = async (req: Request, res: Response): Promise<
   res.json({ success: true, message: `Test price drop alert email sent to ${email}`, result });
 };
 
+
+export const setStockNotification = async (req: Request, res: Response): Promise<void> => {
+  const userId = currentUserId(req);
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new HttpError(401, 'Authentication required to set stock alerts.');
+
+  const product = await requireProduct(req.body?.productId);
+  const notifyStock = optionalBoolean(req.body, 'notifyStock') ?? true;
+  const stores = product.stores ?? [];
+  const hasInStock = stores.some((s) => s.stockStatus === 'IN_STOCK');
+  const currentStockStatus = hasInStock ? 'IN_STOCK' : 'OUT_OF_STOCK';
+
+  const fallbackPrice = product.bestPrice && product.bestPrice > 0 ? product.bestPrice : 1;
+  const { alert } = await upsertAlert(
+    userId,
+    product.id,
+    fallbackPrice,
+    {
+      notifyEmail: true,
+      notifyInApp: true,
+      notifyStock,
+    },
+    currentStockStatus,
+  );
+
+  await prisma.watchlist.upsert({
+    where: { userId_productId: { userId, productId: product.id } },
+    update: {},
+    create: { userId, productId: product.id },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: notifyStock
+      ? `Stock alert activated for ${product.name}. We will email you when it returns to stock!`
+      : `Stock alert disabled for ${product.name}.`,
+    alertId: alert.id,
+    notifyStock: alert.notifyStock,
+    currentStockStatus,
+  });
+};
+
+export const testBackInStockEmail = async (req: Request, res: Response): Promise<void> => {
+  const email = requireEmail(req.body, 'email');
+  const product = await requireProduct(req.body?.productId);
+
+  const bestListing = product.stores?.find((s) => s.storeId === product.bestStoreId) || product.stores?.[0];
+  const bestStoreName = product.bestStore?.name || bestListing?.store?.name || 'Verified Retailer';
+
+  const appBaseUrl = (env.corsOrigins[0] || 'http://localhost:5173').replace(/\/+$/, '');
+  const canonicalProductUrl = `${appBaseUrl}/product/${product.id}`;
+  const productUrl =
+    bestListing?.productUrl && isValidHttpUrl(bestListing.productUrl) ? bestListing.productUrl : canonicalProductUrl;
+
+  const result = await sendBackInStockAlertEmail({
+    email,
+    userName: optionalString(req.body, 'userName') || 'Shopper',
+    productName: product.name,
+    brand: product.brand,
+    currentPrice: product.bestPrice ?? 0,
+    bestStore: bestStoreName,
+    productUrl,
+    imageUrl: product.imageUrl || undefined,
+  });
+
+  if (!result.success) {
+    throw new HttpError(400, result.error || 'Failed to send back-in-stock alert email');
+  }
+
+  res.json({ success: true, message: `Test back-in-stock email sent to ${email}`, result });
+};

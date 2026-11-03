@@ -285,6 +285,7 @@ export const api = {
     targetPrice: number;
     email: string;
     userName?: string;
+    notifyStock?: boolean;
   }): Promise<{ success: boolean; message: string; alertId?: string }> {
     const res = await apiClient.post('/user/alerts/notify', data);
     return res.data;
@@ -294,8 +295,26 @@ export const api = {
     productId: string;
     email: string;
     userName?: string;
+    notifyStock?: boolean;
   }): Promise<{ success: boolean; message: string }> {
     const res = await apiClient.post('/user/alerts/test-email', data);
+    return res.data;
+  },
+
+  async setStockAlert(data: {
+    productId: string;
+    notifyStock?: boolean;
+  }): Promise<{ success: boolean; message: string; alertId?: string; notifyStock: boolean; currentStockStatus: string }> {
+    const res = await apiClient.post('/user/alerts/stock', data);
+    return res.data;
+  },
+
+  async testStockAlert(data: {
+    productId: string;
+    email: string;
+    userName?: string;
+  }): Promise<{ success: boolean; message: string }> {
+    const res = await apiClient.post('/user/alerts/test-stock-email', data);
     return res.data;
   },
 

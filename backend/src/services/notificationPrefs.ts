@@ -5,6 +5,8 @@ export const DEFAULT_NOTIFICATION_PREFS = {
   priceDropPush: false,
   targetEmail: true,
   targetInApp: true,
+  stockEmail: true,
+  stockInApp: true,
   recommendationsInApp: true,
   weeklyDigest: false,
 };

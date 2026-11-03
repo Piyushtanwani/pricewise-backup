@@ -22,6 +22,8 @@ import {
   getRecommendations,
   setPriceNotification,
   testPriceAlertEmail,
+  setStockNotification,
+  testBackInStockEmail,
 } from '../controllers/userController';
 import { authenticateToken } from '../middlewares/auth';
 import { emailAlertRateLimiter } from '../middlewares/security';
@@ -32,7 +34,9 @@ router.use(authenticateToken); // Protect all user and alert routes
 
 // Authenticated Price Alerts via Email
 router.post('/alerts/notify', emailAlertRateLimiter, setPriceNotification);
+router.post('/alerts/stock', emailAlertRateLimiter, setStockNotification);
 router.post('/alerts/test-email', emailAlertRateLimiter, testPriceAlertEmail);
+router.post('/alerts/test-stock-email', emailAlertRateLimiter, testBackInStockEmail);
 
 // Profile & settings
 router.get('/profile', getProfile);
