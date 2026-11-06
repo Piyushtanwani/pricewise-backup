@@ -6,6 +6,7 @@ import { GEMINI_TOOLS } from './toolRegistry';
 import { ToolExecutor } from './toolExecutor';
 import { conversationManager } from './conversationManager';
 import { ResponseFormatter } from './responseFormatter';
+import { GroqFormatter } from './groqFormatter';
 import { ProductCard } from '../productService';
 
 export interface OrchestrationResult {
@@ -33,7 +34,7 @@ export class AIOrchestrator {
     context: { productIds?: string[]; userId?: string; sessionId?: string } = {},
   ): Promise<OrchestrationResult> {
     const ai = getGeminiClient();
-    const model = env.gemini.model || 'gemini-3.5-flash-lite';
+    const model = env.gemini.model || 'gemini-3.1-flash-lite';
     const maxRounds = env.gemini.maxToolRounds || 5;
 
     // 1. Prepare conversation history with context injection
@@ -226,16 +227,27 @@ export class AIOrchestrator {
     // 5. Generate follow-up suggestions
     const suggestedFollowUps = ResponseFormatter.generateFollowUps(detectedIntent, products, message);
 
-    // 6. Record turn in session memory
+    // 6. Format styling with Groq Cloud (Fast Markdown & Typography Stylist)
+    let formattedContent = finalAnswerText;
+    try {
+      formattedContent = await GroqFormatter.format(finalAnswerText, {
+        query: message,
+        intent: detectedIntent,
+      });
+    } catch (fmtErr: any) {
+      console.warn('[AIOrchestrator] Groq formatting skipped, using Gemini text:', fmtErr?.message);
+    }
+
+    // 7. Record turn in session memory
     conversationManager.addTurn(context.sessionId, context.userId, {
       userMessage: message,
-      modelResponse: finalAnswerText,
+      modelResponse: formattedContent,
       productIds: products.map((p) => p.id),
     });
 
     return {
       role: 'assistant',
-      content: finalAnswerText,
+      content: formattedContent,
       products,
       insights,
       parsed: {
@@ -246,7 +258,7 @@ export class AIOrchestrator {
       suggestedFollowUps,
       sessionId: context.sessionId,
       userId: context.userId,
-      source: 'gemini-orchestrator',
+      source: 'gemini-orchestrator + groq-formatter',
     };
   }
 }

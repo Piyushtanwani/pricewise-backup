@@ -9,7 +9,7 @@ export const GEMINI_TOOLS: FunctionDeclaration[] = [
       properties: {
         query: {
           type: 'STRING' as any,
-          description: 'Product name or search keywords (e.g. "OnePlus 12R", "5G phone 12GB RAM", "MacBook Air").',
+          description: 'Specific product title or model keywords (e.g. "OnePlus 12R", "Pixel 7A"). Do NOT include price constraints or conversational words like "under 30,000" or "best phone" in query; use maxBudget and category instead.',
         },
         category: {
           type: 'STRING' as any,

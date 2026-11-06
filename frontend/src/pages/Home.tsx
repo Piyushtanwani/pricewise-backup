@@ -120,15 +120,15 @@ export default function Home() {
   const heroSavings = heroProduct ? Math.max(0, heroProduct.mrp - heroProduct.bestPrice) : 0
   const heroChartData = heroProduct?.priceHistory?.length
     ? heroProduct.priceHistory.map((p, idx) => ({
-        date: `Pt ${idx + 1}`,
-        price: p,
-        avg: heroProduct.bestPrice,
-      }))
+      date: `Pt ${idx + 1}`,
+      price: p,
+      avg: heroProduct.bestPrice,
+    }))
     : [
-        { date: "Day 1", price: heroProduct ? Math.round(heroProduct.bestPrice * 1.08) : 29999, avg: heroProduct?.bestPrice || 29999 },
-        { date: "Day 15", price: heroProduct ? Math.round(heroProduct.bestPrice * 1.04) : 28500, avg: heroProduct?.bestPrice || 29999 },
-        { date: "Today", price: heroProduct?.bestPrice || 27999, avg: heroProduct?.bestPrice || 29999 },
-      ]
+      { date: "Day 1", price: heroProduct ? Math.round(heroProduct.bestPrice * 1.08) : 29999, avg: heroProduct?.bestPrice || 29999 },
+      { date: "Day 15", price: heroProduct ? Math.round(heroProduct.bestPrice * 1.04) : 28500, avg: heroProduct?.bestPrice || 29999 },
+      { date: "Today", price: heroProduct?.bestPrice || 27999, avg: heroProduct?.bestPrice || 29999 },
+    ]
 
   return (
     <div className="min-h-screen bg-[#f4f6fb]">
@@ -292,9 +292,8 @@ export default function Home() {
               <div
                 key={title}
                 onClick={() => to && navigate(to)}
-                className={`bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all ${
-                  to ? "cursor-pointer hover:border-indigo-300 group" : ""
-                }`}
+                className={`bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all ${to ? "cursor-pointer hover:border-indigo-300 group" : ""
+                  }`}
               >
                 <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
                   <Icon size={18} className={iconColor} />
@@ -323,7 +322,7 @@ export default function Home() {
                   Meet your PriceWise Shopping Assistant
                 </h2>
                 <p className="text-indigo-200/90 text-sm sm:text-base leading-relaxed">
-                  Ask questions like <span className="text-white font-medium">"Best phone under ₹30,000"</span> or <span className="text-white font-medium">"Should I buy iPhone 16 now?"</span> and get real-time price intelligence instantly.
+                  Ask questions like <span className="text-white font-medium">"Best phone under ₹30,000"</span> or <span className="text-white font-medium">"Should I buy iPhone 15 now?"</span> and get real-time price intelligence instantly.
                 </p>
               </div>
               <button
@@ -447,11 +446,10 @@ export default function Home() {
                           e.stopPropagation()
                           handleOpenTrackModal(p)
                         }}
-                        className={`ml-auto p-1.5 rounded-lg border text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer ${
-                          trackedProductIds.has(p.id)
+                        className={`ml-auto p-1.5 rounded-lg border text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer ${trackedProductIds.has(p.id)
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold"
                             : "bg-slate-50 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border-slate-200"
-                        }`}
+                          }`}
                         title={trackedProductIds.has(p.id) ? "Tracking Active" : "Track Price"}
                       >
                         <Bell size={11} className={trackedProductIds.has(p.id) ? "fill-emerald-600 text-emerald-600" : ""} />

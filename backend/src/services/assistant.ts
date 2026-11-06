@@ -75,13 +75,67 @@ export const detectCategory = (text: string, known: string[] = []): string | nul
 };
 
 export const detectIntent = (text: string): Intent => {
-  if (/\b(compare|vs\.?|versus|difference between)\b/i.test(text)) return 'compare';
+  const lower = text.toLowerCase();
+  if (
+    /\b(snapdragon|dimensity|mediatek|exynos|tensor|bionic|amoled|oled|ips|lcd|intel|amd|ryzen|rtx|gtx|ddr4|ddr5|refresh rate|nits|ppi|tdp|vram)\b/i.test(lower) &&
+    /\b(vs\.?|versus|difference|compare|better|what is|how to|which|enough)\b/i.test(lower)
+  ) {
+    return 'technical_qa';
+  }
+  if (/\b(what is refresh rate|how much ram|is \d+\s*gb ram enough|which processor for)\b/i.test(lower)) {
+    return 'technical_qa';
+  }
+  if (
+    /\b(compare|vs\.?|versus|difference between)\b/i.test(text) ||
+    (/\bor\b/i.test(text) && /\b(buy|which|better|choose|prefer|pick)\b/i.test(text))
+  ) {
+    return 'compare';
+  }
   if (/\b(cheaper|alternatives?|similar|instead of)\b/i.test(text)) return 'alternatives';
   if (/\b(should i buy|buy now|good time|worth (it|buying)|right time|wait)\b/i.test(text)) return 'buy_now';
   return 'recommend';
 };
 
 const findMentioned = (message: string, products: ProductWithStores[]): ProductWithStores[] => {
+  // If the query has comparison or choice separators like " or " or " vs ", split into distinct target queries
+  let targets = [message];
+  if (/\b(?:vs\.?|versus)\b/i.test(message)) {
+    targets = message.split(/\b(?:vs\.?|versus)\b/i).map((t) => t.trim());
+  } else if (/\bor\b/i.test(message) && /\b(buy|which|better|choose|prefer|pick)\b/i.test(message)) {
+    const cleaned = message.replace(/^(?:should i buy|which is better|which one|compare)\s+/i, '').replace(/\?+$/, '');
+    targets = cleaned.split(/\bor\b/i).map((t) => t.trim());
+  }
+
+  if (targets.length >= 2) {
+    const collected: ProductWithStores[] = [];
+    for (const t of targets.slice(0, 2)) {
+      const words = titleTokens(t);
+      const matches = products
+        .map((p) => {
+          const tokens = titleTokens(p.name, p.brand);
+          let shared = 0;
+          let modelHit = false;
+          for (const tok of tokens) {
+            if (words.has(tok)) {
+              shared++;
+              if (/\d/.test(tok)) modelHit = true;
+            }
+          }
+          const brandHit = words.has(p.brand.toLowerCase());
+          return { p, score: shared + (brandHit ? 1 : 0), qualifies: shared >= 2 || (shared >= 1 && (modelHit || brandHit)) };
+        })
+        .filter((m) => m.qualifies)
+        .sort((a, b) => b.score - a.score);
+
+      for (const m of matches.slice(0, 2)) {
+        if (!collected.some((x) => x.id === m.p.id)) {
+          collected.push(m.p);
+        }
+      }
+    }
+    if (collected.length >= 2) return collected;
+  }
+
   const words = titleTokens(message);
   return products
     .map((p) => {
@@ -136,6 +190,58 @@ const localAnswer = async (message: string, context: { productIds?: string[] } =
     .sort((a, b) => valueScore(b.card) - valueScore(a.card));
 
   const budgetText = budget ? ` under ${inr(budget)}` : '';
+
+  if (intent === 'technical_qa') {
+    const lower = message.toLowerCase();
+    let content = `### Technical Hardware Guide: ${message}\n\nWhen evaluating technology hardware, prioritize your core workflow:\n• **Gaming & Heavy 3D:** Choose architectures with proven driver stacks (Snapdragon Adreno, NVIDIA RTX) for maximum frame stability.\n• **Efficiency & Battery Life:** Modern TSMC 4nm/3nm fabrication processes run significantly cooler with lower idle drain.\n• **Future-Proofing:** Ensure adequate memory bandwidth and VRAM to prevent performance bottlenecks.`;
+    const insights = [
+      { label: 'Technical Analysis', value: 'Architectural and real-world performance evaluation' },
+      { label: 'Buying Advice', value: 'Match component strengths to your specific daily tasks' },
+    ];
+
+    if (/snapdragon.*(?:vs|versus|mediatek|dimensity)|(?:mediatek|dimensity).*(?:vs|versus|snapdragon)/i.test(lower)) {
+      content = `### Snapdragon vs MediaTek Dimensity: Comprehensive Comparison\n\n` +
+        `Both Qualcomm Snapdragon and MediaTek Dimensity build world-class mobile SoCs on cutting-edge ARM architecture (primarily TSMC 4nm and 3nm nodes), but they differ across several critical performance pillars:\n\n` +
+        `**1. CPU Architecture & Sustained Performance:**\n` +
+        `• **Snapdragon:** Flagship chips (Snapdragon 8 Elite / 8 Gen 3) utilize Qualcomm's custom Oryon cores and Prime Cortex-X cores, delivering top-tier single-core burst speeds, high UI responsiveness, and balanced sustained thermal performance.\n` +
+        `• **Dimensity:** Flagship chips (Dimensity 9400 / 9300) pioneer an 'All-Big-Core' architecture without small efficiency cores. This architecture produces exceptional multi-core throughput and heavy multitasking power while maintaining high energy efficiency.\n\n` +
+        `**2. GPU & Gaming Performance:**\n` +
+        `• **Snapdragon (Adreno GPU):** Widely recognized as the gold standard for mobile gaming. Qualcomm's Adreno GPUs benefit from extensive game developer optimization, broad emulator support, and custom driver support (Turnip/Mesa). Peak and sustained frame rates in heavy 3D titles (Genshin Impact, BGMI/PUBG) are industry-leading.\n` +
+        `• **Dimensity (ARM Immortalis / Mali GPU):** Immortalis-G925 delivers desktop-grade hardware ray tracing and phenomenal raw compute. In mainstream mobile titles, performance is neck-and-neck with Snapdragon, though select niche emulators still prioritize Snapdragon driver stacks.\n\n` +
+        `**3. Thermal Efficiency & Battery Life:**\n` +
+        `• Both lineups fabricate at TSMC, eliminating older overheating issues.\n` +
+        `• **Dimensity** often provides class-leading standby time and power efficiency in mixed daily use and streaming.\n` +
+        `• **Snapdragon** demonstrates exceptional power throttling management under prolonged heavy gaming sessions.\n\n` +
+        `**4. Camera ISP & AI Compute:**\n` +
+        `• **Snapdragon:** Spectra ISP excels in 4K/8K HDR computational video, advanced night mode tuning, and broad compatibility with Google Camera (GCam) ports.\n` +
+        `• **Dimensity:** Imagiq ISP pairs with MediaTek's powerful NPU to deliver swift AI scene processing and rich portrait photography with minimal battery drain.\n\n` +
+        `**Verdict & Buying Guidance:**\n` +
+        `• **Choose Snapdragon** if: You are a competitive gamer, frequently play demanding 3D games or emulators, rely on GCam camera mods, or prefer long-term custom software support.\n` +
+        `• **Choose MediaTek Dimensity** if: You seek the best price-to-performance ratio in the mid-range and upper mid-range (Dimensity 7000 / 8000 / 9000 series), superior multi-core power, and outstanding day-to-day battery efficiency.`;
+      insights[0] = { label: 'Gaming & Drivers', value: 'Snapdragon Adreno leads in emulator and game developer optimization' };
+      insights[1] = { label: 'Value & Multi-Core', value: 'MediaTek Dimensity leads in multi-core throughput and price-to-performance' };
+    } else if (/amoled.*(?:vs|versus|oled|lcd|ips)|oled.*(?:vs|versus|amoled|lcd|ips)/i.test(lower)) {
+      content = `### AMOLED vs OLED: Display Technology Explained\n\n` +
+        `**1. Fundamental Differences:**\n` +
+        `• **OLED (Organic Light Emitting Diode):** Individual organic pixels emit their own light, allowing true blacks (infinite contrast ratio) by shutting pixels off completely.\n` +
+        `• **AMOLED (Active Matrix OLED):** Adds an Active Matrix Thin-Film Transistor (TFT) backplane, allowing independent, rapid control of every pixel.\n\n` +
+        `**2. Practical Advantages of AMOLED:**\n` +
+        `• **Faster Refresh Rates & Motion Clarity:** Switches pixel states substantially faster, making 90Hz, 120Hz, and 144Hz displays viable for smartphones and gaming monitors.\n` +
+        `• **Higher Power Efficiency:** Consumes significantly less power when displaying dark UI themes or during Always-On Display (AOD).\n` +
+        `• **Brighter Outdoor Visibility:** Modern Super AMOLED and Dynamic AMOLED panels reach 2,000+ to 4,500 nits peak brightness.\n\n` +
+        `**Verdict:** All modern smartphone 'OLED' screens are technically AMOLED. Choose Super AMOLED / Dynamic AMOLED for the deepest contrast, vibrant HDR color reproduction, and lower battery drain.`;
+      insights[0] = { label: 'Contrast Ratio', value: 'Infinite contrast with true pitch blacks' };
+      insights[1] = { label: 'Efficiency', value: 'Consumes 0 power for black pixels in Dark Mode' };
+    }
+
+    return {
+      role: 'assistant',
+      content,
+      products: [],
+      insights,
+      parsed: { intent: 'technical_qa', budget: null, category: null },
+    };
+  }
 
   if (intent === 'buy_now' || (intent === 'recommend' && mentioned.length === 1 && !category && !budget)) {
     const target = mentioned[0] ?? ranked[0]?.p;
@@ -206,21 +312,51 @@ const localAnswer = async (message: string, context: { productIds?: string[] } =
   }
 
   if (intent === 'compare') {
-    const picks = (mentioned.length >= 2 ? mentioned.map(cardOf) : ranked.map((r) => r.card)).slice(0, 3);
+    let picks: ProductCard[] = [];
+    if (mentioned.length >= 2) {
+      const byBrand = new Map<string, ProductWithStores[]>();
+      for (const p of mentioned) {
+        const b = p.brand.toLowerCase();
+        if (!byBrand.has(b)) byBrand.set(b, []);
+        byBrand.get(b)!.push(p);
+      }
+      if (byBrand.size >= 2) {
+        for (const [, prods] of byBrand) {
+          picks.push(...prods.slice(0, 2).map(cardOf));
+          if (picks.length >= 4) break;
+        }
+      } else {
+        picks = mentioned.slice(0, 3).map(cardOf);
+      }
+    } else {
+      picks = ranked.slice(0, 3).map((r) => r.card);
+    }
+
     if (picks.length >= 2) {
+      const distinctBrands = Array.from(new Set(picks.map((p) => p.brand)));
       const cheapest = [...picks].sort((a, b) => a.bestPrice - b.bestPrice)[0];
       const topRated = [...picks].sort((a, b) => b.rating - a.rating)[0];
       const biggestDiscount = [...picks].sort((a, b) => b.discount - a.discount)[0];
-      const bestValue = [...picks].sort((a, b) => valueScore(b) - valueScore(a))[0];
+
+      let content = `Here is how ${picks.map((p) => p.name).join(', ')} compare right now:`;
+      if (distinctBrands.length >= 2) {
+        const b1Prod = picks.find((p) => p.brand === distinctBrands[0]);
+        const b2Prod = picks.find((p) => p.brand === distinctBrands[1]);
+        content = `Comparing ${distinctBrands.join(' versus ')} across current catalogue offerings:\n\n` +
+          `• ${distinctBrands[0]}: Key option includes the ${b1Prod?.name} at ${inr(b1Prod?.bestPrice || 0)}.\n` +
+          `• ${distinctBrands[1]}: Key option includes the ${b2Prod?.name} at ${inr(b2Prod?.bestPrice || 0)}.\n\n` +
+          `Evaluate each brand according to your priorities in software preference, camera tuning, and performance.`;
+      }
+
       return {
         role: 'assistant',
-        content: `Here is how ${picks.map((p) => p.name).join(', ')} compare right now:`,
+        content,
         products: picks,
         insights: [
           { label: 'Lowest Price', value: `${cheapest.name} at ${inr(cheapest.bestPrice)}` },
           { label: 'Highest Rated', value: `${topRated.name} (${topRated.rating} / 5)` },
           { label: 'Biggest Discount', value: `${biggestDiscount.name} — ${biggestDiscount.discount}% off MRP` },
-          { label: 'Verdict', value: `${bestValue.name} offers the best overall value` },
+          { label: 'Comparison Scope', value: distinctBrands.length >= 2 ? `${distinctBrands.join(' vs ')} (${picks.length} models)` : `${picks.length} models compared` },
         ],
         parsed,
       };
@@ -287,7 +423,7 @@ export const answer = async (
   if (env.mlServiceUrl) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 7500);
+      const timer = setTimeout(() => controller.abort(), 15000);
       const res = await fetch(`${env.mlServiceUrl}/assistant/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
