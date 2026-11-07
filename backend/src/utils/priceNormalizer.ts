@@ -216,3 +216,39 @@ export function sanitizePriceForDb(price: unknown): number | null {
   const parsed = parsePrice(price);
   return parsed > 0 ? parsed : null;
 }
+
+/**
+ * Sanity boundary check for live fetched prices:
+ * A live price is considered genuine and safe to persist/display if:
+ * 1. It is a valid positive number >= absolute minimum floor (₹3,000 for any smartphone in catalog).
+ * 2. It is within 60% to 150% of the baseline DB price (preventing extreme sudden drops or fake accessory/EMI prices, and extreme price spikes).
+ *
+ * @param livePrice The newly fetched live price to check.
+ * @param baselinePrice The verified price already in the database (or catalog bestPrice/MRP).
+ * @param minAbsoluteFloor Optional absolute floor (defaults to 3000).
+ */
+export function isPriceWithinSanityBounds(
+  livePrice: number | null | undefined,
+  baselinePrice: number | null | undefined,
+  minAbsoluteFloor = 3000,
+): boolean {
+  if (typeof livePrice !== 'number' || !Number.isFinite(livePrice) || isNaN(livePrice) || livePrice <= 0) {
+    return false;
+  }
+
+  // Absolute floor check: no genuine smartphone is below ₹3,000
+  if (livePrice < minAbsoluteFloor) {
+    return false;
+  }
+
+  // If a valid baseline exists from DB
+  if (typeof baselinePrice === 'number' && Number.isFinite(baselinePrice) && baselinePrice > 0) {
+    const minAllowed = baselinePrice * 0.60;
+    const maxAllowed = baselinePrice * 1.50;
+    if (livePrice < minAllowed || livePrice > maxAllowed) {
+      return false;
+    }
+  }
+
+  return true;
+}
