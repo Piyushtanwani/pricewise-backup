@@ -42,6 +42,34 @@ export interface StorePriceRow {
   lastCheckedAt?: string
 }
 
+export type OfferCategory = 'BANK' | 'CASHBACK' | 'FESTIVAL' | 'EMI' | 'EXCHANGE' | 'COUPON'
+
+export interface StoreDiscountOffer {
+  type: OfferCategory
+  title: string
+  description: string
+  bank?: string | null
+}
+
+export interface StoreOffersEntry {
+  storeId: string
+  store: string
+  storeSlug: string
+  productUrl: string
+  offers: StoreDiscountOffer[]
+  source: 'live_scraped' | 'cache' | 'unavailable'
+  fetchedAt: string
+  expiresAt: string
+}
+
+export interface ProductLiveOffersResponse {
+  productId: string
+  productName: string
+  offersByStore: Record<string, StoreOffersEntry>
+  fetchedAt: string
+  fromCache: boolean
+}
+
 export interface PricePoint {
   date: string
   price: number

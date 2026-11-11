@@ -4,6 +4,7 @@ import {
   getCatalogMeta,
   getProduct,
   getProductLiveStores,
+  getProductLiveOffers,
   getProductHistory,
   getProductPrediction,
   getAlternatives,
@@ -19,6 +20,7 @@ router.get('/meta', getCatalogMeta);
 router.get('/compare', compareProducts);
 router.get('/:id/buy', redirectToStore);
 router.get('/:id/live-stores', getProductLiveStores);
+router.get('/:id/live-offers', getProductLiveOffers);
 router.get('/:id', optionalAuth, getProduct);
 router.get('/:id/history', getProductHistory);
 router.get('/:id/prediction', getProductPrediction);

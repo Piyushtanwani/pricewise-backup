@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router"
 import {
   Star, Heart, Bell, GitCompare, ExternalLink, Sparkles,
   CheckCircle, ChevronRight, Info, Loader2, RefreshCw,
-  AlertTriangle, TrendingUp
+  AlertTriangle, TrendingUp, Tag, ChevronDown, ChevronUp
 } from "lucide-react"
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -15,7 +15,17 @@ import CompareButton from "../components/ui/CompareButton"
 import PriceAlertModal from "../components/ui/PriceAlertModal"
 import { api, apiClient } from "../services/api"
 import { useAuth } from "../context/AuthContext"
-import type { Product, ProductDetailResponse, StorePriceRow, PricePoint, PredictionPoint, ProductPredictionResult } from "../types/product"
+import type {
+  Product,
+  ProductDetailResponse,
+  StorePriceRow,
+  PricePoint,
+  PredictionPoint,
+  ProductPredictionResult,
+  StoreOffersEntry,
+  StoreDiscountOffer,
+  OfferCategory,
+} from "../types/product"
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN")
 
@@ -37,6 +47,9 @@ export default function ProductDetail() {
   const [error, setError] = useState<string | null>(null)
   const [liveStores, setLiveStores] = useState<StorePriceRow[] | null>(null)
   const [liveStoresLoading, setLiveStoresLoading] = useState(false)
+  const [liveOffers, setLiveOffers] = useState<Record<string, StoreOffersEntry>>({})
+  const [liveOffersLoading, setLiveOffersLoading] = useState(false)
+  const [expandedOfferStores, setExpandedOfferStores] = useState<Record<string, boolean>>({})
 
   const [timeRange, setTimeRange] = useState("3M")
   const [selectedStore, setSelectedStore] = useState<string>("All Stores")
@@ -58,6 +71,8 @@ export default function ProductDetail() {
       try {
         setLoading(true)
         setError(null)
+        setLiveOffers({})
+        setExpandedOfferStores({})
 
         // 1. Load core product details first for instant UI render
         const prodDetail = await api.getProduct(id!)
@@ -101,7 +116,20 @@ export default function ProductDetail() {
           })
           .catch((err) => console.error("Error fetching live stores:", err))
           .finally(() => {
-            if (isMounted) setLiveStoresLoading(false)
+            if (!isMounted) return
+            setLiveStoresLoading(false)
+            // Fetch live discount/bank/festival offers independently after store URLs are resolved
+            setLiveOffersLoading(true)
+            api.getLiveOffers(id!, false)
+              .then((offerRes) => {
+                if (isMounted && offerRes?.offersByStore) {
+                  setLiveOffers(offerRes.offersByStore)
+                }
+              })
+              .catch((err) => console.error("Error fetching live offers:", err))
+              .finally(() => {
+                if (isMounted) setLiveOffersLoading(false)
+              })
           })
 
         // 3. Load history, predictions, and alternatives in background (non-blocking)
@@ -155,20 +183,28 @@ export default function ProductDetail() {
   const handleRefreshLivePrices = async () => {
     if (!id || liveStoresLoading) return
     setLiveStoresLoading(true)
+    setLiveOffersLoading(true)
     try {
       const res = await api.getLiveStores(id, true)
       if (res.stores && res.stores.length > 0) {
         setLiveStores(res.stores)
       }
-      // Re-fetch product details to synchronize UI with PostgreSQL records updated by the live sync
-      const refreshedDetail = await api.getProduct(id, true)
+      // Re-fetch product details and force-refresh live bank/card offers in parallel
+      const [refreshedDetail, refreshedOffers] = await Promise.all([
+        api.getProduct(id, true),
+        api.getLiveOffers(id, true).catch(() => null),
+      ])
       if (refreshedDetail) {
         setDetail(refreshedDetail)
+      }
+      if (refreshedOffers?.offersByStore) {
+        setLiveOffers(refreshedOffers.offersByStore)
       }
     } catch (err) {
       console.error("Failed to refresh live store prices:", err)
     } finally {
       setLiveStoresLoading(false)
+      setLiveOffersLoading(false)
     }
   }
 
@@ -498,6 +534,46 @@ export default function ProductDetail() {
     setShowNotifyModal(true)
   }
 
+  const getStoreOffers = (storeRow: StorePriceRow): StoreDiscountOffer[] => {
+    const slug = (storeRow.storeSlug || "").toLowerCase().trim()
+    const name = (storeRow.store || "").toLowerCase().trim()
+    if (slug && liveOffers[slug]?.offers) return liveOffers[slug].offers
+
+    const norm = (val: string) => val.toLowerCase().replace(/[^a-z0-9]/g, "")
+    const targetNorm = norm(name || slug)
+    for (const [key, entry] of Object.entries(liveOffers)) {
+      if (
+        norm(key) === targetNorm ||
+        norm(entry.store) === targetNorm ||
+        (name.includes("vijay") && key.includes("vijay")) ||
+        (name.includes("amazon") && key === "amazon") ||
+        (name.includes("flipkart") && key === "flipkart") ||
+        (name.includes("croma") && key === "croma")
+      ) {
+        return entry.offers || []
+      }
+    }
+    return []
+  }
+
+  const offerBadgeMeta = (type: OfferCategory): { label: string; cls: string } => {
+    switch (type) {
+      case "FESTIVAL":
+        return { label: "Festival", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+      case "CASHBACK":
+        return { label: "Cashback", cls: "bg-sky-50 text-sky-700 border-sky-200" }
+      case "EMI":
+        return { label: "EMI", cls: "bg-amber-50 text-amber-800 border-amber-200" }
+      case "EXCHANGE":
+        return { label: "Exchange", cls: "bg-purple-50 text-purple-700 border-purple-200" }
+      case "COUPON":
+        return { label: "Coupon", cls: "bg-slate-100 text-slate-700 border-slate-200" }
+      case "BANK":
+      default:
+        return { label: "Bank", cls: "bg-indigo-50 text-indigo-700 border-indigo-200" }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#f4f6fb] pt-14">
       <div className="max-w-[1440px] mx-auto px-6 py-6">
@@ -623,13 +699,14 @@ export default function ProductDetail() {
                     stores.map((s, idx) => {
                       const isOut = s.stockStatus === 'OUT_OF_STOCK' || s.availability === 'Out of Stock'
                       const isLimited = s.stockStatus === 'LIMITED' || s.availability === 'Limited Stock'
+                      const storeOffers = getStoreOffers(s)
                       return (
                         <a
                           key={s.storeId || s.store || idx}
                           href={getDirectBuyUrl(s)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all text-xs group ${
+                          className={`flex flex-col px-3 py-2.5 rounded-xl border transition-all text-xs group ${
                             isOut
                               ? "bg-slate-50 border-slate-200 text-slate-500 opacity-80 hover:border-slate-300 hover:bg-slate-100/70 cursor-pointer"
                               : idx === 0 && !isOut
@@ -637,39 +714,56 @@ export default function ProductDetail() {
                               : "bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-slate-50"
                           }`}
                         >
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className={`font-bold ${isOut ? "text-slate-500 line-through" : "text-slate-900"}`}>{s.store}</span>
-                            {isOut ? (
-                              <span className="bg-red-100 text-red-700 text-[9px] px-1.5 py-0.2 rounded font-bold">
-                                Out of Stock
-                              </span>
-                            ) : isLimited ? (
-                              <span className="bg-amber-100 text-amber-800 text-[9px] px-1.5 py-0.2 rounded font-medium">
-                                Few Left
-                              </span>
-                            ) : idx === 0 ? (
-                              <span className="bg-emerald-200 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-bold">
-                                Lowest
-                              </span>
-                            ) : s.diff > 0 ? (
-                              <span className="text-[10px] text-slate-500">
-                                +{fmt(s.diff)}
-                              </span>
-                            ) : null}
-                            {!isOut && (isDirectProductUrl(s.url) ? (
-                              <span className="bg-sky-100 text-sky-800 text-[9px] px-1 py-0.2 rounded font-semibold" title="Direct verified store product page">
-                                Direct Page
-                              </span>
-                            ) : (
-                              <span className="bg-slate-100 text-slate-600 text-[9px] px-1 py-0.2 rounded" title="Store keyword search">
-                                Search
-                              </span>
-                            ))}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`font-bold ${isOut ? "text-slate-500 line-through" : "text-slate-900"}`}>{s.store}</span>
+                              {isOut ? (
+                                <span className="bg-red-100 text-red-700 text-[9px] px-1.5 py-0.2 rounded font-bold">
+                                  Out of Stock
+                                </span>
+                              ) : isLimited ? (
+                                <span className="bg-amber-100 text-amber-800 text-[9px] px-1.5 py-0.2 rounded font-medium">
+                                  Few Left
+                                </span>
+                              ) : idx === 0 ? (
+                                <span className="bg-emerald-200 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-bold">
+                                  Lowest
+                                </span>
+                              ) : s.diff > 0 ? (
+                                <span className="text-[10px] text-slate-500">
+                                  +{fmt(s.diff)}
+                                </span>
+                              ) : null}
+                              {!isOut && (isDirectProductUrl(s.url) ? (
+                                <span className="bg-sky-100 text-sky-800 text-[9px] px-1 py-0.2 rounded font-semibold" title="Direct verified store product page">
+                                  Direct Page
+                                </span>
+                              ) : (
+                                <span className="bg-slate-100 text-slate-600 text-[9px] px-1 py-0.2 rounded" title="Store keyword search">
+                                  Search
+                                </span>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className={`text-sm font-bold font-mono ${isOut ? "text-slate-400 line-through" : "text-slate-900"}`}>{fmt(s.price)}</span>
+                              {!isOut && <ExternalLink size={12} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-sm font-bold font-mono ${isOut ? "text-slate-400 line-through" : "text-slate-900"}`}>{fmt(s.price)}</span>
-                            {!isOut && <ExternalLink size={12} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />}
-                          </div>
+                          {!isOut && storeOffers.length > 0 ? (
+                            <div className="mt-1.5 pt-1.5 border-t border-slate-200/70 flex items-center gap-1.5 text-[10px] text-indigo-700 font-medium min-w-0">
+                              <Tag size={10} className="shrink-0 text-indigo-500" />
+                              <span className="truncate">{storeOffers[0].description}</span>
+                              {storeOffers.length > 1 && (
+                                <span className="shrink-0 bg-indigo-100/80 text-indigo-700 px-1.5 py-0.2 rounded-full text-[9px] font-semibold">
+                                  +{storeOffers.length - 1}
+                                </span>
+                              )}
+                            </div>
+                          ) : !isOut && liveOffersLoading ? (
+                            <div className="mt-1.5 pt-1.5 border-t border-slate-200/50 text-[10px] text-slate-400 animate-pulse">
+                              Checking bank &amp; card offers...
+                            </div>
+                          ) : null}
                         </a>
                       )
                     })
@@ -812,7 +906,8 @@ export default function ProductDetail() {
                 <tr className="border-b border-slate-100">
                   <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3">Store</th>
                   <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3">Price</th>
-                  <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 hidden sm:table-cell">Shipping</th>
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 hidden sm:table-cell">Offers &amp; Discounts</th>
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 hidden lg:table-cell">Shipping</th>
                   <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 hidden md:table-cell">Availability</th>
                   <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 hidden lg:table-cell">vs Best</th>
                   <th className="pb-3" />
@@ -823,14 +918,18 @@ export default function ProductDetail() {
                   stores.map((store, i) => {
                     const isOut = store.stockStatus === 'OUT_OF_STOCK' || store.availability === 'Out of Stock'
                     const isLimited = store.stockStatus === 'LIMITED' || store.availability === 'Limited Stock'
+                    const storeOffers = isOut ? [] : getStoreOffers(store)
+                    const storeKey = store.storeSlug || store.store || String(i)
+                    const isExpanded = Boolean(expandedOfferStores[storeKey])
+                    const visibleOffers = isExpanded ? storeOffers : storeOffers.slice(0, 2)
                     return (
                       <tr
                         key={store.storeId || store.store || i}
                         className={`${i === 0 && !isOut ? "bg-emerald-50/50" : isOut ? "bg-slate-50/50 opacity-80" : ""} hover:bg-slate-50 transition-colors`}
                       >
-                        <td className="py-3 pr-4">
+                        <td className="py-3 pr-4 align-top">
                           <div className="flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-xs">
+                            <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
                               {store.store.charAt(0)}
                             </span>
                             <div>
@@ -841,23 +940,92 @@ export default function ProductDetail() {
                               {isOut && (
                                 <span className="text-[10px] text-red-600 font-medium">Currently Unavailable</span>
                               )}
+                              {/* Compact mobile offer list (hidden on >=sm where dedicated column renders) */}
+                              {storeOffers.length > 0 && (
+                                <div className="sm:hidden mt-1.5 space-y-1">
+                                  {visibleOffers.map((offer, oIdx) => {
+                                    const badge = offerBadgeMeta(offer.type)
+                                    return (
+                                      <div key={oIdx} className="flex items-start gap-1 text-[11px] text-slate-600">
+                                        <span className={`shrink-0 px-1.5 py-0.2 rounded border text-[9px] font-semibold ${badge.cls}`}>
+                                          {badge.label}
+                                        </span>
+                                        <span className="leading-snug">{offer.description}</span>
+                                      </div>
+                                    )
+                                  })}
+                                  {storeOffers.length > 2 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setExpandedOfferStores((prev) => ({ ...prev, [storeKey]: !prev[storeKey] }))
+                                      }
+                                      className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                                    >
+                                      {isExpanded ? (
+                                        <>Show less <ChevronUp size={11} /></>
+                                      ) : (
+                                        <>+{storeOffers.length - 2} more offers <ChevronDown size={11} /></>
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 pr-4">
+                        <td className="py-3 pr-4 align-top">
                           <span className={`text-base font-bold ${isOut ? "text-slate-400 line-through" : i === 0 ? "text-emerald-700" : "text-slate-800"}`}>
                             {fmt(store.price)}
                           </span>
                         </td>
-                        <td className="py-3 pr-4 hidden sm:table-cell">
+                        <td className="py-3 pr-4 hidden sm:table-cell align-top max-w-md">
+                          {isOut ? (
+                            <span className="text-xs text-slate-400">—</span>
+                          ) : storeOffers.length > 0 ? (
+                            <div className="space-y-1.5">
+                              {visibleOffers.map((offer, oIdx) => {
+                                const badge = offerBadgeMeta(offer.type)
+                                return (
+                                  <div key={oIdx} className="flex items-start gap-1.5 text-xs text-slate-700">
+                                    <span className={`shrink-0 mt-0.5 px-1.5 py-0.5 rounded border text-[10px] font-semibold ${badge.cls}`}>
+                                      {badge.label}
+                                    </span>
+                                    <span className="leading-snug">{offer.description}</span>
+                                  </div>
+                                )
+                              })}
+                              {storeOffers.length > 2 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedOfferStores((prev) => ({ ...prev, [storeKey]: !prev[storeKey] }))
+                                  }
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                                >
+                                  {isExpanded ? (
+                                    <>Show less <ChevronUp size={12} /></>
+                                  ) : (
+                                    <>+{storeOffers.length - 2} more offers <ChevronDown size={12} /></>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          ) : liveOffersLoading ? (
+                            <span className="text-xs text-slate-400 animate-pulse">Checking bank offers...</span>
+                          ) : (
+                            <span className="text-xs text-slate-400">—</span>
+                          )}
+                        </td>
+                        <td className="py-3 pr-4 hidden lg:table-cell align-top">
                           <span className="text-slate-600">{isOut ? "—" : (store.shipping || "Free")}</span>
                         </td>
-                        <td className="py-3 pr-4 hidden md:table-cell">
+                        <td className="py-3 pr-4 hidden md:table-cell align-top">
                           <Badge variant={isOut ? "error" : isLimited ? "warning" : "success"}>
                             {isOut ? "🔴 Out of Stock" : isLimited ? "🟡 Limited Stock" : "🟢 In Stock"}
                           </Badge>
                         </td>
-                        <td className="py-3 pr-4 hidden lg:table-cell">
+                        <td className="py-3 pr-4 hidden lg:table-cell align-top">
                           {isOut ? (
                             <span className="text-slate-400 text-xs">Unavailable</span>
                           ) : store.diff > 0 ? (
@@ -866,7 +1034,7 @@ export default function ProductDetail() {
                             <span className="text-emerald-600 text-xs font-mono font-bold">Best</span>
                           )}
                         </td>
-                        <td className="py-3 text-right">
+                        <td className="py-3 text-right align-top">
                           {isOut ? (
                             <a
                               href={getDirectBuyUrl(store)}
@@ -895,9 +1063,10 @@ export default function ProductDetail() {
                   <tr>
                     <td className="py-3 pr-4 font-semibold text-slate-800">{product.bestStore}</td>
                     <td className="py-3 pr-4 font-bold text-emerald-700">{fmt(product.bestPrice)}</td>
-                    <td className="py-3 pr-4 text-slate-600">Free</td>
-                    <td className="py-3 pr-4"><Badge variant="success">🟢 In Stock</Badge></td>
-                    <td className="py-3 pr-4 font-bold text-emerald-600">Best</td>
+                    <td className="py-3 pr-4 hidden sm:table-cell text-xs text-slate-400">—</td>
+                    <td className="py-3 pr-4 hidden lg:table-cell text-slate-600">Free</td>
+                    <td className="py-3 pr-4 hidden md:table-cell"><Badge variant="success">🟢 In Stock</Badge></td>
+                    <td className="py-3 pr-4 hidden lg:table-cell font-bold text-emerald-600">Best</td>
                     <td className="py-3 text-right">
                       <a
                         href={getDirectBuyUrl()}

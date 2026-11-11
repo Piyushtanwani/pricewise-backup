@@ -7,6 +7,7 @@ import type {
   MarketIntelligenceSummary,
   AIChatResponse,
   StorePriceRow,
+  ProductLiveOffersResponse,
   PricePoint,
   PredictionPoint,
   ProductPredictionResult,
@@ -152,6 +153,14 @@ export const api = {
   async getLiveStores(id: string, refresh = true): Promise<{ stores: StorePriceRow[]; bestDealUrl: string | null; source?: string }> {
     const res = await apiClient.get<{ stores: StorePriceRow[]; bestDealUrl: string | null; source?: string }>(
       `/products/${encodeURIComponent(id)}/live-stores`,
+      { params: refresh ? { refresh: 'true' } : undefined }
+    );
+    return res.data;
+  },
+
+  async getLiveOffers(id: string, refresh = false): Promise<ProductLiveOffersResponse> {
+    const res = await apiClient.get<ProductLiveOffersResponse>(
+      `/products/${encodeURIComponent(id)}/live-offers`,
       { params: refresh ? { refresh: 'true' } : undefined }
     );
     return res.data;

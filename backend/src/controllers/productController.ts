@@ -14,6 +14,7 @@ import { livePriceCache } from '../utils/cache';
 import { TargetSpecs } from '../services/retailerScraperService';
 import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
 import { scrapeLiveStoreListing, scrapeFlipkart, scrapeCroma } from '../services/retailerScraperService';
+import { getLiveOffersForProduct } from '../services/storeOfferService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -554,6 +555,31 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
     source: 'live_scraped',
     refreshedAt: new Date().toISOString(),
   });
+};
+
+export const getProductLiveOffers = async (req: Request, res: Response): Promise<void> => {
+  const productId = String(req.params.id);
+  const forceRefresh = req.query.refresh === 'true' || req.query.forceRefresh === 'true';
+  const product = await findProductOr404(productId);
+  const targetSpecs = extractProductSpecs(product);
+
+  const dbStores = storePriceRows(product)
+    .filter((s) => matchAllowedStore(s.store, product.brand, product.name) !== null)
+    .map((s) => ({
+      storeId: s.storeId,
+      store: s.store,
+      storeSlug: s.storeSlug,
+      url: s.url,
+    }));
+
+  const offersResult = await getLiveOffersForProduct(
+    { id: product.id, name: product.name, brand: product.brand },
+    dbStores,
+    targetSpecs,
+    { forceRefresh },
+  );
+
+  res.json(offersResult);
 };
 
 export const getProductHistory = async (req: Request, res: Response): Promise<void> => {
