@@ -218,26 +218,47 @@ export function sanitizePriceForDb(price: unknown): number | null {
 }
 
 /**
+ * Category-aware minimum absolute price floor:
+ * Laptops: ₹10,000 (prevents laptop sleeves, mice, chargers from passing as laptops)
+ * TVs: ₹7,000 (prevents wall mounts, remotes, cables from passing as TVs)
+ * Tablets: ₹4,000 (prevents tablet cases, styluses from passing as tablets)
+ * Mobiles / Default: ₹3,000 (prevents back covers, cables from passing as phones)
+ */
+export function getCategoryMinFloor(category?: string | null): number {
+  if (!category) return 3000;
+  const c = category.toLowerCase();
+  if (c.includes('laptop')) return 10000;
+  if (c.includes('tv') || c.includes('television')) return 7000;
+  if (c.includes('tablet') || c.includes('pad')) return 4000;
+  return 3000;
+}
+
+/**
  * Sanity boundary check for live fetched prices:
  * A live price is considered genuine and safe to persist/display if:
- * 1. It is a valid positive number >= absolute minimum floor (₹3,000 for any smartphone in catalog).
+ * 1. It is a valid positive number >= absolute minimum floor (category-aware, e.g. ₹10k for laptops, ₹7k for TVs, ₹3k for mobiles).
  * 2. It is within 60% to 150% of the baseline DB price (preventing extreme sudden drops or fake accessory/EMI prices, and extreme price spikes).
  *
  * @param livePrice The newly fetched live price to check.
  * @param baselinePrice The verified price already in the database (or catalog bestPrice/MRP).
- * @param minAbsoluteFloor Optional absolute floor (defaults to 3000).
+ * @param minAbsoluteFloor Optional absolute floor (defaults to 3000, or category floor).
+ * @param category Optional category name to derive dynamic minimum floor.
  */
 export function isPriceWithinSanityBounds(
   livePrice: number | null | undefined,
   baselinePrice: number | null | undefined,
   minAbsoluteFloor = 3000,
+  category?: string | null,
 ): boolean {
   if (typeof livePrice !== 'number' || !Number.isFinite(livePrice) || isNaN(livePrice) || livePrice <= 0) {
     return false;
   }
 
-  // Absolute floor check: no genuine smartphone is below ₹3,000
-  if (livePrice < minAbsoluteFloor) {
+  // Determine effective floor
+  const effectiveFloor = category ? getCategoryMinFloor(category) : minAbsoluteFloor;
+
+  // Absolute floor check: no genuine product is below category minimum
+  if (livePrice < effectiveFloor) {
     return false;
   }
 

@@ -794,7 +794,7 @@ export const cleanDestinationUrl = (url: string, productName?: string): string =
  * Constructs direct retailer search URL as reliable fallback
  */
 export const getFallbackStoreSearch = (storeName: string, productName: string): string => {
-  const query = encodeURIComponent(productName || 'smartphone');
+  const query = encodeURIComponent(productName || 'electronics');
   const s = (storeName || '').toLowerCase();
   const prod = (productName || '').toLowerCase();
 
@@ -814,7 +814,10 @@ export const getFallbackStoreSearch = (storeName: string, productName: string): 
     if (prod.includes('oneplus')) {
       return 'https://www.vijaysales.com/c/smartphones?brand=OnePlus';
     }
-    return 'https://www.vijaysales.com/c/smartphones';
+    if (productName && productName.trim().length > 0) {
+      return `https://www.vijaysales.com/search/${query}`;
+    }
+    return 'https://www.vijaysales.com/search/electronics';
   }
   return `https://www.amazon.in/s?k=${query}`;
 };

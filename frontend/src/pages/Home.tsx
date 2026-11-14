@@ -53,11 +53,13 @@ const features = [
 
 const popular = [
   "iPhone 16 Pro Max",
+  "MacBook Air M3",
+  "Sony Bravia 55 inch 4K",
   "Galaxy S25 Ultra",
-  "OnePlus Nord 4",
-  "Redmi Note 15 5G",
-  "Galaxy S24 FE",
-  "iPhone 17 Pro Max",
+  "iPad Air M2",
+  "HP Victus 15",
+  "LG OLED C4",
+  "OnePlus Pad 2",
 ]
 
 export default function Home() {
@@ -270,10 +272,30 @@ export default function Home() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 mb-12">
           {[
-            { label: "Mobiles Tracked", value: `${meta?.categories?.[0]?.count || 140}+`, icon: Smartphone, color: "text-indigo-600" },
-            { label: "Stores Covered", value: `${meta?.stores?.length || 4} Retailers`, icon: TrendingDown, color: "text-emerald-600" },
-            { label: "Top Brands", value: `${meta?.brands?.length || 7} Brands`, icon: BarChart2, color: "text-amber-600" },
-            { label: "Verified Catalog", value: "Real-Time Sync", icon: Zap, color: "text-indigo-600" },
+            {
+              label: "Devices Tracked",
+              value: `${meta?.categories?.reduce((sum, c) => sum + c.count, 0) || 350}+`,
+              icon: Zap,
+              color: "text-indigo-600",
+            },
+            {
+              label: "Categories",
+              value: `${meta?.categories?.length || 4} Electronics`,
+              icon: Smartphone,
+              color: "text-emerald-600",
+            },
+            {
+              label: "Top Brands",
+              value: `${meta?.brands?.length || 25}+ Brands`,
+              icon: BarChart2,
+              color: "text-amber-600",
+            },
+            {
+              label: "Stores Covered",
+              value: `${meta?.stores?.length || 7} Retailers`,
+              icon: TrendingDown,
+              color: "text-indigo-600",
+            },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
               <Icon size={18} className={`${color} mb-1`} />

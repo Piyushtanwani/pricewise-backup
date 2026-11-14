@@ -250,6 +250,7 @@ async function persistLiveRatesToPostgres(
   productId: string,
   stores: StorePriceRow[],
   productBaselinePrice?: number | null,
+  productCategory?: string | null,
 ): Promise<void> {
   try {
     const dbStores = await prisma.store.findMany();
@@ -279,7 +280,7 @@ async function persistLiveRatesToPostgres(
       if (existing) {
         // Sanity Check: Ensure live rate is within 60%-150% of existing DB price or product baseline
         const baseline = existing.currentPrice > 0 ? existing.currentPrice : productBaselinePrice;
-        if (!isPriceWithinSanityBounds(item.price, baseline)) {
+        if (!isPriceWithinSanityBounds(item.price, baseline, 3000, productCategory)) {
           console.warn(
             `[SanityCheck] Skipped DB price update for product ${productId} on store ${item.store}: live price ₹${item.price} is outside 60%-150% sanity bounds of DB baseline ₹${baseline}`,
           );
@@ -317,7 +318,7 @@ async function persistLiveRatesToPostgres(
         }
       } else if (item.url && item.url.trim().length > 0) {
         // Discovered a new verified store listing for this product
-        if (!isPriceWithinSanityBounds(item.price, productBaselinePrice)) {
+        if (!isPriceWithinSanityBounds(item.price, productBaselinePrice, 3000, productCategory)) {
           console.warn(
             `[SanityCheck] Skipped DB store creation for product ${productId} on new store ${item.store}: live price ₹${item.price} is outside sanity bounds of product baseline ₹${productBaselinePrice}`,
           );
@@ -399,7 +400,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
       const storeBaseline = matchedDbStore?.price && matchedDbStore.price > 0 ? matchedDbStore.price : productBaselinePrice;
 
       let finalPrice = s.price;
-      if (!isPriceWithinSanityBounds(s.price, storeBaseline)) {
+      if (!isPriceWithinSanityBounds(s.price, storeBaseline, 3000, product.category)) {
         console.warn(
           `[SanityCheck] Glitched SerpApi live price for ${product.name} at ${s.store}: ₹${s.price} (baseline: ₹${storeBaseline}). Reverting to DB price.`,
         );
@@ -462,7 +463,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
     const bestInStock = finalStores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK) || finalStores[0];
 
     if (forceRefresh) {
-      await persistLiveRatesToPostgres(productId, finalStores, productBaselinePrice);
+      await persistLiveRatesToPostgres(productId, finalStores, productBaselinePrice, product.category);
     }
 
     res.json({
@@ -483,7 +484,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
       if (!scraped) return s;
 
       const storeBaseline = s.price > 0 ? s.price : productBaselinePrice;
-      const isPriceValid = scraped.price && isPriceWithinSanityBounds(scraped.price, storeBaseline);
+      const isPriceValid = scraped.price && isPriceWithinSanityBounds(scraped.price, storeBaseline, 3000, product.category);
 
       if (scraped.price && !isPriceValid) {
         console.warn(
@@ -509,7 +510,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   if (!hasFlipkart) {
     try {
       const fkOffer = await scrapeFlipkart('https://www.flipkart.com/search', product.bestPrice, product.name, targetSpecs);
-      if (fkOffer && fkOffer.price && isPriceWithinSanityBounds(fkOffer.price, productBaselinePrice)) {
+      if (fkOffer && fkOffer.price && isPriceWithinSanityBounds(fkOffer.price, productBaselinePrice, 3000, product.category)) {
         scrapedStores.push({
           storeId: 'flipkart-live',
           store: 'Flipkart',
@@ -546,7 +547,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   const bestInStock = finalStores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK) || finalStores[0];
 
   if (forceRefresh) {
-    await persistLiveRatesToPostgres(productId, finalStores, productBaselinePrice);
+    await persistLiveRatesToPostgres(productId, finalStores, productBaselinePrice, product.category);
   }
 
   res.json({

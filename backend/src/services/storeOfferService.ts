@@ -1,7 +1,7 @@
 import { livePriceCache } from '../utils/cache';
 import { SerpStoreRate, matchAllowedStore } from './serpShoppingService';
 import { TargetSpecs, matchProductVariant } from './retailerScraperService';
-import { resolveDirectStoreUrl, checkProductUrlModelMismatch } from './storeRedirectService';
+import { resolveDirectStoreUrl, checkProductUrlModelMismatch, resolveFlipkartDirectUrl } from './storeRedirectService';
 
 export type OfferCategory = 'BANK' | 'CASHBACK' | 'FESTIVAL' | 'EMI' | 'EXCHANGE' | 'COUPON';
 
@@ -68,7 +68,7 @@ const KNOWN_BANKS: { pattern: RegExp; label: string }[] = [
   { pattern: /\bhdfc\b/i, label: 'HDFC Bank' },
   { pattern: /\bicici\b/i, label: 'ICICI Bank' },
   { pattern: /\bsbi\b|state bank of india/i, label: 'SBI' },
-  { pattern: /\baxis\b/i, label: 'Axis Bank' },
+  { pattern: /(?<![0-9a-z\-])axis\s*(?:bank|card)?\b(?!\s*(?:gyro|motor|sensor|stabiliz))/i, label: 'Axis Bank' },
   { pattern: /\bkotak\b/i, label: 'Kotak Bank' },
   { pattern: /\bidfc\b/i, label: 'IDFC First Bank' },
   { pattern: /\byes\s*bank\b/i, label: 'Yes Bank' },
@@ -99,6 +99,7 @@ const JUNK_TEXT_PATTERNS: RegExp[] = [
   /\{|\}|=>|<\/?[a-z]+/i,
   /\btempered glass\b|\bback cover\b|\bscreen protector\b|\bphone case\b/i,
   /\bcustomer reviews?\b|\bratings?\s*&\s*reviews?\b/i,
+  /\b(?:gyroscope|accelerometer|proximity sensor|ambient light|fingerprint sensor|megapixels?|supervooc|bypass charging|haptics|stereo speakers)\b/i,
 ];
 
 const OFFER_SIGNAL_PATTERN =
@@ -280,6 +281,59 @@ function extractAmazonTitle(html: string): string {
   return extractPageTitle(html);
 }
 
+export function isPageTitleMatchingProduct(
+  pageTitle: string,
+  productName: string,
+  targetSpecs?: TargetSpecs,
+): boolean {
+  if (!pageTitle || !productName) return true;
+  const pLower = pageTitle.toLowerCase();
+  const nLower = productName.toLowerCase();
+
+  // 1. Accessory check
+  const ACCESSORY_LIST = ['case', 'cover', 'back cover', 'tempered glass', 'screen protector', 'skin', 'cable', 'charger', 'pouch', 'strap'];
+  for (const acc of ACCESSORY_LIST) {
+    if (pLower.includes(acc) && !nLower.includes(acc)) {
+      return false;
+    }
+  }
+
+  // 2. Storage mismatch check (e.g. page is 128 GB when target is 256 GB)
+  if (targetSpecs?.storage) {
+    const targetStorageNum = targetSpecs.storage.match(/\d+/)?.[0];
+    if (targetStorageNum) {
+      const nonRamStorages = Array.from(
+        pLower.matchAll(/\b(\d+)\s*(?:gb|tb)(?!\s*(?:ram|unified|memory))\b/gi),
+      ).map((m) => m[1]);
+      if (nonRamStorages.length > 0 && !nonRamStorages.includes(targetStorageNum)) {
+        return false;
+      }
+    }
+  }
+
+  // 3. Brand check: must contain the target brand
+  const brandWord = productName.trim().split(/\s+/)[0]?.toLowerCase();
+  if (brandWord && !pLower.includes(brandWord)) {
+    const coreTokens = nLower.replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter((t) => t.length > 3);
+    const sharedTokens = coreTokens.filter((t) => pLower.includes(t));
+    if (sharedTokens.length < 2) {
+      return false;
+    }
+  }
+
+  // 4. Variant tier conflicts (e.g. Ultra vs base, Pro vs base, Max vs base)
+  const CRITICAL_VARIANTS = ['ultra', 'pro', 'plus', 'max', 'mini', 'lite', 'fe'];
+  for (const v of CRITICAL_VARIANTS) {
+    const targetHas = new RegExp(`\\b${v}\\b`, 'i').test(nLower);
+    const pageHas = new RegExp(`\\b${v}\\b`, 'i').test(pLower);
+    if (!targetHas && pageHas) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /**
  * Extracts real-time Bank, Card, Cashback, Festival & EMI offers from an Amazon product page HTML.
  */
@@ -300,8 +354,7 @@ export function extractAmazonOffersFromHtml(
 
   const pageTitle = extractAmazonTitle(html);
   if (pageTitle && productName) {
-    const match = matchProductVariant(pageTitle, productName, targetSpecs);
-    if (!match.matches) {
+    if (!isPageTitleMatchingProduct(pageTitle, productName, targetSpecs)) {
       return { status: 'mismatch', offers: [] };
     }
   }
@@ -362,22 +415,65 @@ export function extractFlipkartOffersFromHtml(
   if (
     lowerHtml.includes('access denied') ||
     lowerHtml.includes('cf-browser-verification') ||
-    lowerHtml.includes('something went wrong!') && !html.includes('Available offers')
+    (lowerHtml.includes('something went wrong!') && !html.includes('Available offers') && !html.includes('__INITIAL_STATE__'))
   ) {
     return { status: 'blocked', offers: [] };
   }
 
   const pageTitle = extractPageTitle(html);
   if (pageTitle && productName && !pageTitle.toLowerCase().includes('online shopping india')) {
-    const match = matchProductVariant(pageTitle, productName, targetSpecs);
-    if (!match.matches) {
+    if (!isPageTitleMatchingProduct(pageTitle, productName, targetSpecs)) {
       return { status: 'mismatch', offers: [] };
     }
   }
 
   const candidates: string[] = [];
 
-  // 1. Embedded SSR JSON (__INITIAL_STATE__ / offerSummaries / tags / descriptions)
+  // 1. Modern Flipkart __INITIAL_STATE__ JSON extraction (NepOffers / bankOfferGrid / offerSummariesRC)
+  const scriptMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\});<\/script>/);
+  if (scriptMatch) {
+    try {
+      const data = JSON.parse(scriptMatch[1]);
+      const slots =
+        data?.multiWidgetState?.widgetsData?.slots ||
+        data?.multiWidgetState?.widgetsData?.completeSlots ||
+        [];
+      for (const slot of slots) {
+        const offers = slot?.slotData?.widget?.data?.offers;
+        if (Array.isArray(offers)) {
+          for (const off of offers) {
+            const summaries = off?.value?.offerSummariesRC || [];
+            for (const s of summaries) {
+              const grids = s?.value?.bankOfferGrid || [];
+              for (const g of grids) {
+                const v = g?.value || {};
+                const title = v.offerTitle || g?.tracking?.metaInfoLabelKey || 'Bank Offer';
+                const discount = v.discountedPriceText || g?.tracking?.metaInfoLabelValue || '';
+                const sub = v.offerSubTitleRC?.value?.contentList?.map((c: any) => c.contentValue).filter(Boolean).join(' ') || '';
+                const staticText =
+                  v.actionCta?.action?.params?.offerBottomsheetDetails?.value?.staticData
+                    ?.map((d: any) => d.contentValue)
+                    .filter(Boolean)
+                    .join('. ') || '';
+
+                let fullText = `${title}: ${discount ? discount + ' - ' : ''}${sub}`;
+                if (staticText) fullText += ` (${staticText})`;
+                candidates.push(fullText);
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Proceed to regex fallbacks
+    }
+  }
+
+  // 2. High-speed regex fallbacks on modern & classic SSR JSON
+  for (const m of html.matchAll(/"offerTitle"\s*:\s*"([^"]+)"[\s\S]{0,350}?"discountedPriceText"\s*:\s*"([^"]+)"/g)) {
+    candidates.push(`Bank Offer: ${m[1]} - ${m[2]}`);
+  }
+
   for (const m of html.matchAll(
     /"(?:title|tag|offerType)"\s*:\s*"(Bank Offer|Special Price|Cashback|No [Cc]ost EMI|Partner Offer|Festival Offer|Extra [^"]+)"[\s\S]{0,350}?"(?:text|description|subTitle|details)"\s*:\s*"([^"]{12,240})"/gi,
   )) {
@@ -392,7 +488,7 @@ export function extractFlipkartOffersFromHtml(
     candidates.push(m[1]);
   }
 
-  // 2. DOM "Available offers" block
+  // 3. DOM "Available offers" block
   const availIdx = html.search(/Available offers/i);
   if (availIdx !== -1) {
     const slice = stripNonContentHtml(html.slice(availIdx, availIdx + 12000));
@@ -461,15 +557,14 @@ export function extractCromaOffersFromHtml(
 
   const pageTitle = extractPageTitle(html);
   if (pageTitle && productName && !pageTitle.toLowerCase().includes('croma')) {
-    const match = matchProductVariant(pageTitle, productName, targetSpecs);
-    if (!match.matches) {
+    if (!isPageTitleMatchingProduct(pageTitle, productName, targetSpecs)) {
       return { status: 'mismatch', offers: [] };
     }
   }
 
   const candidates: string[] = [];
 
-  // 1. Next.js __NEXT_DATA__ JSON
+  // 1. Next.js __NEXT_DATA__ JSON & Croma window.__INITIAL_DATA__
   const nextDataMatch = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i);
   if (nextDataMatch) {
     try {
@@ -477,6 +572,17 @@ export function extractCromaOffersFromHtml(
       collectOfferStringsFromJson(parsed, 0, candidates);
     } catch {
       // Ignore malformed JSON
+    }
+  }
+
+  const initDataMatch = html.match(/window\.__INITIAL_DATA__\s*=\s*(\{[\s\S]*?\});/);
+  if (initDataMatch) {
+    try {
+      const cleanJson = initDataMatch[1].replace(/:\s*undefined/g, ': null');
+      const parsed = JSON.parse(cleanJson);
+      collectOfferStringsFromJson(parsed, 0, candidates);
+    } catch {
+      // Ignore
     }
   }
 
@@ -657,6 +763,9 @@ async function resolveDirectPageForOffers(
   if (sLower.includes('amazon') && (urlLower.includes('/s?') || urlLower.includes('/s/') || !urlLower.includes('/dp/'))) {
     const resolved = await resolveAmazonDirectUrl(productName, targetSpecs);
     if (resolved) url = resolved;
+  } else if (sLower.includes('flipkart') && (urlLower.includes('/search') || !urlLower.includes('/p/itm'))) {
+    const resolved = await resolveFlipkartDirectUrl(productName);
+    if (resolved) url = resolved;
   } else if (sLower.includes('croma') && (urlLower.includes('/search') || !urlLower.includes('/p/'))) {
     const resolved = await resolveCromaDirectUrl(productName, targetSpecs);
     if (resolved) url = resolved;
@@ -822,11 +931,12 @@ export function normalizeCanonicalStoreSlug(rawSlugOrName: string): string {
 async function collectCandidateStores(
   productName: string,
   brandName: string,
-  dbStores: CandidateStoreInput[],
+  dbStores: CandidateStoreInput[] = [],
 ): Promise<CandidateStoreInput[]> {
   const bySlug = new Map<string, CandidateStoreInput>();
+  const storesList = Array.isArray(dbStores) ? dbStores : [];
 
-  for (const s of dbStores) {
+  for (const s of storesList) {
     const match = matchAllowedStore(s.store, brandName, productName);
     if (!match) continue;
     const key = match.key === 'brand' ? normalizeCanonicalStoreSlug(match.displayName) : match.key;

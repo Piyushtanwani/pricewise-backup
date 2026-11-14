@@ -102,7 +102,7 @@ const ACCESSORY_KEYWORDS = [
 ];
 
 export interface AllowedStoreMatch {
-  key: 'amazon' | 'flipkart' | 'croma' | 'vijay_sales' | 'brand';
+  key: 'amazon' | 'flipkart' | 'croma' | 'vijay_sales' | 'reliance_digital' | 'brand';
   displayName: string;
   directUrl: string;
 }
@@ -164,13 +164,27 @@ export const matchAllowedStore = (
     };
   }
 
-  // 5. Official Brand Store
+  // 5. Reliance Digital
+  if (s.includes('reliance') || s.includes('reliancedigital')) {
+    return {
+      key: 'reliance_digital',
+      displayName: 'Reliance Digital',
+      directUrl: `https://www.reliancedigital.in/search?q=${q}`,
+    };
+  }
+
+  // 6. Official Brand Store
   if (brand && (s.includes(brand) || (brand === 'apple' && s.includes('apple')))) {
     if (brand.includes('apple')) {
+      const appleUrl = cleanName.toLowerCase().includes('macbook')
+        ? 'https://www.apple.com/in/shop/buy-mac'
+        : cleanName.toLowerCase().includes('ipad')
+        ? 'https://www.apple.com/in/shop/buy-ipad'
+        : 'https://www.apple.com/in/shop/buy-iphone';
       return {
         key: 'brand',
         displayName: 'Apple Store',
-        directUrl: 'https://www.apple.com/in/shop/buy-iphone',
+        directUrl: appleUrl,
       };
     }
     if (brand.includes('oneplus')) {
@@ -185,6 +199,62 @@ export const matchAllowedStore = (
         key: 'brand',
         displayName: 'Samsung Shop',
         directUrl: `https://www.samsung.com/in/search/?searchvalue=${q}`,
+      };
+    }
+    if (brand.includes('hp')) {
+      return {
+        key: 'brand',
+        displayName: 'HP Store',
+        directUrl: `https://www.hp.com/in-en/shop/catalogsearch/result/?q=${q}`,
+      };
+    }
+    if (brand.includes('dell')) {
+      return {
+        key: 'brand',
+        displayName: 'Dell Store',
+        directUrl: `https://www.dell.com/en-in/search/${q}`,
+      };
+    }
+    if (brand.includes('lenovo')) {
+      return {
+        key: 'brand',
+        displayName: 'Lenovo Store',
+        directUrl: `https://www.lenovo.com/in/en/search?fq=&text=${q}`,
+      };
+    }
+    if (brand.includes('asus')) {
+      return {
+        key: 'brand',
+        displayName: 'Asus Store',
+        directUrl: `https://in.store.asus.com/catalogsearch/result/?q=${q}`,
+      };
+    }
+    if (brand.includes('acer')) {
+      return {
+        key: 'brand',
+        displayName: 'Acer Store',
+        directUrl: `https://store.acer.com/en-in/catalogsearch/result/?q=${q}`,
+      };
+    }
+    if (brand.includes('msi')) {
+      return {
+        key: 'brand',
+        displayName: 'MSI Store',
+        directUrl: `https://in.msi.com/search/${q}`,
+      };
+    }
+    if (brand.includes('sony')) {
+      return {
+        key: 'brand',
+        displayName: 'Sony Center',
+        directUrl: `https://shopatsc.com/search?q=${q}`,
+      };
+    }
+    if (brand.includes('lg')) {
+      return {
+        key: 'brand',
+        displayName: 'LG Store',
+        directUrl: `https://www.lg.com/in/search/${q}`,
       };
     }
     if (brand.includes('motorola')) {
@@ -229,6 +299,13 @@ export const matchAllowedStore = (
         directUrl: `https://store.google.com/in/search?q=${q}`,
       };
     }
+
+    // Universal fallback for any other official brand domain
+    return {
+      key: 'brand',
+      displayName: `${brandName.charAt(0).toUpperCase() + brandName.slice(1)} Store`,
+      directUrl: `https://www.google.com/search?q=${q}+${encodeURIComponent(brandName)}+official+store`,
+    };
   }
 
   // Strictly NOT allowed: skip all other websites

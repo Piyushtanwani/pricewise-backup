@@ -27,11 +27,19 @@ const sortOptions = [
   "Best Deal",
 ]
 
-const KNOWN_BRANDS = ["apple", "iphone", "samsung", "oneplus", "vivo", "realme", "motorola", "oppo"]
+const KNOWN_BRANDS = [
+  "apple", "iphone", "ipad", "macbook",
+  "samsung", "galaxy",
+  "oneplus", "vivo", "realme", "motorola", "oppo",
+  "hp", "dell", "lenovo", "asus", "acer", "msi",
+  "sony", "bravia", "lg", "tcl", "vu", "hisense", "xiaomi", "redmi", "honor",
+]
 
 interface SearchSidebarProps {
+  categoryFilters: string[]
   brandFilters: string[]
   storeFilters: string[]
+  selectedCategories: string[]
   selectedBrands: string[]
   selectedStores: string[]
   priceRange: [number, number]
@@ -39,6 +47,7 @@ interface SearchSidebarProps {
   minRating: number | undefined
   meta: CatalogMeta | null
   query: string
+  onToggleCategory: (c: string) => void
   onToggleBrand: (b: string) => void
   onToggleStore: (s: string) => void
   onPriceChange: (val: number) => void
@@ -47,8 +56,10 @@ interface SearchSidebarProps {
 }
 
 function SearchSidebar({
+  categoryFilters,
   brandFilters,
   storeFilters,
+  selectedCategories,
   selectedBrands,
   selectedStores,
   priceRange,
@@ -56,6 +67,7 @@ function SearchSidebar({
   minRating,
   meta,
   query,
+  onToggleCategory,
   onToggleBrand,
   onToggleStore,
   onPriceChange,
@@ -64,6 +76,7 @@ function SearchSidebar({
 }: SearchSidebarProps) {
   const hasActiveFilters =
     Boolean(query) ||
+    selectedCategories.length > 0 ||
     selectedBrands.length > 0 ||
     selectedStores.length > 0 ||
     minRating !== undefined ||
@@ -71,6 +84,25 @@ function SearchSidebar({
 
   return (
     <aside className="space-y-5">
+      {categoryFilters.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">Category</h3>
+          <div className="space-y-1.5">
+            {categoryFilters.map((c) => (
+              <label key={c} className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.includes(c)}
+                  onChange={() => onToggleCategory(c)}
+                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                />
+                <span className="text-sm text-slate-600 group-hover:text-slate-900">{c}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="text-sm font-semibold text-slate-800 mb-3">Brand</h3>
         <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
@@ -163,6 +195,7 @@ export default function Search() {
   const navigate = useNavigate()
 
   const query = params.get("q") || params.get("search") || ""
+  const categoryParam = params.get("category")
   const brandParam = params.get("brand")
   const storeParam = params.get("store")
   const sortParam = params.get("sort") || "Relevance"
@@ -176,6 +209,9 @@ export default function Search() {
   const [error, setError] = useState<string | null>(null)
 
   const [sort, setSort] = useState(sortParam)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    categoryParam ? categoryParam.split(",").filter(Boolean) : []
+  )
   const [selectedStores, setSelectedStores] = useState<string[]>(
     storeParam ? storeParam.split(",").filter(Boolean) : []
   )
@@ -221,6 +257,7 @@ export default function Search() {
     try {
       const res = await api.getProducts({
         q: query || undefined,
+        category: selectedCategories.length > 0 ? selectedCategories : undefined,
         brand: selectedBrands.length > 0 ? selectedBrands : undefined,
         store: selectedStores.length > 0 ? selectedStores : undefined,
         minPrice: priceAdjusted ? priceRange[0] : undefined,
@@ -241,7 +278,7 @@ export default function Search() {
     } finally {
       setLoading(false)
     }
-  }, [query, selectedBrands, selectedStores, priceAdjusted, priceRange, minRating, sort, currentPage, pageSize])
+  }, [query, selectedCategories, selectedBrands, selectedStores, priceAdjusted, priceRange, minRating, sort, currentPage, pageSize])
 
   // Debounced search trigger to avoid excessive API calls while adjusting range
   useEffect(() => {
@@ -259,15 +296,24 @@ export default function Search() {
   }, [executeSearch])
 
   // Update URL parameters when main filters change
-  const updateUrlParams = (newQuery?: string, newBrands?: string[], newStores?: string[], newSort?: string, newPage?: number) => {
+  const updateUrlParams = (
+    newQuery?: string,
+    newBrands?: string[],
+    newStores?: string[],
+    newSort?: string,
+    newPage?: number,
+    newCategories?: string[],
+  ) => {
     const nextParams = new URLSearchParams()
     const qVal = newQuery !== undefined ? newQuery : query
+    const cVal = newCategories !== undefined ? newCategories : selectedCategories
     const bVal = newBrands !== undefined ? newBrands : selectedBrands
     const sVal = newStores !== undefined ? newStores : selectedStores
     const sortVal = newSort !== undefined ? newSort : sort
     const pVal = newPage !== undefined ? newPage : currentPage
 
     if (qVal) nextParams.set("q", qVal)
+    if (cVal.length > 0) nextParams.set("category", cVal.join(","))
     if (bVal.length > 0) nextParams.set("brand", bVal.join(","))
     if (sVal.length > 0) nextParams.set("store", sVal.join(","))
     if (sortVal && sortVal !== "Relevance") nextParams.set("sort", sortVal)
@@ -287,6 +333,16 @@ export default function Search() {
     setSearchInput("")
     setCurrentPage(1)
     updateUrlParams("", undefined, undefined, undefined, 1)
+  }
+
+  const toggleCategory = (cat: string) => {
+    const next = selectedCategories.includes(cat)
+      ? selectedCategories.filter((x) => x !== cat)
+      : [...selectedCategories, cat]
+
+    setSelectedCategories(next)
+    setCurrentPage(1)
+    updateUrlParams(undefined, undefined, undefined, undefined, 1, next)
   }
 
   const toggleBrand = (b: string) => {
@@ -346,6 +402,7 @@ export default function Search() {
   }
 
   const clearAllFilters = () => {
+    setSelectedCategories([])
     setSelectedBrands([])
     setSelectedStores([])
     setMinRating(undefined)
@@ -368,12 +425,21 @@ export default function Search() {
     )
   }
 
+  const categoryFilters =
+    meta?.categories?.map((c) => c.name) || [
+      "Mobiles",
+      "Laptops",
+      "Tablets",
+      "TVs",
+    ]
   const brandFilters =
     meta?.brands?.map((b) => b.name) || [
       "Apple",
       "Samsung",
       "OnePlus",
-      "Xiaomi",
+      "HP",
+      "Dell",
+      "Sony",
     ]
   const storeFilters =
     meta?.stores?.map((s) => s.name) || [
@@ -385,6 +451,7 @@ export default function Search() {
 
   const activeFiltersCount =
     (query ? 1 : 0) +
+    selectedCategories.length +
     selectedBrands.length +
     selectedStores.length +
     (minRating !== undefined ? 1 : 0) +
@@ -403,7 +470,7 @@ export default function Search() {
               <input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search smartphone name, brand (Apple, Samsung, OnePlus, Xiaomi)..."
+                placeholder="Search mobiles, laptops, smart TVs, tablets, brands..."
                 className="flex-1 text-sm text-slate-700 placeholder:text-slate-400 outline-none bg-transparent"
               />
               {searchInput && (
@@ -425,6 +492,35 @@ export default function Search() {
           </form>
         </div>
 
+        {/* Quick Category Navigation Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none">
+          {["All", ...(meta?.categories?.map((c) => c.name) || ["Mobiles", "Laptops", "Tablets", "TVs"])].map((cat) => {
+            const isAll = cat === "All"
+            const isSelected = isAll ? selectedCategories.length === 0 : selectedCategories.includes(cat)
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => {
+                  if (isAll) {
+                    setSelectedCategories([])
+                    updateUrlParams(undefined, undefined, undefined, undefined, 1, [])
+                  } else {
+                    toggleCategory(cat)
+                  }
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shadow-2xs ${
+                  isSelected
+                    ? "bg-indigo-600 text-white shadow-indigo-500/25 shadow-sm"
+                    : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+                }`}
+              >
+                {cat}
+              </button>
+            )
+          })}
+        </div>
+
         {/* Results Header */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
@@ -432,13 +528,15 @@ export default function Search() {
               {query
                 ? `Search: "${query}"`
                 : selectedBrands.length > 0
-                ? `${selectedBrands.join(", ")} Mobiles`
+                ? `${selectedBrands.join(", ")} ${selectedCategories.join(" & ") || "Products"}`
+                : selectedCategories.length > 0
+                ? `All ${selectedCategories.join(" & ")}`
                 : selectedStores.length > 0
                 ? `Available at ${selectedStores.join(", ")}`
-                : "All Smartphones"}
+                : "All Electronics"}
             </h1>
             <p className="text-sm text-slate-500">
-              Showing {products.length} of {totalProducts} smartphones in database
+              Showing {products.length} of {totalProducts} verified products in catalog
             </p>
           </div>
         </div>
@@ -448,8 +546,10 @@ export default function Search() {
           <div className="hidden lg:block w-56 shrink-0">
             <div className="bg-white rounded-xl border border-slate-200 p-5 sticky top-20 shadow-sm">
               <SearchSidebar
+                categoryFilters={categoryFilters}
                 brandFilters={brandFilters}
                 storeFilters={storeFilters}
+                selectedCategories={selectedCategories}
                 selectedBrands={selectedBrands}
                 selectedStores={selectedStores}
                 priceRange={priceRange}
@@ -457,6 +557,7 @@ export default function Search() {
                 minRating={minRating}
                 meta={meta}
                 query={query}
+                onToggleCategory={toggleCategory}
                 onToggleBrand={toggleBrand}
                 onToggleStore={toggleStore}
                 onPriceChange={handlePriceChange}
@@ -510,8 +611,10 @@ export default function Search() {
                   </button>
                 </div>
                 <SearchSidebar
+                  categoryFilters={categoryFilters}
                   brandFilters={brandFilters}
                   storeFilters={storeFilters}
+                  selectedCategories={selectedCategories}
                   selectedBrands={selectedBrands}
                   selectedStores={selectedStores}
                   priceRange={priceRange}
@@ -519,6 +622,7 @@ export default function Search() {
                   minRating={minRating}
                   meta={meta}
                   query={query}
+                  onToggleCategory={toggleCategory}
                   onToggleBrand={toggleBrand}
                   onToggleStore={toggleStore}
                   onPriceChange={handlePriceChange}
@@ -546,6 +650,21 @@ export default function Search() {
                     </button>
                   </span>
                 )}
+
+                {selectedCategories.map((c) => (
+                  <span
+                    key={c}
+                    className="inline-flex items-center gap-1.5 text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-1 rounded-full font-medium"
+                  >
+                    Category: {c}
+                    <button
+                      onClick={() => toggleCategory(c)}
+                      className="cursor-pointer hover:text-purple-900"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
 
                 {selectedBrands.map((b) => (
                   <span
