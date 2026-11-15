@@ -7,7 +7,12 @@ import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } 
 import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard, StorePriceRow } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
 import { env } from '../config/env';
-import { resolveDirectStoreUrl, validateCanonicalProductUrl } from '../services/storeRedirectService';
+import {
+  resolveDirectStoreUrl,
+  validateCanonicalProductUrl,
+  resolveAmazonDirectUrl,
+  resolveCromaDirectUrl,
+} from '../services/storeRedirectService';
 import { refreshProductAggregates } from '../services/productService';
 import { parsePrice, isPriceWithinSanityBounds } from '../utils/priceNormalizer';
 import { livePriceCache } from '../utils/cache';
@@ -296,13 +301,44 @@ async function persistLiveRatesToPostgres(
         }
 
         const priceChanged = Math.abs(existing.currentPrice - item.price) > 1;
+
+        // URL Protection: Never overwrite a verified direct product URL with a search or Google redirect URL
+        const isExistingDirect = Boolean(
+          existing.productUrl &&
+            (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}/i.test(existing.productUrl) ||
+              /\/p\/itm[a-zA-Z0-9]+/i.test(existing.productUrl) ||
+              /croma\.com\/[^/]+\/p\/\d+/i.test(existing.productUrl)),
+        );
+
+        const isIncomingSearchOrGoogle = Boolean(
+          item.url &&
+            (/google\.[a-z.]+\/search/i.test(item.url) ||
+              /amazon\.[a-z.]+\/s(?:\?|\/)/i.test(item.url) ||
+              /flipkart\.com\/search(?:\?|\/)/i.test(item.url) ||
+              /croma\.com\/searchB(?:\?|\/)/i.test(item.url)),
+        );
+
+        const isIncomingDirect = Boolean(
+          item.url &&
+            (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}/i.test(item.url) ||
+              /\/p\/itm[a-zA-Z0-9]+/i.test(item.url) ||
+              /croma\.com\/[^/]+\/p\/\d+/i.test(item.url)),
+        );
+
+        const shouldUpdateUrl = Boolean(
+          item.url &&
+            item.url.trim().length > 0 &&
+            !isIncomingSearchOrGoogle &&
+            (!isExistingDirect || isIncomingDirect),
+        );
+
         await prisma.productStore.update({
           where: { id: existing.id },
           data: {
             currentPrice: item.price,
             ...(item.mrp ? { mrp: item.mrp } : {}),
             stockStatus: item.stockStatus,
-            ...(item.url ? { productUrl: item.url } : {}),
+            ...(shouldUpdateUrl ? { productUrl: item.url } : {}),
             lastCheckedAt: now,
           },
         });
@@ -318,6 +354,9 @@ async function persistLiveRatesToPostgres(
         }
       } else if (item.url && item.url.trim().length > 0) {
         // Discovered a new verified store listing for this product
+        if (/google\.[a-z.]+\/search/i.test(item.url)) {
+          continue; // Skip generic google search URLs
+        }
         if (!isPriceWithinSanityBounds(item.price, productBaselinePrice, 3000, productCategory)) {
           console.warn(
             `[SanityCheck] Skipped DB store creation for product ${productId} on new store ${item.store}: live price ₹${item.price} is outside sanity bounds of product baseline ₹${productBaselinePrice}`,
@@ -412,6 +451,26 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
         }
       }
 
+      // Preserve verified direct product URLs from DB rather than downgrading to SerpApi search/redirect links!
+      const isDbUrlDirect = Boolean(
+        matchedDbStore?.url &&
+          (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}/i.test(matchedDbStore.url) ||
+            /\/p\/itm[a-zA-Z0-9]+/i.test(matchedDbStore.url) ||
+            /croma\.com\/[^/]+\/p\/\d+/i.test(matchedDbStore.url)),
+      );
+      const isSerpUrlDirect = Boolean(
+        s.url &&
+          (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}/i.test(s.url) ||
+            /\/p\/itm[a-zA-Z0-9]+/i.test(s.url) ||
+            /croma\.com\/[^/]+\/p\/\d+/i.test(s.url)),
+      );
+
+      const finalStoreUrl = isSerpUrlDirect
+        ? s.url
+        : isDbUrlDirect
+        ? matchedDbStore!.url
+        : s.url;
+
       liveStoreRows.push({
         storeId: s.storeId,
         store: s.store,
@@ -424,7 +483,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
         availability: s.availability || 'In Stock',
         stockStatus,
         diff: s.diff,
-        url: s.url,
+        url: finalStoreUrl,
         lastCheckedAt: s.lastCheckedAt ?? new Date().toISOString(),
       });
     }
@@ -780,10 +839,33 @@ export const redirectToStore = async (req: Request, res: Response): Promise<void
   // If redirecting to Flipkart, ensure the direct link matches the EXACT RAM & storage variant
   if (storeName.toLowerCase().includes('flipkart') && (!directUrl.includes('/p/itm') || directUrl.includes('flipkart.com/search'))) {
     try {
-
       const fkScraped = await scrapeFlipkart('https://www.flipkart.com/search', product.bestPrice, product.name, targetSpecs);
       if (fkScraped?.directUrl && fkScraped.directUrl.includes('/p/itm')) {
         directUrl = fkScraped.directUrl;
+      }
+    } catch {
+      // Keep directUrl
+    }
+  }
+
+  // If redirecting to Amazon, ensure direct link is /dp/ and not /s?k= search
+  if (storeName.toLowerCase().includes('amazon') && (!directUrl.includes('/dp/') || directUrl.includes('/s?') || directUrl.includes('/s/'))) {
+    try {
+      const azDirect = await resolveAmazonDirectUrl(product.name, targetSpecs);
+      if (azDirect) {
+        directUrl = azDirect;
+      }
+    } catch {
+      // Keep directUrl
+    }
+  }
+
+  // If redirecting to Croma, ensure direct link is /p/ and not /searchB search
+  if (storeName.toLowerCase().includes('croma') && (!directUrl.includes('/p/') || directUrl.includes('/searchb') || directUrl.includes('/search?'))) {
+    try {
+      const crDirect = await resolveCromaDirectUrl(product.name, targetSpecs);
+      if (crDirect) {
+        directUrl = crDirect;
       }
     } catch {
       // Keep directUrl

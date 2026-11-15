@@ -478,6 +478,9 @@ export default function ProductDetail() {
   }
 
   const getDirectBuyUrl = (storeRow?: StorePriceRow) => {
+    const apiBase = apiClient.defaults.baseURL || '/api'
+    const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
+
     if (storeRow?.url) {
       let finalUrl = storeRow.url
       // Auto-correct path-based Vijay Sales search URLs to prevent 404
@@ -485,28 +488,24 @@ export default function ProductDetail() {
         const rawQ = finalUrl.replace(/^https?:\/\/(?:www\.)?vijaysales\.com\/search\//i, "")
         finalUrl = `https://www.vijaysales.com/search?q=${rawQ}`
       }
-      // Auto-correct Croma discontinued URLs to prevent landing on search?q=null
-      if (finalUrl.includes("croma.com")) {
-        const cleanQ = encodeURIComponent((product.name || "smartphone").replace(/\(.*?\)/g, "").trim())
-        if (
-                    finalUrl.includes("null") ||
-          finalUrl.includes("{search_term_string}")
-        ) {
-          return `https://www.croma.com/searchB?q=${cleanQ}`
-        }
-      }
-      if (isDirectProductUrl(finalUrl)) {
+
+      // If it's a verified direct product page (not a search or Google link), open directly
+      if (
+        isDirectProductUrl(finalUrl) &&
+        !finalUrl.includes("google.") &&
+        !finalUrl.includes("/search") &&
+        !finalUrl.includes("/s?") &&
+        !finalUrl.includes("/s/") &&
+        !finalUrl.includes("smartprix.com") &&
+        !finalUrl.includes("linkredirect.in")
+      ) {
         return finalUrl
       }
-      const apiBase = apiClient.defaults.baseURL || '/api'
-      if (finalUrl.includes("smartprix.com") || finalUrl.includes("linkredirect.in")) {
-        const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
-        return `${apiBase}/products/${product.id}/buy${storeParam}`
-      }
-      return finalUrl
+
+      // For tracking links, Google search links, or store search queries, route through backend dynamic resolver
+      return `${apiBase}/products/${product.id}/buy${storeParam}`
     }
-    const apiBase = apiClient.defaults.baseURL || '/api'
-    const storeParam = storeRow?.store ? `?store=${encodeURIComponent(storeRow.store)}` : ""
+
     return `${apiBase}/products/${product.id}/buy${storeParam}`
   }
 
@@ -660,13 +659,23 @@ export default function ProductDetail() {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-baseline gap-3 mb-1">
-                    <span className="text-4xl font-bold text-slate-900">{fmt(currentBestPrice)}</span>
-                    <span className="text-lg text-slate-400 line-through">{fmt(currentMrp)}</span>
+                    {currentBestPrice > 0 ? (
+                      <>
+                        <span className="text-4xl font-bold text-slate-900">{fmt(currentBestPrice)}</span>
+                        {currentMrp > currentBestPrice && (
+                          <span className="text-lg text-slate-400 line-through">{fmt(currentMrp)}</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-2xl font-bold text-slate-700">Check Stores for Pricing</span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="success">Save {fmt(savings)}</Badge>
-                    <Badge variant="success">{discountPct}% OFF</Badge>
-                  </div>
+                  {currentBestPrice > 0 && savings > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="success">Save {fmt(savings)}</Badge>
+                      <Badge variant="success">{discountPct}% OFF</Badge>
+                    </div>
+                  ) : null}
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-slate-500 mb-1">Lowest price at</p>

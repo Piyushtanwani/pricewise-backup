@@ -152,6 +152,35 @@ test('checkProductUrlModelMismatch accurately detects conflicting model series a
     'Apple iPhone 15 128 GB',
   );
   assert.equal(proCheck.isMismatch, true);
+
+  // Brand mismatch: Dell product vs HP URL
+  const brandCheck = checkProductUrlModelMismatch(
+    'https://www.flipkart.com/hp-pavilion-plus-laptop/p/itm12345',
+    'Dell XPS 13 Plus Laptop (16GB/ 1TB SSD)',
+  );
+  assert.equal(brandCheck.isMismatch, true);
+  assert.ok(brandCheck.reason?.includes('Brand mismatch'));
+
+  // Laptop validation: Windows 11 Pro, Intel Core Ultra, and 14/16 inch screen must NOT trigger false mismatch
+  const laptopValidCheck = checkProductUrlModelMismatch(
+    'https://www.flipkart.com/samsung-galaxy-book4-intel-core-ultra-7-16-gb-512-gb-ssd-windows-11-pro-np750xgj-laptop/p/itm1df5212efb9fc',
+    'Samsung Galaxy Book4 Laptop (16GB/ 512GB SSD)',
+  );
+  assert.equal(laptopValidCheck.isMismatch, false);
+
+  // Tablet validation: Bundled stylus and display sizes (11-inch / 12.4-inch) must NOT trigger false mismatch
+  const tabletStylusCheck = checkProductUrlModelMismatch(
+    'https://www.croma.com/samsung-galaxy-tab-s10-plus-wi-fi-android-tablet-with-samsung-stylus-s-12-4-inch-12gb-ram-256gb-rom-moonstone-gray-/p/311504',
+    'Samsung Galaxy Tab S10 Plus (12GB RAM + 256GB)',
+  );
+  assert.equal(tabletStylusCheck.isMismatch, false);
+
+  // TV validation: 4K Ultra HD LCD Google TV must NOT be rejected as accessory or variant conflict
+  const tvValidCheck = checkProductUrlModelMismatch(
+    'https://www.croma.com/sony-bravia-2-109-cm-43-inch-4k-ultra-hd-lcd-google-tv-with-live-colour-technology/p/308025',
+    'Sony Bravia 2 S20B 43 inch Ultra HD 4K Smart LED TV',
+  );
+  assert.equal(tvValidCheck.isMismatch, false);
 });
 
 test('getFallbackStoreSearch generates correct store search URLs', () => {
