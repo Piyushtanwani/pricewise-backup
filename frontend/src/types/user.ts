@@ -5,6 +5,8 @@ export interface User {
   email: string;
   name: string;
   phone: string | null;
+  role?: 'USER' | 'ADMIN';
+  isBanned?: boolean;
   createdAt: string;
 }
 

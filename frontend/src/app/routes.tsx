@@ -14,6 +14,7 @@ import Alerts from "../pages/Alerts"
 import Profile from "../pages/Profile"
 import Settings from "../pages/Settings"
 import Login from "../pages/Login"
+import Admin from "../pages/Admin"
 
 import FloatingAssistantButton from "../components/ui/FloatingAssistantButton"
 import Footer from "../components/layout/Footer"
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
       { path: "alerts", Component: Alerts },
       { path: "profile", Component: Profile },
       { path: "settings", Component: Settings },
+      { path: "admin", Component: Admin },
     ],
   },
   {

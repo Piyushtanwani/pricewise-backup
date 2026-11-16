@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   wishlistIds: Set<string>;
   watchlistIds: Set<string>;
   isWishlisted: (productId: string) => boolean;
@@ -227,6 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         loading,
         isAuthenticated: Boolean(user),
+        isAdmin: user?.role === 'ADMIN',
         wishlistIds,
         watchlistIds,
         isWishlisted,

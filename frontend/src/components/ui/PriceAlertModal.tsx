@@ -265,6 +265,7 @@ export default function PriceAlertModal({
               value={notifyName}
               onChange={(e) => setNotifyName(e.target.value)}
               placeholder="e.g. Piyush"
+              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-sm text-slate-800"
             />
           </div>
 

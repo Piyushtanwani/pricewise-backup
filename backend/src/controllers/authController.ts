@@ -13,11 +13,21 @@ import {
 } from '../services/otpService';
 import { sendRegistrationOtpEmail } from '../services/emailService';
 
-const publicUser = (user: { id: string; email: string; name: string; phone: string | null; createdAt: Date }) => ({
+const publicUser = (user: {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  role?: string;
+  isBanned?: boolean;
+  createdAt: Date;
+}) => ({
   id: user.id,
   email: user.email,
   name: user.name,
   phone: user.phone,
+  role: (user.role as 'USER' | 'ADMIN') || 'USER',
+  isBanned: Boolean(user.isBanned),
   createdAt: user.createdAt.toISOString(),
 });
 
@@ -109,6 +119,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   // Also reject guest placeholder accounts that have no password set yet.
   if (!user || user.password === 'GUEST_NO_PASSWORD' || !(await bcrypt.compare(password, user.password))) {
     throw new HttpError(401, 'Invalid email or password');
+  }
+
+  if (user.isBanned) {
+    throw new HttpError(403, 'Your account has been suspended. Please contact support.');
   }
 
   res.json({ token: signToken(user), user: publicUser(user) });

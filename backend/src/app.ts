@@ -6,6 +6,7 @@ import productRoutes from './routes/productRoutes';
 import userRoutes from './routes/userRoutes';
 import intelligenceRoutes from './routes/intelligenceRoutes';
 import { adminRouter, integrationRouter } from './routes/integrationRoutes';
+import webAdminRoutes from './routes/adminRoutes';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import { securityHeaders } from './middlewares/security';
 
@@ -54,7 +55,8 @@ export const createApp = () => {
   app.use('/api/user', userRoutes);
   app.use('/api/intelligence', intelligenceRoutes);
   app.use('/api/integrations', integrationRouter);
-  app.use('/api/admin', adminRouter);
+  app.use('/api/admin', webAdminRoutes);
+  app.use('/api/operator', adminRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router"
 import {
   Search, Heart, Bell, User, ChevronDown, GitCompare, X,
   Home, Compass, BarChart2, Sparkles, Settings, LogOut, ListChecks,
-  AlertCircle, Check, Loader2, Bot
+  AlertCircle, Check, Loader2, Bot, ShieldCheck
 } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
 import { useCompareAction } from "../../hooks/useCompareAction"
@@ -28,7 +28,7 @@ export default function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifLoading, setNotifLoading] = useState(false)
 
-  const { user, isAuthenticated, logout } = useAuth()
+  const { user, isAuthenticated, isAdmin, logout } = useAuth()
   const { handleCompare, compareCount } = useCompareAction()
   const navigate = useNavigate()
   const location = useLocation()
@@ -180,6 +180,19 @@ export default function Navbar() {
                 </Link>
               )
             })}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                  isActive("/admin")
+                    ? "bg-amber-500 text-white shadow-sm"
+                    : "text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200"
+                }`}
+              >
+                <ShieldCheck size={14} className={isActive("/admin") ? "text-white" : "text-amber-600"} />
+                <span>Admin</span>
+              </Link>
+            )}
           </div>
 
           {/* Search Bar */}
@@ -351,6 +364,16 @@ export default function Navbar() {
                     </div>
 
                     <div className="py-1">
+                      {isAdmin && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-sm text-amber-800 font-bold bg-amber-50 hover:bg-amber-100 transition-colors border-b border-amber-100"
+                        >
+                          <ShieldCheck size={15} className="text-amber-600" />
+                          Admin Console
+                        </Link>
+                      )}
                       <Link
                         to="/ai"
                         onClick={() => setProfileOpen(false)}

@@ -373,4 +373,70 @@ export const api = {
     });
     return res.data;
   },
+
+  // ---------------------------------------------------------------- Admin
+  async getAdminReports(): Promise<any> {
+    const res = await apiClient.get('/admin/reports');
+    return res.data;
+  },
+
+  async getAdminProducts(params?: { page?: number; limit?: number; q?: string; brand?: string; stock?: string }): Promise<any> {
+    const res = await apiClient.get('/admin/products', { params });
+    return res.data;
+  },
+
+  async getAdminProduct(id: string): Promise<any> {
+    const res = await apiClient.get(`/admin/products/${encodeURIComponent(id)}`);
+    return res.data;
+  },
+
+  async createAdminProduct(data: any): Promise<any> {
+    const res = await apiClient.post('/admin/products', data);
+    return res.data;
+  },
+
+  async updateAdminProduct(id: string, data: any): Promise<any> {
+    const res = await apiClient.patch(`/admin/products/${encodeURIComponent(id)}`, data);
+    return res.data;
+  },
+
+  async deleteAdminProduct(id: string): Promise<any> {
+    const res = await apiClient.delete(`/admin/products/${encodeURIComponent(id)}`);
+    return res.data;
+  },
+
+  async getAdminUsers(params?: { page?: number; limit?: number; q?: string; role?: string }): Promise<any> {
+    const res = await apiClient.get('/admin/users', { params });
+    return res.data;
+  },
+
+  async updateAdminUserRole(id: string, role: 'USER' | 'ADMIN'): Promise<any> {
+    const res = await apiClient.patch(`/admin/users/${encodeURIComponent(id)}/role`, { role });
+    return res.data;
+  },
+
+  async toggleAdminUserBan(id: string): Promise<any> {
+    const res = await apiClient.patch(`/admin/users/${encodeURIComponent(id)}/ban`);
+    return res.data;
+  },
+
+  async deleteAdminUser(id: string): Promise<any> {
+    const res = await apiClient.delete(`/admin/users/${encodeURIComponent(id)}`);
+    return res.data;
+  },
+
+  async getAdminNotificationQueue(params?: { page?: number; limit?: number; status?: string }): Promise<any> {
+    const res = await apiClient.get('/admin/notifications/queue', { params });
+    return res.data;
+  },
+
+  async retryAdminNotificationJob(id: string): Promise<any> {
+    const res = await apiClient.post(`/admin/notifications/queue/${encodeURIComponent(id)}/retry`);
+    return res.data;
+  },
+
+  async triggerAdminMonitorCycle(): Promise<any> {
+    const res = await apiClient.post('/admin/monitor/trigger');
+    return res.data;
+  },
 };

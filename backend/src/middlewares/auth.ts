@@ -3,10 +3,12 @@ import jwt from 'jsonwebtoken';
 import { timingSafeEqual } from 'crypto';
 import { env } from '../config/env';
 import { HttpError } from '../utils/http';
+import prisma from '../utils/prisma';
 
 export interface AuthUser {
   id: string;
   email: string;
+  role?: 'USER' | 'ADMIN';
 }
 
 declare global {
@@ -29,11 +31,11 @@ const verify = (token: string): AuthUser => {
   if (typeof decoded === 'string' || typeof decoded.id !== 'string' || typeof decoded.email !== 'string') {
     throw new Error('Malformed token payload');
   }
-  return { id: decoded.id, email: decoded.email };
+  return { id: decoded.id, email: decoded.email, role: (decoded as any).role };
 };
 
 export const signToken = (user: AuthUser): string =>
-  jwt.sign({ id: user.id, email: user.email }, env.jwtSecret, {
+  jwt.sign({ id: user.id, email: user.email, role: user.role || 'USER' }, env.jwtSecret, {
     expiresIn: env.jwtExpiresIn as jwt.SignOptions['expiresIn'],
   });
 
@@ -82,4 +84,29 @@ export const requireAdminKey = (req: Request, res: Response, next: NextFunction)
     return;
   }
   next();
+};
+
+export const requireAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({ message: 'Unauthorized: Authentication required' });
+    return;
+  }
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { role: true, email: true, isBanned: true },
+    });
+    if (!user || user.isBanned) {
+      res.status(403).json({ message: 'Forbidden: Account suspended' });
+      return;
+    }
+    const isAdmin = (user.role as string) === 'ADMIN';
+    if (!isAdmin) {
+      res.status(403).json({ message: 'Forbidden: Admin access required' });
+      return;
+    }
+    next();
+  } catch (err) {
+    res.status(500).json({ message: 'Authorization error' });
+  }
 };

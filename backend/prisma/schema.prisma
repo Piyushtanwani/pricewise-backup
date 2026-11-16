@@ -26,12 +26,19 @@ enum NotificationType {
   DIGEST
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id                String         @id @default(uuid())
   email             String         @unique
   password          String
   name              String
   phone             String?
+  role              Role           @default(USER)
+  isBanned          Boolean        @default(false)
   // Shape mirrors the Settings page toggles, e.g. { priceDropEmail: true, targetInApp: true }
   notificationPrefs Json?
   createdAt         DateTime       @default(now())
