@@ -138,14 +138,13 @@ export default function Admin() {
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isAdmin)) {
-      navigate("/")
       return
     }
     if (activeTab === "reports") loadReports()
     if (activeTab === "products") loadProducts()
     if (activeTab === "users") loadUsers()
     if (activeTab === "queue") loadQueue()
-  }, [authLoading, isAuthenticated, isAdmin, activeTab, loadReports, loadProducts, loadUsers, loadQueue, navigate])
+  }, [authLoading, isAuthenticated, isAdmin, activeTab, loadReports, loadProducts, loadUsers, loadQueue])
 
   const handleTriggerMonitor = async () => {
     try {
@@ -349,6 +348,40 @@ export default function Admin() {
       <div className="min-h-screen bg-[#f4f6fb] pt-24 text-center">
         <Loader2 size={36} className="animate-spin text-indigo-600 mx-auto mb-3" />
         <p className="text-sm text-slate-500">Verifying administrator credentials...</p>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#f4f6fb] pt-28 text-center px-4">
+        <div className="max-w-md mx-auto bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Admin Console Access Restricted</h2>
+          <p className="text-sm text-slate-500 mb-6">
+            {!isAuthenticated
+              ? "You must be signed in with an administrator account to view this page."
+              : "Your account does not have administrator privileges."}
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            {!isAuthenticated ? (
+              <button
+                onClick={() => navigate("/login")}
+                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm cursor-pointer shadow-sm"
+              >
+                Sign In
+              </button>
+            ) : null}
+            <button
+              onClick={() => navigate("/")}
+              className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm cursor-pointer"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
