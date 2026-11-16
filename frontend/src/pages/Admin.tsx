@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react"
 import {
-  ShieldCheck, BarChart3, Package, Users, Bell, RefreshCw, Plus,
+  ShieldCheck, ShieldAlert, BarChart3, Package, Users, Bell, RefreshCw, Plus,
   Search, Trash2, Edit2, CheckCircle2, AlertTriangle, X,
-  TrendingDown, ExternalLink, UserCheck, UserX, Loader2, Play
+  TrendingDown, ExternalLink, UserCheck, UserX, Loader2, Play,
+  ChevronLeft, ChevronRight
 } from "lucide-react"
 import { useNavigate } from "react-router"
 import { useAuth } from "../context/AuthContext"
@@ -10,6 +11,185 @@ import { api } from "../services/api"
 import Badge from "../components/ui/Badge"
 
 const fmt = (n?: number | null) => (n !== undefined && n !== null ? "₹" + Math.round(n).toLocaleString("en-IN") : "—")
+
+// -----------------------------------------------------------------------------
+// Access Denied Screen with 5-Second Auto-Redirect
+// -----------------------------------------------------------------------------
+function AdminAccessDenied() {
+  const navigate = useNavigate()
+  const [secondsLeft, setSecondsLeft] = useState(5)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          navigate("/")
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [navigate])
+
+  return (
+    <div className="min-h-screen bg-[#f4f6fb] flex items-center justify-center px-4 py-16">
+      <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-rose-200 shadow-xl text-center relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-rose-500 via-amber-500 to-rose-600" />
+
+        <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <ShieldAlert size={36} />
+        </div>
+
+        <span className="inline-block px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-rose-100 text-rose-800 mb-2">
+          Access Restricted
+        </span>
+
+        <h1 className="text-2xl font-black text-slate-900 mb-2">
+          Admin Not Allowed
+        </h1>
+
+        <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+          You do not have administrative permissions to view or manage the PriceWise administration console.
+        </p>
+
+        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-6 flex items-center justify-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-rose-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+            {secondsLeft}s
+          </div>
+          <p className="text-xs text-slate-600 font-medium text-left">
+            Redirecting to <span className="font-bold text-slate-900">Home page</span> automatically in{" "}
+            <span className="font-bold text-rose-600">{secondsLeft} seconds</span>...
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+          <button
+            onClick={() => navigate("/")}
+            className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+          >
+            Go to Home Now
+          </button>
+          <button
+            onClick={() => navigate("/login")}
+            className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer"
+          >
+            Switch Account
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// -----------------------------------------------------------------------------
+// Reusable Table Pagination Bar
+// -----------------------------------------------------------------------------
+function AdminPagination({
+  currentPage,
+  totalItems,
+  limit,
+  onPageChange,
+  onLimitChange,
+  itemLabel = "items",
+}: {
+  currentPage: number
+  totalItems: number
+  limit: number
+  onPageChange: (newPage: number) => void
+  onLimitChange?: (newLimit: number) => void
+  itemLabel?: string
+}) {
+  const totalPages = Math.max(1, Math.ceil(totalItems / limit))
+  if (totalItems <= 0) return null
+
+  const from = (currentPage - 1) * limit + 1
+  const to = Math.min(currentPage * limit, totalItems)
+
+  const getPages = () => {
+    const pages: (number | string)[] = []
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages)
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages)
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages)
+      }
+    }
+    return pages
+  }
+
+  return (
+    <div className="px-4 py-3 border-t border-slate-200 bg-slate-50/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+      <div className="flex items-center gap-2">
+        <span>
+          Showing <span className="font-bold text-slate-800">{from}</span>–<span className="font-bold text-slate-800">{to}</span> of{" "}
+          <span className="font-bold text-slate-800">{totalItems}</span> {itemLabel}
+        </span>
+        {onLimitChange && (
+          <div className="flex items-center gap-1 ml-2">
+            <span className="text-[11px] text-slate-400">Per page:</span>
+            <select
+              value={limit}
+              onChange={(e) => onLimitChange(Number(e.target.value))}
+              className="py-0.5 px-1.5 rounded border border-slate-200 bg-white text-xs font-semibold text-slate-700 cursor-pointer"
+            >
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-slate-700 cursor-pointer transition-colors"
+        >
+          <ChevronLeft size={13} /> Prev
+        </button>
+
+        <div className="flex items-center gap-1">
+          {getPages().map((p, idx) =>
+            typeof p === "number" ? (
+              <button
+                key={idx}
+                onClick={() => onPageChange(p)}
+                className={`min-w-7 h-7 px-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                  p === currentPage
+                    ? "bg-indigo-600 text-white shadow-2xs"
+                    : "border border-slate-200 bg-white hover:bg-slate-100 text-slate-700"
+                }`}
+              >
+                {p}
+              </button>
+            ) : (
+              <span key={idx} className="px-1 text-slate-400 font-bold">
+                ...
+              </span>
+            )
+          )}
+        </div>
+
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-slate-700 cursor-pointer transition-colors"
+        >
+          Next <ChevronRight size={13} />
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export default function Admin() {
   const { user, isAuthenticated, isAdmin, loading: authLoading } = useAuth()
@@ -28,6 +208,7 @@ export default function Admin() {
   const [products, setProducts] = useState<any[]>([])
   const [prodTotal, setProdTotal] = useState(0)
   const [prodPage, setProdPage] = useState(1)
+  const [prodLimit, setProdLimit] = useState(15)
   const [prodSearch, setProdSearch] = useState("")
   const [prodStockFilter, setProdStockFilter] = useState("all")
   const [productModalOpen, setProductModalOpen] = useState(false)
@@ -54,12 +235,15 @@ export default function Admin() {
   const [usersList, setUsersList] = useState<any[]>([])
   const [userTotal, setUserTotal] = useState(0)
   const [userPage, setUserPage] = useState(1)
+  const [userLimit, setUserLimit] = useState(15)
   const [userSearch, setUserSearch] = useState("")
   const [userRoleFilter, setUserRoleFilter] = useState("all")
 
   // 4. Queue Data
   const [queueJobs, setQueueJobs] = useState<any[]>([])
   const [queueTotal, setQueueTotal] = useState(0)
+  const [queuePage, setQueuePage] = useState(1)
+  const [queueLimit, setQueueLimit] = useState(15)
   const [queueStatus, setQueueStatus] = useState("all")
 
   const clearMsgs = () => {
@@ -86,7 +270,7 @@ export default function Admin() {
       setLoading(true)
       const res = await api.getAdminProducts({
         page: prodPage,
-        limit: 15,
+        limit: prodLimit,
         q: prodSearch || undefined,
         stock: prodStockFilter !== "all" ? prodStockFilter : undefined,
       })
@@ -97,7 +281,7 @@ export default function Admin() {
     } finally {
       setLoading(false)
     }
-  }, [prodPage, prodSearch, prodStockFilter])
+  }, [prodPage, prodLimit, prodSearch, prodStockFilter])
 
   // Load Users
   const loadUsers = useCallback(async () => {
@@ -105,7 +289,7 @@ export default function Admin() {
       setLoading(true)
       const res = await api.getAdminUsers({
         page: userPage,
-        limit: 15,
+        limit: userLimit,
         q: userSearch || undefined,
         role: userRoleFilter !== "all" ? userRoleFilter : undefined,
       })
@@ -116,15 +300,15 @@ export default function Admin() {
     } finally {
       setLoading(false)
     }
-  }, [userPage, userSearch, userRoleFilter])
+  }, [userPage, userLimit, userSearch, userRoleFilter])
 
   // Load Notification Queue
   const loadQueue = useCallback(async () => {
     try {
       setLoading(true)
       const res = await api.getAdminNotificationQueue({
-        page: 1,
-        limit: 30,
+        page: queuePage,
+        limit: queueLimit,
         status: queueStatus !== "all" ? queueStatus : undefined,
       })
       setQueueJobs(res.jobs || [])
@@ -134,7 +318,7 @@ export default function Admin() {
     } finally {
       setLoading(false)
     }
-  }, [queueStatus])
+  }, [queuePage, queueLimit, queueStatus])
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isAdmin)) {
@@ -353,37 +537,7 @@ export default function Admin() {
   }
 
   if (!isAuthenticated || !isAdmin) {
-    return (
-      <div className="min-h-screen bg-[#f4f6fb] pt-28 text-center px-4">
-        <div className="max-w-md mx-auto bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-4">
-            <ShieldCheck size={32} />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Admin Console Access Restricted</h2>
-          <p className="text-sm text-slate-500 mb-6">
-            {!isAuthenticated
-              ? "You must be signed in with an administrator account to view this page."
-              : "Your account does not have administrator privileges."}
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            {!isAuthenticated ? (
-              <button
-                onClick={() => navigate("/login")}
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm cursor-pointer shadow-sm"
-              >
-                Sign In
-              </button>
-            ) : null}
-            <button
-              onClick={() => navigate("/")}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm cursor-pointer"
-            >
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </div>
-    )
+    return <AdminAccessDenied />
   }
 
   return (
@@ -803,6 +957,18 @@ export default function Admin() {
                   </tbody>
                 </table>
               </div>
+
+              <AdminPagination
+                currentPage={prodPage}
+                totalItems={prodTotal}
+                limit={prodLimit}
+                onPageChange={(p) => setProdPage(p)}
+                onLimitChange={(l) => {
+                  setProdLimit(l)
+                  setProdPage(1)
+                }}
+                itemLabel="smartphones"
+              />
             </div>
           </div>
         )}
@@ -943,6 +1109,18 @@ export default function Admin() {
                   </tbody>
                 </table>
               </div>
+
+              <AdminPagination
+                currentPage={userPage}
+                totalItems={userTotal}
+                limit={userLimit}
+                onPageChange={(p) => setUserPage(p)}
+                onLimitChange={(l) => {
+                  setUserLimit(l)
+                  setUserPage(1)
+                }}
+                itemLabel="users"
+              />
             </div>
           </div>
         )}
@@ -1058,6 +1236,18 @@ export default function Admin() {
                   </tbody>
                 </table>
               </div>
+
+              <AdminPagination
+                currentPage={queuePage}
+                totalItems={queueTotal}
+                limit={queueLimit}
+                onPageChange={(p) => setQueuePage(p)}
+                onLimitChange={(l) => {
+                  setQueueLimit(l)
+                  setQueuePage(1)
+                }}
+                itemLabel="notification jobs"
+              />
             </div>
           </div>
         )}

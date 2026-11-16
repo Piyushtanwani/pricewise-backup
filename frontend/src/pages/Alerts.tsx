@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Bell, TrendingDown, Trash2, Loader2, LogIn, CheckCircle2 } from "lucide-react"
+import { Bell, TrendingDown, Trash2, Loader2, LogIn, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react"
 import { Link, useNavigate } from "react-router"
 import Badge from "../components/ui/Badge"
 import { api } from "../services/api"
@@ -27,6 +27,12 @@ export default function Alerts() {
   const [loading, setLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+
+  // Pagination states
+  const [alertsPage, setAlertsPage] = useState(1)
+  const ALERTS_PER_PAGE = 8
+  const [eventsPage, setEventsPage] = useState(1)
+  const EVENTS_PER_PAGE = 8
 
   const loadAlerts = useCallback(async () => {
     if (!isAuthenticated) {
@@ -146,6 +152,12 @@ export default function Alerts() {
     )
   }
 
+  const totalAlertPages = Math.max(1, Math.ceil(alerts.length / ALERTS_PER_PAGE))
+  const paginatedAlerts = alerts.slice((alertsPage - 1) * ALERTS_PER_PAGE, alertsPage * ALERTS_PER_PAGE)
+
+  const totalEventPages = Math.max(1, Math.ceil(events.length / EVENTS_PER_PAGE))
+  const paginatedEvents = events.slice((eventsPage - 1) * EVENTS_PER_PAGE, eventsPage * EVENTS_PER_PAGE)
+
   return (
     <div className="min-h-screen bg-[#f4f6fb] pt-14">
       <div className="max-w-[1440px] mx-auto px-6 py-6">
@@ -215,7 +227,7 @@ export default function Alerts() {
                 </h2>
 
                 <div className="space-y-3">
-                  {alerts.map((alert) => (
+                  {paginatedAlerts.map((alert) => (
                     <div
                       key={alert.id}
                       className={`bg-white rounded-xl border p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between shadow-2xs transition-all ${
@@ -285,6 +297,33 @@ export default function Alerts() {
                     </div>
                   ))}
                 </div>
+
+                {totalAlertPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 px-1 text-xs text-slate-500">
+                    <span>
+                      Showing <span className="font-bold text-slate-800">{(alertsPage - 1) * ALERTS_PER_PAGE + 1}</span>–<span className="font-bold text-slate-800">{Math.min(alertsPage * ALERTS_PER_PAGE, alerts.length)}</span> of <span className="font-bold text-slate-800">{alerts.length}</span> alerts
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setAlertsPage((p) => Math.max(1, p - 1))}
+                        disabled={alertsPage <= 1}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-slate-700 cursor-pointer"
+                      >
+                        <ChevronLeft size={13} /> Prev
+                      </button>
+                      <span className="px-2 font-bold text-slate-700">
+                        Page {alertsPage} / {totalAlertPages}
+                      </span>
+                      <button
+                        onClick={() => setAlertsPage((p) => Math.min(totalAlertPages, p + 1))}
+                        disabled={alertsPage >= totalAlertPages}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-slate-700 cursor-pointer"
+                      >
+                        Next <ChevronRight size={13} />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </section>
             )}
 
@@ -299,7 +338,7 @@ export default function Alerts() {
                 </h2>
 
                 <div className="space-y-3">
-                  {events.map((e) => (
+                  {paginatedEvents.map((e) => (
                     <div
                       key={e.id}
                       className="bg-white rounded-xl border border-emerald-100 p-4 flex gap-4 shadow-2xs items-center"
@@ -337,6 +376,33 @@ export default function Alerts() {
                     </div>
                   ))}
                 </div>
+
+                {totalEventPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 px-1 text-xs text-slate-500">
+                    <span>
+                      Showing <span className="font-bold text-slate-800">{(eventsPage - 1) * EVENTS_PER_PAGE + 1}</span>–<span className="font-bold text-slate-800">{Math.min(eventsPage * EVENTS_PER_PAGE, events.length)}</span> of <span className="font-bold text-slate-800">{events.length}</span> events
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setEventsPage((p) => Math.max(1, p - 1))}
+                        disabled={eventsPage <= 1}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-slate-700 cursor-pointer"
+                      >
+                        <ChevronLeft size={13} /> Prev
+                      </button>
+                      <span className="px-2 font-bold text-slate-700">
+                        Page {eventsPage} / {totalEventPages}
+                      </span>
+                      <button
+                        onClick={() => setEventsPage((p) => Math.min(totalEventPages, p + 1))}
+                        disabled={eventsPage >= totalEventPages}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-slate-700 cursor-pointer"
+                      >
+                        Next <ChevronRight size={13} />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </section>
             )}
           </div>
