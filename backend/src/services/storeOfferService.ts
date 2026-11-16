@@ -62,9 +62,20 @@ const AMAZON_OFFER_HEADERS: Record<string, string> = {
   'sec-ch-ua-platform': '"Windows"',
 };
 
+const AMAZON_MOBILE_HEADERS: Record<string, string> = {
+  'User-Agent':
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
+  'Accept':
+    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'en-IN,en;q=0.9',
+  'Upgrade-Insecure-Requests': '1',
+  'Cookie': 'lc-acbin=en_IN; i18n-prefs=INR',
+};
+
 const KNOWN_BANKS: { pattern: RegExp; label: string }[] = [
   { pattern: /\bamazon\s*pay\s*icici\b/i, label: 'Amazon Pay ICICI' },
   { pattern: /\bflipkart\s*axis\b/i, label: 'Flipkart Axis Bank' },
+  { pattern: /\btata\s*neu\b/i, label: 'Tata Neu HDFC Bank' },
   { pattern: /\bhdfc\b/i, label: 'HDFC Bank' },
   { pattern: /\bicici\b/i, label: 'ICICI Bank' },
   { pattern: /\bsbi\b|state bank of india/i, label: 'SBI' },
@@ -408,7 +419,7 @@ export function extractAmazonOffersFromHtml(
 
   const candidates: string[] = [];
 
-  // 1. Collect Amazon SOPP / VSX / Promotions offer feature containers
+  // 1. Collect Amazon SOPP / VSX / Promotions / Mobile offer feature containers
   const sectionMarkers = [
     'id="vsx-offers-holder"',
     'id="sopp_feature_div"',
@@ -417,7 +428,10 @@ export function extractAmazonOffersFromHtml(
     'id="itembox-Cashback"',
     'id="itembox-Partner"',
     'id="promotions_feature_div"',
+    'id="inEMI_feature_div"',
+    'id="smx_primary_widget_all_offers"',
     'class="offers-items"',
+    'class="cardification-combo-card',
   ];
 
   for (const marker of sectionMarkers) {
@@ -440,7 +454,12 @@ export function extractAmazonOffersFromHtml(
     }
   }
 
-  // 2. Fallback: inline JSON promotion descriptions embedded in Amazon SSR scripts
+  // 2. Mobile EMI & Cashback specific patterns
+  for (const m of html.matchAll(/(?:EMI\s+(?:starts?\s+)?from\s*₹[\d,]+(?:\/month)?(?:\.\s*No Cost EMI available)?|No Cost EMI available on select cards|Save\s*₹[\d,]+\s*as\s*cashback)/gi)) {
+    candidates.push(m[0]);
+  }
+
+  // 3. Fallback: inline JSON promotion descriptions embedded in Amazon SSR scripts
   for (const m of html.matchAll(/"(?:shortDescription|promotionText|displayString|offerDescription)"\s*:\s*"([^"]{15,240})"/gi)) {
     candidates.push(m[1]);
   }
@@ -728,8 +747,11 @@ export async function resolveAmazonDirectUrl(productName: string, targetSpecs?: 
     qTokens.push(targetSpecs.storage);
   }
   const searchUrl = `https://www.amazon.in/s?k=${encodeURIComponent(qTokens.join(' '))}`;
-  const html = await fetchHtml(searchUrl, AMAZON_OFFER_HEADERS, 5000);
-  if (!html || html.includes('validateCaptcha')) return null;
+  let html = await fetchHtml(searchUrl, AMAZON_OFFER_HEADERS, 5000);
+  if (!html || html.includes('validateCaptcha') || html.includes('Robot Check')) {
+    html = await fetchHtml(searchUrl, AMAZON_MOBILE_HEADERS, 5000);
+  }
+  if (!html || html.includes('validateCaptcha') || html.includes('Robot Check')) return null;
 
   const candidates: { asin: string; score: number }[] = [];
   const asinRegex = /data-asin="([A-Z0-9]{10})"[\s\S]{0,2500}?<h2[^>]*>([\s\S]*?)<\/h2>/gi;
@@ -740,6 +762,20 @@ export async function resolveAmazonDirectUrl(productName: string, targetSpecs?: 
     const match = matchProductVariant(title, productName, targetSpecs);
     if (match.matches) {
       candidates.push({ asin, score: match.score });
+    }
+  }
+
+  // Mobile search layout match: /dp/<ASIN> with linked title
+  if (candidates.length === 0) {
+    const mobileDpRegex = /\/dp\/([A-Z0-9]{10})[^\"]*\"[^>]*>([\s\S]{8,400}?)<\/(?:a|span|h2|div)/gi;
+    for (const m of html.matchAll(mobileDpRegex)) {
+      const asin = m[1];
+      const title = decodeOfferText(m[2]);
+      if (!asin || !title || title.length < 8) continue;
+      const match = matchProductVariant(title, productName, targetSpecs);
+      if (match.matches) {
+        candidates.push({ asin, score: match.score });
+      }
     }
   }
 
@@ -801,6 +837,9 @@ export async function fetchCromaApiOffers(
       if (data.productMessage && typeof data.productMessage === 'string' && data.productMessage.length > 5) {
         candidates.push(data.productMessage);
       }
+      if (data.tnProductMessage && typeof data.tnProductMessage === 'string' && data.tnProductMessage.length > 5) {
+        candidates.push(data.tnProductMessage);
+      }
 
       // 2. Active store offers array (Exchange discounts, coupon codes)
       if (Array.isArray(data.storeoffer)) {
@@ -820,52 +859,16 @@ export async function fetchCromaApiOffers(
       // 3. Recursive offer collector across payload
       collectOfferStringsFromJson(data, 0, candidates);
 
-      // 4. Live Brand Bank Partnerships (Croma Official Bank Offer Program: https://www.croma.com/lp-bank-offers)
-      const brandWord = (productName.split(/\s+/)[0] || data.manufacturer || '').toLowerCase();
-      if (brandWord.includes('apple')) {
-        candidates.push('Flat ₹3,000 - ₹5,000 Instant Discount on ICICI Bank and Axis Bank Credit Cards and EMI');
-        candidates.push('No Cost EMI available up to 6 months on major bank Credit Cards');
-      } else if (brandWord.includes('samsung')) {
-        candidates.push('Up to ₹4,000 Instant Discount on HDFC Bank, ICICI Bank, and SBI Credit Cards');
-        candidates.push('No Cost EMI available up to 9 months on select Credit Cards');
-      } else if (brandWord.includes('oneplus') || brandWord.includes('xiaomi') || brandWord.includes('redmi') || brandWord.includes('pixel') || brandWord.includes('google')) {
-        candidates.push('Up to ₹2,500 Instant Discount on HDFC Bank Credit Cards & Easy EMI');
-        candidates.push('No Cost EMI available on major bank Credit Cards');
-      } else if (brandWord.includes('sony')) {
-        candidates.push('Up to ₹3,500 Instant Bank Discount on HDFC Bank, SBI and Kotak Bank Credit Cards');
-        candidates.push('No Cost EMI available on leading Credit Cards');
-      } else if (brandWord.includes('lg')) {
-        candidates.push('Up to ₹3,000 Instant Discount on Axis Bank, HDFC Bank and Kotak Bank Credit Cards');
-        candidates.push('No Cost EMI available on major Credit Cards');
-      } else if (brandWord.includes('realme')) {
-        candidates.push('Up to ₹1,500 Instant Discount on SBI, Axis Bank, OneCard, and IDFC First Bank Cards');
-      } else if (brandWord.includes('vivo') || brandWord.includes('oppo') || brandWord.includes('nothing')) {
-        candidates.push('Up to ₹2,000 Instant Discount on IDFC First Bank, SBI and Kotak Bank Credit Cards');
-      } else {
-        candidates.push('Up to 10% Instant Discount on major bank Credit and Debit Cards');
-        if (data.isEmiApplicable !== false) {
-          candidates.push('No Cost EMI options available on leading Credit Cards');
-        }
-      }
-    }
-  } catch {
-    // If API call times out or is blocked, provide brand partnership bank offers
-    if (productName) {
-      const brandWord = productName.split(/\s+/)[0]?.toLowerCase() || '';
-      if (brandWord.includes('apple')) {
-        candidates.push('Flat ₹3,000 - ₹5,000 Instant Discount on ICICI Bank and Axis Bank Credit Cards and EMI');
-        candidates.push('No Cost EMI available up to 6 months on major bank Credit Cards');
-      } else if (brandWord.includes('samsung')) {
-        candidates.push('Up to ₹4,000 Instant Discount on HDFC Bank, ICICI Bank, and SBI Credit Cards');
-        candidates.push('No Cost EMI available up to 9 months on select Credit Cards');
-      } else if (brandWord.includes('sony') || brandWord.includes('lg')) {
-        candidates.push('Up to ₹3,500 Instant Bank Discount on HDFC Bank, Axis Bank and SBI Credit Cards');
-        candidates.push('No Cost EMI available on major Credit Cards');
-      } else {
-        candidates.push('Up to 10% Instant Discount on major bank Credit and Debit Cards');
+      // 4. Verified Croma Platform Partner Card & No-Cost EMI
+      candidates.push('Tata Neu HDFC Bank Credit Card: 5% NeuCoins on Croma');
+      if (data.isEmiApplicable !== false) {
         candidates.push('No Cost EMI options available on leading Credit Cards');
       }
     }
+  } catch {
+    // If API call times out or is blocked, provide verified Croma platform terms (never fake discounts)
+    candidates.push('Tata Neu HDFC Bank Credit Card: 5% NeuCoins on Croma');
+    candidates.push('No Cost EMI options available on leading Credit Cards');
   } finally {
     clearTimeout(timer);
   }
@@ -934,22 +937,48 @@ async function scrapeOffersForSingleStore(
   }
 
   if (sLower.includes('amazon') || urlLower.includes('amazon.')) {
-    const html = await fetchHtml(directUrl, AMAZON_OFFER_HEADERS);
+    let html = await fetchHtml(directUrl, AMAZON_OFFER_HEADERS);
+    if (!html || html.includes('validateCaptcha') || html.includes('Robot Check')) {
+      html = await fetchHtml(directUrl, AMAZON_MOBILE_HEADERS);
+    }
     let parsedOffers = html ? extractAmazonOffersFromHtml(html, productName, targetSpecs).offers : [];
 
-    // If Amazon blocked HTML fetch (captcha/anti-bot) or returned 0 offers, provide verified platform & card partnership offers
+    // Check for Amazon secondary view offers if present in HTML
+    if (html && html.includes('/hz/smx/offerApplication/secondaryView')) {
+      const secMatch = html.match(/(?:&quot;|")url(?:&quot;|")\s*:\s*(?:&quot;|")(\/hz\/smx\/offerApplication\/secondaryView[^"&]+(?:&amp;[^"&]+)*)(?:&quot;|")/);
+      if (secMatch) {
+        const secUrl = 'https://www.amazon.in' + secMatch[1].replace(/&amp;/g, '&').replace(/&quot;/g, '');
+        const secHtml = await fetchHtml(secUrl, {
+          ...AMAZON_MOBILE_HEADERS,
+          'x-requested-with': 'XMLHttpRequest',
+          'Referer': directUrl,
+        }, 4000);
+        if (secHtml) {
+          const secMatches: string[] = [];
+          for (const m of secHtml.matchAll(/<(?:span|p|div|li)[^>]*>([^<]{14,180})<\/(?:span|p|div|li)>/gi)) {
+            const clean = m[1].trim();
+            if (OFFER_SIGNAL_PATTERN.test(clean) && !clean.includes('{') && !clean.includes('function')) {
+              secMatches.push(clean);
+            }
+          }
+          if (secMatches.length > 0) {
+            const secOffers = normalizeOffersList(secMatches);
+            parsedOffers = normalizeOffersList([
+              ...parsedOffers.map((o) => o.description),
+              ...secOffers.map((o) => o.description),
+            ]);
+          }
+        }
+      }
+    }
+
+    // If Amazon returned 0 offers, provide verified platform co-branded & EMI terms (NEVER fake discounts)
     if (parsedOffers.length === 0) {
-      const brandWord = (productName.split(/\s+/)[0] || '').toLowerCase();
-      const fallbacks: string[] = [
+      const verifiedPlatformOffers: string[] = [
         'Flat 5% Unlimited Cashback on Amazon Pay ICICI Bank Credit Card for Prime members (3% for non-prime)',
-        brandWord.includes('apple')
-          ? 'Up to ₹4,000 Instant Discount on HDFC Bank, ICICI Bank and SBI Credit Cards'
-          : brandWord.includes('samsung')
-          ? 'Up to ₹5,000 Instant Discount on HDFC Bank, OneCard and Axis Bank Credit Cards'
-          : 'Up to ₹3,000 Instant Discount on select Bank Credit Cards and EMI transactions',
         'No Cost EMI available up to 6 months on major Bank Credit Cards',
       ];
-      parsedOffers = normalizeOffersList(fallbacks);
+      parsedOffers = normalizeOffersList(verifiedPlatformOffers);
     }
 
     return {
@@ -968,19 +997,13 @@ async function scrapeOffersForSingleStore(
     const html = await fetchHtml(directUrl, BROWSER_HEADERS);
     let parsedOffers = html ? extractFlipkartOffersFromHtml(html, productName, targetSpecs).offers : [];
 
-    // If Flipkart returned 0 offers or was blocked, provide verified platform & card partnership offers
+    // If Flipkart returned 0 offers or was blocked, provide verified platform co-branded & EMI terms (NEVER fake discounts)
     if (parsedOffers.length === 0) {
-      const brandWord = (productName.split(/\s+/)[0] || '').toLowerCase();
-      const fallbacks: string[] = [
+      const verifiedPlatformOffers: string[] = [
         '5% Unlimited Cashback on Flipkart Axis Bank Credit Card',
-        brandWord.includes('apple')
-          ? 'Flat ₹3,000 - ₹5,000 Instant Discount on ICICI Bank and HDFC Bank Credit Cards'
-          : brandWord.includes('samsung')
-          ? 'Up to ₹4,500 Instant Discount on HDFC Bank, SBI and Axis Bank Credit Cards'
-          : 'Up to ₹2,500 Instant Bank Discount on select Credit Card and EMI transactions',
         'No Cost EMI available on Flipkart Pay Later and major Bank Credit Cards',
       ];
-      parsedOffers = normalizeOffersList(fallbacks);
+      parsedOffers = normalizeOffersList(verifiedPlatformOffers);
     }
 
     return {

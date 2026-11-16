@@ -390,7 +390,7 @@ export default function Home() {
         {/* Trending Products */}
         <section className="mb-14">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-2xl font-bold text-slate-900">Trending Smartphones</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Trending Products</h2>
             <button
               onClick={() => navigate("/search?sort=relevance")}
               className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1 cursor-pointer"

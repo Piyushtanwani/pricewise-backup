@@ -215,3 +215,27 @@ test('getLiveOffersForProduct caches strictly per productId and deduplicates off
 
   await livePriceCache.del(`live_offers::${prodA.id}`);
 });
+
+test('extractAmazonOffersFromHtml parses mobile EMI & Cashback containers correctly', () => {
+  const mobileHtml = `
+    <html>
+      <head><title>Apple iPhone 15 (128 GB) - Black</title></head>
+      <body>
+        <span id="productTitle">Apple iPhone 15 (128 GB) - Black</span>
+        <div id="inEMI_feature_div">
+          <span>EMI from ₹2,601. No Cost EMI available.</span>
+        </div>
+        <div class="cardification-combo-card">
+          <span>Save ₹2,219 as cashback on Amazon Pay ICICI Card</span>
+        </div>
+      </body>
+    </html>
+  `;
+  const res = extractAmazonOffersFromHtml(mobileHtml, 'Apple iPhone 15', { storage: '128 GB' });
+  assert.equal(res.status, 'ok');
+  assert.ok(res.offers.length >= 2);
+  assert.ok(res.offers.some((o) => o.type === 'EMI'));
+  assert.ok(res.offers.some((o) => o.type === 'CASHBACK'));
+  // Ensure no hardcoded fake amounts exist in parsed output
+  assert.ok(!res.offers.some((o) => o.description.includes('Flat ₹3,000 - ₹5,000')));
+});
