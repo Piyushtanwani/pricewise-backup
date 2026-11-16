@@ -88,6 +88,15 @@ export const evaluatePriceChange = async (
 
   for (const alert of alerts) {
     if (newBest <= alert.targetPrice) {
+      // If previous price is known and price did not actually drop (e.g. price was unchanged or increased),
+      // suppress triggering the alert
+      if (previousBest !== null && !isGenuinePriceReduction) {
+        console.info(
+          `[AlertEngine] Target reached for alert ${alert.id}, but no prior price drop observed (prev: ${previousBest}, new: ${newBest}). Suppressing price-drop email.`,
+        );
+        continue;
+      }
+
       // Prevent duplicate notifications if already triggered for this price level
       if (alert.triggeredAt) {
         alreadyNotified.add(alert.userId);
@@ -130,10 +139,6 @@ export const evaluatePriceChange = async (
             productUrl: directProductUrl,
             imageUrl: product.imageUrl || undefined,
           }).catch((err) => console.error('[AlertEngine Email Error]:', err));
-        } else {
-          console.info(
-            `[AlertEngine] Target reached for alert ${alert.id}, but no prior price drop observed (prev: ${previousBest}, new: ${newBest}). Suppressing price-drop email.`,
-          );
         }
       }
 

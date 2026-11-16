@@ -146,6 +146,7 @@ export const verifyRegistrationOtp = async (
 
   if (record.attempts >= MAX_ATTEMPTS) {
     pendingRegistrations.delete(normalizedEmail);
+    await livePriceCache.del(`otp:${normalizedEmail}`);
     throw new HttpError(429, 'Too many invalid attempts. For your security, this code has been invalidated. Please register again.');
   }
 
@@ -162,8 +163,11 @@ export const verifyRegistrationOtp = async (
     const remaining = MAX_ATTEMPTS - record.attempts;
     if (remaining <= 0) {
       pendingRegistrations.delete(normalizedEmail);
+      await livePriceCache.del(`otp:${normalizedEmail}`);
       throw new HttpError(400, 'Invalid verification code. Maximum attempts exceeded. Please register again.');
     }
+    const ttlSeconds = Math.max(1, Math.ceil((record.expiresAt - now) / 1000));
+    await livePriceCache.set(`otp:${normalizedEmail}`, record, ttlSeconds);
     throw new HttpError(400, `Invalid verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`);
   }
 

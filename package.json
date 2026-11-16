@@ -1,0 +1,11 @@
+{
+  "name": "pricewise-root",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npx tsx tests/runner.ts",
+    "test:quick": "npx tsx tests/runner.ts --quick"
+  }
+}
+

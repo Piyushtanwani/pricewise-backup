@@ -26,13 +26,14 @@ const readToken = (req: Request): string | undefined => {
   return header.slice('Bearer '.length).trim() || undefined;
 };
 
-const verify = (token: string): AuthUser => {
+export const verifyToken = (token: string): AuthUser => {
   const decoded = jwt.verify(token, env.jwtSecret);
   if (typeof decoded === 'string' || typeof decoded.id !== 'string' || typeof decoded.email !== 'string') {
     throw new Error('Malformed token payload');
   }
   return { id: decoded.id, email: decoded.email, role: (decoded as any).role };
 };
+const verify = verifyToken;
 
 export const signToken = (user: AuthUser): string =>
   jwt.sign({ id: user.id, email: user.email, role: user.role || 'USER' }, env.jwtSecret, {
