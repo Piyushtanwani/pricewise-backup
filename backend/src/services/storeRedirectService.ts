@@ -1,5 +1,6 @@
 import prisma from '../utils/prisma';
 import { sanitizeRetailerUrl } from '../utils/urlSanitizer';
+import { TargetSpecs, matchProductVariant } from './retailerScraperService';
 
 // Memory cache for quick lookups
 const urlCache = new Map<string, string>();
@@ -11,17 +12,27 @@ export const isFlipkartVariantMismatch = (url: string, productName: string): boo
   if (!url || !url.toLowerCase().includes('flipkart.com')) return false;
   const storageMatch = productName.match(/(\d+)\s*(?:GB|TB)(?!\s*RAM)/i);
   if (!storageMatch) return false;
-  const targetStorage = storageMatch[1].toLowerCase(); // e.g. '512'
+  const targetStorage = storageMatch[1].toLowerCase(); // e.g. '128' or '512'
   const urlLower = url.toLowerCase();
 
-  // If URL already contains the target storage, it's a match
-  if (urlLower.includes(`${targetStorage}-gb`) || urlLower.includes(`${targetStorage}gb`) || urlLower.includes(`${targetStorage}-tb`)) {
+  // If URL already contains the target storage (with gb, tb, or rom), it's a match
+  if (
+    urlLower.includes(`${targetStorage}-gb`) ||
+    urlLower.includes(`${targetStorage}gb`) ||
+    urlLower.includes(`${targetStorage}-rom`) ||
+    urlLower.includes(`${targetStorage}rom`) ||
+    urlLower.includes(`${targetStorage}-tb`)
+  ) {
     return false;
   }
 
-  // Check if URL has another storage specified (e.g. 256-gb, 128-gb)
-  const urlStorageMatch = urlLower.match(/-(\d+)-(?:gb|tb)/i) || urlLower.match(/-(\d+)(?:gb|tb)/i);
-  if (urlStorageMatch && urlStorageMatch[1] !== targetStorage) {
+  // Extract all storage numbers from URL that are NOT followed by -ram
+  // (e.g. in "8-gb-ram-128-rom", 8 is RAM and 128 is ROM)
+  const urlStorages = Array.from(
+    urlLower.matchAll(/-(\d+)-(?:gb|tb|rom)(?!-ram)/gi),
+  ).map((m) => m[1]);
+
+  if (urlStorages.length > 0 && !urlStorages.includes(targetStorage)) {
     return true; // Conflicting storage variant
   }
   return false;
@@ -41,7 +52,32 @@ export const checkProductUrlModelMismatch = (
   const urlLower = url.toLowerCase();
   const nameLower = productName.toLowerCase();
 
-  // 1. Accessory check in URL (cases, panels, protectors, chargers, housings)
+  // Detect non-smartphone categories (Laptops, TVs, Tablets, Desktops)
+  const isElectronicsNonPhone =
+    /\b(laptop|notebook|macbook|chromebook|gaming|book|ideapad|thinkpad|vivobook|zenbook|pavilion|inspiron|vostro|legion|predator|victus|omen|tuf|rog|surface|tv|television|bravia|qled|oled|mini led|smart tv|tablet|tab|ipad|pad|mediapad|slate|\d+\s*(?:inch|in))\b/i.test(nameLower) ||
+    urlLower.includes('-laptop') ||
+    urlLower.includes('-notebook') ||
+    urlLower.includes('-tv') ||
+    urlLower.includes('-television') ||
+    urlLower.includes('-tablet') ||
+    urlLower.includes('-tab-') ||
+    urlLower.includes('/ipad') ||
+    urlLower.includes('buy-mac') ||
+    urlLower.includes('buy-ipad');
+
+  const isTv =
+    /\b(tv|television|bravia|qled|oled|mini led|smart tv)\b/i.test(nameLower) ||
+    urlLower.includes('-tv') ||
+    urlLower.includes('-television');
+
+  const isTablet =
+    /\b(tablet|tab|ipad|pad|mediapad|slate)\b/i.test(nameLower) ||
+    urlLower.includes('-tablet') ||
+    urlLower.includes('-tab-') ||
+    urlLower.includes('/ipad') ||
+    urlLower.includes('buy-ipad');
+
+  // 1. Accessory check in URL (cases, panels, protectors, chargers, housings, sleeves, mice)
   const ACCESSORY_LIST = [
     'case',
     'cover',
@@ -66,8 +102,30 @@ export const checkProductUrlModelMismatch = (
     'sim-card-tray',
     'middle-frame',
     'lcd',
+    'sleeve',
+    'mouse',
+    'backpack',
+    'stylus',
   ];
   for (const acc of ACCESSORY_LIST) {
+    // If it's a TV, do not flag 'lcd' as an accessory (it's the screen display technology)
+    if (isTv && acc === 'lcd') continue;
+
+    // If it's a TV, do not flag 'cable' if it's the bundled power cable in TV box
+    if (isTv && acc === 'cable' && (urlLower.includes('power-cable') || urlLower.includes('power_cable') || urlLower.includes('tv') || urlLower.includes('television'))) {
+      continue;
+    }
+
+    // If it's a TV, do not flag 'stand' if it's table-top stand in TV box
+    if (isTv && acc === 'stand' && (urlLower.includes('table-top-stand') || urlLower.includes('tv') || urlLower.includes('television'))) {
+      continue;
+    }
+
+    // If it's a tablet, do not flag 'stylus' if it's a bundled stylus/S-Pen
+    if (isTablet && acc === 'stylus' && (urlLower.includes('with-samsung-stylus') || urlLower.includes('with-stylus') || urlLower.includes('stylus-included') || urlLower.includes('s-pen') || urlLower.includes('tab-pen') || urlLower.includes('tablet') || urlLower.includes('tab-') || urlLower.includes('pad'))) {
+      continue;
+    }
+
     if (
       urlLower.includes(`/${acc}`) ||
       urlLower.includes(`-${acc}-`) ||
@@ -91,7 +149,53 @@ export const checkProductUrlModelMismatch = (
   const rawSlug = slugMatch ? slugMatch[1] : '';
   const slug = rawSlug && !['p', 'dp', 'gp', 'item'].includes(rawSlug) ? rawSlug : '';
 
-  // 3. Variant words check (pro, max, ultra, plus, mini, lite, fe, se, neo, fold, flip)
+  // 3. Brand mismatch check: Ensure URL slug does not point to a conflicting major brand
+  const MAJOR_BRANDS = [
+    'apple',
+    'samsung',
+    'dell',
+    'hp',
+    'lenovo',
+    'asus',
+    'acer',
+    'msi',
+    'oneplus',
+    'vivo',
+    'realme',
+    'oppo',
+    'xiaomi',
+    'redmi',
+    'motorola',
+    'moto',
+    'sony',
+    'lg',
+    'infinix',
+    'poco',
+    'iqoo',
+    'nothing',
+    'google',
+    'honor',
+  ];
+
+  const targetBrands = MAJOR_BRANDS.filter((b) =>
+    new RegExp(`\\b${b}\\b`, 'i').test(nameLower),
+  );
+
+  if (targetBrands.length > 0 && slug) {
+    const slugTokens = slug.split(/[-_]/);
+    const slugBrands = MAJOR_BRANDS.filter((b) => slugTokens.includes(b));
+    if (slugBrands.length > 0) {
+      const brandMatches = slugBrands.some((sb) => targetBrands.includes(sb));
+      if (!brandMatches) {
+        return {
+          isMismatch: true,
+          reason: `Brand mismatch: product is "${targetBrands.join('/')}", but URL points to "${slugBrands.join('/')}"`,
+        };
+      }
+    }
+  }
+
+  // 3. Variant words check (pro, max, plus, ultra, mini, lite, fe, se, neo, fold, flip)
   const VARIANT_WORDS = ['pro', 'max', 'plus', 'ultra', 'mini', 'lite', 'fe', 'neo', 'se', 'fold', 'flip'];
   for (const vw of VARIANT_WORDS) {
     const nameHasVariant = new RegExp(`\\b${vw}\\b`, 'i').test(nameLower);
@@ -104,9 +208,104 @@ export const checkProductUrlModelMismatch = (
       continue;
     }
 
-    const urlHasVariant = slug
+    // In laptops, TVs, tablets & electronics: ignore technical display/audio/processor terms
+    if (isElectronicsNonPhone) {
+      if (
+        vw === 'ultra' &&
+        slug &&
+        (slug.includes('core-ultra') ||
+          slug.includes('intel-ultra') ||
+          slug.includes('ultra-hd') ||
+          slug.includes('4k-ultra') ||
+          slug.includes('ultra-clean') ||
+          slug.includes('ultra-slim') ||
+          slug.includes('-ultra-processor') ||
+          slug.includes('dimensity-ultra') ||
+          slug.includes('g100-ultra') ||
+          slug.includes('ultra-view'))
+      ) {
+        continue;
+      }
+      if (
+        vw === 'plus' &&
+        slug &&
+        (slug.includes('wqxga-plus') ||
+          slug.includes('fhd-plus') ||
+          slug.includes('qhd-plus') ||
+          slug.includes('amoled-plus') ||
+          slug.includes('plus-display') ||
+          slug.includes('plus-dynamic') ||
+          slug.includes('plus-gen') ||
+          slug.includes('pen-plus') ||
+          slug.includes('game-mode-plus') ||
+          slug.includes('qled-plus') ||
+          slug.includes('color-plus'))
+      ) {
+        continue;
+      }
+      if (
+        vw === 'pro' &&
+        slug &&
+        (slug.includes('win11-pro') ||
+          slug.includes('windows-11-pro') ||
+          slug.includes('windows-pro') ||
+          slug.includes('color-pro') ||
+          slug.includes('picture-pro') ||
+          slug.includes('dimming-pro') ||
+          slug.includes('engine-pro') ||
+          slug.includes('vision-pro') ||
+          slug.includes('audio-pro') ||
+          slug.includes('sound-pro') ||
+          slug.includes('fx-pro'))
+      ) {
+        continue;
+      }
+      if (
+        vw === 'lite' &&
+        slug &&
+        (slug.includes('sound-lite') ||
+          slug.includes('audio-lite') ||
+          slug.includes('voice-lite') ||
+          slug.includes('tizen-lite') ||
+          slug.includes('bravia-lite'))
+      ) {
+        continue;
+      }
+      if (
+        vw === 'max' &&
+        slug &&
+        (slug.includes('max-q') ||
+          slug.includes('maxq') ||
+          slug.includes('audio-max') ||
+          slug.includes('-max-') ||
+          slug.includes('dimensity') ||
+          slug.includes('processor'))
+      ) {
+        continue;
+      }
+    }
+
+    let urlHasVariant = slug
       ? new RegExp(`[-_]${vw}[-_]`, 'i').test(`-${slug}-`)
       : new RegExp(`[-_\\/]${vw}[-_\\/]`, 'i').test(urlLower);
+
+    // Tablet Plus variants: in Samsung/Lenovo, Plus tablets are often designated by display size in the slug (10.61-inch, 11-inch, 12.4-inch, 12.7-inch, 13.1-inch) instead of the word "plus"
+    if (
+      nameHasVariant &&
+      isTablet &&
+      vw === 'plus' &&
+      slug &&
+      (slug.includes('10-61-inch') ||
+        slug.includes('10-6-inch') ||
+        slug.includes('11-inch') ||
+        slug.includes('11-0-inch') ||
+        slug.includes('12-4-inch') ||
+        slug.includes('12-7-inch') ||
+        slug.includes('13-inch') ||
+        slug.includes('13-1-inch'))
+    ) {
+      urlHasVariant = true;
+    }
 
     // If URL contains a variant word that the product does NOT have (e.g. S25 FE for A16, or Pro for base phone)
     if (!nameHasVariant && urlHasVariant) {
@@ -125,29 +324,31 @@ export const checkProductUrlModelMismatch = (
     }
   }
 
-  // 4. Model code check (e.g. A16, S25, S24, M15, F54, 12R)
-  const modelCodeMatch = nameLower.match(/\b([a-z]\d{1,2}[a-z]?)\b/i);
-  if (modelCodeMatch && slug) {
-    const code = modelCodeMatch[1].toLowerCase(); // e.g. 'a16'
-    const slugHasCode =
-      slug.includes(`-${code}-`) ||
-      slug.includes(`-${code}`) ||
-      slug.includes(`${code}-`) ||
-      slug.includes(`/${code}-`) ||
-      slug.includes(`/${code}`);
+  // 4. Model code check (e.g. A16, S25, S24, M15, F54, 12R) - Smartphones only
+  if (!isElectronicsNonPhone) {
+    const modelCodeMatch = nameLower.match(/\b([a-z]\d{1,2}[a-z]?)\b/i);
+    if (modelCodeMatch && slug) {
+      const code = modelCodeMatch[1].toLowerCase(); // e.g. 'a16'
+      const slugHasCode =
+        slug.includes(`-${code}-`) ||
+        slug.includes(`-${code}`) ||
+        slug.includes(`${code}-`) ||
+        slug.includes(`/${code}-`) ||
+        slug.includes(`/${code}`);
 
-    if (!slugHasCode) {
-      return {
-        isMismatch: true,
-        reason: `Model code mismatch: product is "${code}", but URL slug is "${slug}"`,
-      };
+      if (!slugHasCode) {
+        return {
+          isMismatch: true,
+          reason: `Model code mismatch: product is "${code}", but URL slug is "${slug}"`,
+        };
+      }
     }
   }
 
-  // 5. Generation numbers (e.g. 11, 12, 13, 14, 15, 16, 23, 24, 25)
-  const prodTokens = nameLower.replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter(Boolean);
-  const numTokens = prodTokens.filter((t) => /^\d{2}$/.test(t) && Number(t) < 50);
-  if (slug) {
+  // 5. Generation numbers (e.g. 11, 12, 13, 14, 15, 16, 23, 24, 25) - Smartphones only
+  if (!isElectronicsNonPhone && slug) {
+    const prodTokens = nameLower.replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter(Boolean);
+    const numTokens = prodTokens.filter((t) => /^\d{2}$/.test(t) && Number(t) < 50);
     for (const num of numTokens) {
       const otherGenerations = ['11', '12', '13', '14', '15', '16', '23', '24', '25'].filter((g) => g !== num);
       const hasOther = otherGenerations.some(
@@ -174,10 +375,6 @@ export const checkProductUrlModelMismatch = (
   return { isMismatch: false };
 };
 
-/**
- * Resolves a direct product page URL on Flipkart by querying Flipkart's catalog
- * and finding the exact direct /p/itm... product link for the requested RAM/Storage variant.
- */
 export const resolveFlipkartDirectUrl = async (productName: string): Promise<string | null> => {
   if (!productName) return null;
   const cacheKey = `flipkart_direct::${productName.toLowerCase().trim()}`;
@@ -225,7 +422,13 @@ export const resolveFlipkartDirectUrl = async (productName: string): Promise<str
     if (targetStorage) {
       const variantMatch = validCandidates.find((url) => {
         const uLower = url.toLowerCase();
-        return uLower.includes(`${targetStorage}-gb`) || uLower.includes(`${targetStorage}gb`) || uLower.includes(`${targetStorage}-tb`);
+        return (
+          uLower.includes(`${targetStorage}-gb`) ||
+          uLower.includes(`${targetStorage}gb`) ||
+          uLower.includes(`${targetStorage}-rom`) ||
+          uLower.includes(`${targetStorage}rom`) ||
+          uLower.includes(`${targetStorage}-tb`)
+        );
       });
       if (variantMatch) {
         urlCache.set(cacheKey, variantMatch);
@@ -238,6 +441,108 @@ export const resolveFlipkartDirectUrl = async (productName: string): Promise<str
     return direct;
   } catch {
     return null;
+  }
+};
+
+export const resolveAmazonDirectUrl = async (
+  productName: string,
+  targetSpecs?: TargetSpecs,
+): Promise<string | null> => {
+  if (!productName) return null;
+  const cacheKey = `amazon_direct::${productName.toLowerCase().trim()}`;
+  if (urlCache.has(cacheKey)) {
+    return urlCache.get(cacheKey)!;
+  }
+  const qTokens = [productName.replace(/\(.*?\)/g, '').trim()];
+  if (targetSpecs?.storage && !qTokens[0].toLowerCase().includes(targetSpecs.storage.toLowerCase().replace(/\s+/g, ''))) {
+    qTokens.push(targetSpecs.storage);
+  }
+  const searchUrl = `https://www.amazon.in/s?k=${encodeURIComponent(qTokens.join(' '))}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  try {
+    const res = await fetch(searchUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-IN,en-GB;q=0.9,en;q=0.8',
+        'Cookie': 'lc-acbin=en_IN; i18n-prefs=INR',
+      },
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    if (html.includes('validateCaptcha')) return null;
+
+    const candidates: { asin: string; score: number }[] = [];
+    const asinRegex = /data-asin="([A-Z0-9]{10})"[\s\S]{0,2500}?<h2[^>]*>([\s\S]*?)<\/h2>/gi;
+    for (const m of html.matchAll(asinRegex)) {
+      const asin = m[1];
+      const title = m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!asin || !title) continue;
+      const match = matchProductVariant(title, productName, targetSpecs);
+      if (match.matches) {
+        candidates.push({ asin, score: match.score });
+      }
+    }
+
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => b.score - a.score);
+    const directUrl = `https://www.amazon.in/dp/${candidates[0].asin}`;
+    urlCache.set(cacheKey, directUrl);
+    return directUrl;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+export const resolveCromaDirectUrl = async (
+  productName: string,
+  targetSpecs?: TargetSpecs,
+): Promise<string | null> => {
+  if (!productName) return null;
+  const cacheKey = `croma_direct::${productName.toLowerCase().trim()}`;
+  if (urlCache.has(cacheKey)) {
+    return urlCache.get(cacheKey)!;
+  }
+  const clean = productName.replace(/\(.*?\)/g, '').trim();
+  const searchUrl = `https://www.croma.com/searchB?q=${encodeURIComponent(clean)}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  try {
+    const res = await fetch(searchUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    const candidates: { url: string; score: number }[] = [];
+    for (const m of html.matchAll(/href="(\/[a-z0-9-]+\/p\/[0-9]{5,8})"/gi)) {
+      const pathUrl = m[1];
+      const slugTitle = pathUrl.split('/p/')[0].replace(/[\/-]+/g, ' ').trim();
+      const match = matchProductVariant(slugTitle, productName, targetSpecs);
+      if (match.matches) {
+        candidates.push({ url: `https://www.croma.com${pathUrl}`, score: match.score });
+      }
+    }
+
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => b.score - a.score);
+    const directUrl = candidates[0].url;
+    urlCache.set(cacheKey, directUrl);
+    return directUrl;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
   }
 };
 
@@ -316,7 +621,22 @@ export const validateCanonicalProductUrl = (
 
   // 2. Check for accessory keywords in URL slug
   const urlLower = cleanUrl.toLowerCase();
+  const isTv =
+    /\b(tv|television|bravia|qled|oled|mini led|smart tv)\b/i.test(product.name) ||
+    urlLower.includes('-tv') ||
+    urlLower.includes('-television');
+
+  const isTablet =
+    /\b(tablet|tab|ipad|pad|mediapad|slate)\b/i.test(product.name) ||
+    urlLower.includes('-tablet') ||
+    urlLower.includes('-tab-') ||
+    urlLower.includes('/ipad') ||
+    urlLower.includes('buy-ipad');
+
   for (const acc of ACCESSORY_TERMS) {
+    if (isTv && (acc === 'cable' || acc === 'stand' || acc === 'lcd')) continue;
+    if (isTablet && acc === 'stylus') continue;
+
     if (
       urlLower.includes(`/${acc}`) ||
       urlLower.includes(`-${acc}-`) ||
@@ -599,8 +919,31 @@ export const resolveDirectStoreUrl = async (
     return clean;
   }
 
+  // 1b. If rawUrl is a Google redirect / Google Shopping search URL
+  if (rawUrl.includes('google.com') || rawUrl.includes('google.co.in')) {
+    try {
+      const parsed = new URL(rawUrl);
+      const targetParam = parsed.searchParams.get('url') || parsed.searchParams.get('q') || parsed.searchParams.get('adurl');
+      if (targetParam && targetParam.startsWith('http') && !targetParam.includes('google.')) {
+        return resolveDirectStoreUrl(targetParam, storeName, productName);
+      }
+    } catch {
+      // Continue to dynamic store resolution
+    }
+    if (storeTarget.includes('flipkart') && productName) {
+      const directFlipkart = await resolveFlipkartDirectUrl(productName);
+      if (directFlipkart) return directFlipkart;
+    } else if (storeTarget.includes('amazon') && productName) {
+      const directAmazon = await resolveAmazonDirectUrl(productName);
+      if (directAmazon) return directAmazon;
+    } else if (storeTarget.includes('croma') && productName) {
+      const directCroma = await resolveCromaDirectUrl(productName);
+      if (directCroma) return directCroma;
+    }
+  }
+
   // 2. For Flipkart: If rawUrl is a generic search URL or lacks a /p/itm... product ID, resolve dynamically
-  if (storeTarget.includes('flipkart') && productName) {
+  if (storeTarget.includes('flipkart') && productName && (!rawUrl.includes('/p/itm') || rawUrl.includes('/search'))) {
     const directFlipkart = await resolveFlipkartDirectUrl(productName);
     if (directFlipkart) {
       urlCache.set(cacheKey, directFlipkart);
@@ -608,7 +951,25 @@ export const resolveDirectStoreUrl = async (
     }
   }
 
-  // 3. Check if rawUrl is another direct retailer URL
+  // 3. For Amazon: If rawUrl is a generic search URL or lacks a /dp/ product ID, resolve dynamically
+  if (storeTarget.includes('amazon') && productName && (!rawUrl.includes('/dp/') || rawUrl.includes('/s?') || rawUrl.includes('/s/'))) {
+    const directAmazon = await resolveAmazonDirectUrl(productName);
+    if (directAmazon) {
+      urlCache.set(cacheKey, directAmazon);
+      return directAmazon;
+    }
+  }
+
+  // 4. For Croma: If rawUrl is a generic search URL or lacks a /p/ SKU ID, resolve dynamically
+  if (storeTarget.includes('croma') && productName && (!rawUrl.includes('/p/') || rawUrl.includes('/searchb') || rawUrl.includes('/search?'))) {
+    const directCroma = await resolveCromaDirectUrl(productName);
+    if (directCroma) {
+      urlCache.set(cacheKey, directCroma);
+      return directCroma;
+    }
+  }
+
+  // 5. Check if rawUrl is another direct retailer URL
   if (
     rawUrl.includes('amazon.in') ||
     rawUrl.includes('amazon.com') ||
@@ -794,7 +1155,7 @@ export const cleanDestinationUrl = (url: string, productName?: string): string =
  * Constructs direct retailer search URL as reliable fallback
  */
 export const getFallbackStoreSearch = (storeName: string, productName: string): string => {
-  const query = encodeURIComponent(productName || 'smartphone');
+  const query = encodeURIComponent(productName || 'electronics');
   const s = (storeName || '').toLowerCase();
   const prod = (productName || '').toLowerCase();
 
@@ -814,7 +1175,10 @@ export const getFallbackStoreSearch = (storeName: string, productName: string): 
     if (prod.includes('oneplus')) {
       return 'https://www.vijaysales.com/c/smartphones?brand=OnePlus';
     }
-    return 'https://www.vijaysales.com/c/smartphones';
+    if (productName && productName.trim().length > 0) {
+      return `https://www.vijaysales.com/search/${query}`;
+    }
+    return 'https://www.vijaysales.com/search/electronics';
   }
   return `https://www.amazon.in/s?k=${query}`;
 };

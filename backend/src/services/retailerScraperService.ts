@@ -307,12 +307,24 @@ export const scrapeAmazon = async (
 
     const hasOutOfStockDiv = html.includes('id="outOfStock"') || html.includes('class="outOfStock"');
 
-    // Safe stock evaluation
-    let stock = evaluateStockStatus(availText);
-    if (hasOutOfStockDiv) {
+    // Safe stock evaluation: Explicit out-of-stock signals MUST NEVER be overridden by residual HTML DOM action buttons
+    const isExplicitOos =
+      hasOutOfStockDiv ||
+      availText.includes('currently unavailable') ||
+      availText.includes('out of stock') ||
+      availText.includes('temporarily unavailable') ||
+      availText.includes('temporarily out of stock') ||
+      availText.includes('sold out') ||
+      availText.includes('discontinued') ||
+      availText.includes("we don't know when or if this item will be back in stock");
+
+    let stock: StockEvaluationResult;
+    if (isExplicitOos) {
       stock = { availability: 'Out of Stock', stockStatus: StockStatus.OUT_OF_STOCK, inStock: false };
     } else if (hasAddToCart || hasBuyNow) {
       stock = { availability: 'In Stock', stockStatus: StockStatus.IN_STOCK, inStock: true };
+    } else {
+      stock = evaluateStockStatus(availText);
     }
 
     // Target active Amazon Buy Box container (avoiding secondary third-party seller list prices)
@@ -477,6 +489,8 @@ export const scrapeFlipkart = async (
     // 2. Direct Flipkart Product Page Scrape (when fetchUrl is /p/itm...)
     const isDirectOutOfStock =
       html.includes('schema.org/OutOfStock') ||
+      html.includes('"availability":"OUT_OF_STOCK"') ||
+      html.includes('"listingStatus":"OUT_OF_STOCK"') ||
       html.includes('NOTIFY ME') ||
       html.includes('Notify Me') ||
       html.includes('Currently Out of Stock') ||

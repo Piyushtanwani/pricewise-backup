@@ -14,6 +14,7 @@ import {
   sliceByDays,
 } from '../priceAnalytics';
 import { getPricePrediction, seriesFor } from '../historyService';
+import { parseBudget, detectCategory } from '../assistant';
 
 /** Helper to resolve product either by ID or fuzzy name match */
 async function resolveProduct(productId?: string, productName?: string): Promise<ProductWithStores | null> {
@@ -106,34 +107,71 @@ export class ToolExecutor {
     limit?: number;
   }) {
     const limit = Math.min(Math.max(args.limit || 5, 1), 10);
-    const where: any = {};
+    let category = args.category?.trim();
+    let brand = args.brand?.trim();
+    let maxBudget = args.maxBudget !== undefined ? Number(args.maxBudget) : undefined;
+    let minBudget = args.minBudget !== undefined ? Number(args.minBudget) : undefined;
+    const rawQuery = args.query?.trim() || '';
 
-    if (args.category) {
-      where.category = { contains: args.category.trim(), mode: 'insensitive' };
-    }
-    if (args.brand) {
-      where.brand = { contains: args.brand.trim(), mode: 'insensitive' };
-    }
-    if (args.maxBudget !== undefined || args.minBudget !== undefined) {
-      where.bestPrice = {};
-      if (args.maxBudget !== undefined) where.bestPrice.lte = Number(args.maxBudget);
-      if (args.minBudget !== undefined) where.bestPrice.gte = Number(args.minBudget);
-    }
-    if (args.query && args.query.trim()) {
-      const q = args.query.trim();
-      where.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { brand: { contains: q, mode: 'insensitive' } },
-        { category: { contains: q, mode: 'insensitive' } },
-      ];
+    // Auto-extract budget and category if omitted in arguments
+    if (rawQuery) {
+      if (maxBudget === undefined) {
+        const extractedBudget = parseBudget(rawQuery);
+        if (extractedBudget) maxBudget = extractedBudget;
+      }
+      if (!category) {
+        const extractedCat = detectCategory(rawQuery);
+        if (extractedCat) category = extractedCat;
+      }
     }
 
-    const products = await prisma.product.findMany({
-      where,
+    // Strip budget phrases, currency markers, and common conversational words
+    const cleanQuery = rawQuery
+      .replace(/(?:under|below|less than|within|up to|budget|around|max)\s*(?:₹|rs\.?|inr)?\s*[\d,]+(?:\.\d+)?\s*(?:k|thousand|lakhs?|lacs?|l)?/gi, ' ')
+      .replace(/(?:₹|rs\.?|inr)\s*[\d,]+(?:\.\d+)?\s*(?:k|thousand|lakhs?|lacs?|l)?/gi, ' ')
+      .replace(/\b(best|top|good|great|recommend|suggest|show|tell|find|looking for|want|need|which|should|buy|price|prices|phones?|mobiles?|smartphones?|laptops?)\b/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const buildWhere = (includeTextSearch: boolean) => {
+      const where: any = {};
+      if (category) {
+        where.category = { contains: category, mode: 'insensitive' };
+      }
+      if (brand) {
+        where.brand = { contains: brand, mode: 'insensitive' };
+      }
+      if (maxBudget !== undefined || minBudget !== undefined) {
+        where.bestPrice = {};
+        if (maxBudget !== undefined) where.bestPrice.lte = maxBudget;
+        if (minBudget !== undefined) where.bestPrice.gte = minBudget;
+      }
+      if (includeTextSearch && cleanQuery) {
+        where.OR = [
+          { name: { contains: cleanQuery, mode: 'insensitive' } },
+          { brand: { contains: cleanQuery, mode: 'insensitive' } },
+          { category: { contains: cleanQuery, mode: 'insensitive' } },
+        ];
+      }
+      return where;
+    };
+
+    let products = await prisma.product.findMany({
+      where: buildWhere(true),
       take: limit,
       orderBy: [{ bestPrice: 'asc' }, { reviewCount: 'desc' }],
       include: productInclude,
     });
+
+    // Fallback if strict cleanQuery didn't match any titles but category or budget is specified
+    if (products.length === 0 && (category || maxBudget !== undefined)) {
+      products = await prisma.product.findMany({
+        where: buildWhere(false),
+        take: limit,
+        orderBy: [{ bestPrice: 'asc' }, { reviewCount: 'desc' }],
+        include: productInclude,
+      });
+    }
 
     const seriesMap = await loadDailySeries(products.map((p) => p.id), { days: 60 });
     return {

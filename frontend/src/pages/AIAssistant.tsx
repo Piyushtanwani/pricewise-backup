@@ -26,7 +26,7 @@ const LEGACY_STORAGE_KEY = "pricewise_shopping_assistant_history"
 
 const quickPrompts = [
   "Best phone under ₹30,000",
-  "Should I buy iPhone 16 or Galaxy S25?",
+  "Should I buy iPhone 15 or Galaxy S25?",
   "Cheapest 5G phone with 12GB RAM",
   "Best camera phone with great battery",
   "Compare OnePlus and Motorola",
@@ -86,8 +86,14 @@ export default function AIAssistant() {
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [lastFailedQuery, setLastFailedQuery] = useState<string | null>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
   const hasInitializedRef = useRef(false)
+  const isInitialLoadRef = useRef(true)
+
+  // 0. Ensure window starts at the top when navigating to Shopping Assistant
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" })
+  }, [])
 
   // 1. Purge legacy global storage key to prevent cross-account leaks
   useEffect(() => {
@@ -141,8 +147,20 @@ export default function AIAssistant() {
     }
   }, [messages, currentUserId, authLoading])
 
+  // 4. Smoothly scroll ONLY the internal chat container (never the browser window/footer)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    if (isInitialLoadRef.current) {
+      // Don't auto-scroll on initial page view so the top header is in view
+      isInitialLoadRef.current = false
+      return
+    }
+
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      })
+    }
   }, [messages, loading])
 
   // 4. Reset conversation: wipes user-scoped storage and mints a brand new session
@@ -288,24 +306,22 @@ export default function AIAssistant() {
         </div>
 
         {/* Message Thread */}
-        <div className="flex-1 overflow-y-auto py-5 space-y-5 pr-1">
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto py-5 space-y-5 pr-1">
           {messages.map((msg, i) => (
             <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               {msg.role === "assistant" && (
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
-                  msg.isError ? "bg-rose-100 text-rose-600" : "bg-gradient-to-tr from-indigo-600 to-violet-600 text-white"
-                }`}>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${msg.isError ? "bg-rose-100 text-rose-600" : "bg-gradient-to-tr from-indigo-600 to-violet-600 text-white"
+                  }`}>
                   {msg.isError ? <AlertCircle size={16} /> : <Bot size={16} />}
                 </div>
               )}
 
-              <div className={`max-w-3xl rounded-2xl p-4 sm:p-5 shadow-xs ${
-                msg.role === "user"
-                  ? "bg-indigo-600 text-white"
-                  : msg.isError
-                    ? "bg-rose-50 border border-rose-200 text-rose-900"
-                    : "bg-white border border-slate-200 text-slate-800"
-              }`}>
+              <div className={`max-w-3xl rounded-2xl p-4 sm:p-5 shadow-xs ${msg.role === "user"
+                ? "bg-indigo-600 text-white"
+                : msg.isError
+                  ? "bg-rose-50 border border-rose-200 text-rose-900"
+                  : "bg-white border border-slate-200 text-slate-800"
+                }`}>
                 {/* Message Body with Markdown */}
                 <div className="text-sm leading-relaxed prose prose-slate max-w-none prose-p:my-2 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5">
                   <ReactMarkdown
@@ -440,7 +456,6 @@ export default function AIAssistant() {
               </div>
             </div>
           )}
-          <div ref={bottomRef} />
         </div>
 
         {/* Quick Prompts Bar (shown only on initial start so there is never duplicate prompt clutter) */}

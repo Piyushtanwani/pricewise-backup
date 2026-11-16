@@ -7,13 +7,19 @@ import { buildInsights, computeStats, computeVerdict, parseRange, sliceByDays } 
 import { presentCards, productInclude, resolveProductImageUrl, storePriceRows, toProductCard, StorePriceRow } from '../services/productService';
 import { findProductOr404, getPriceHistory, getPricePrediction, seriesFor } from '../services/historyService';
 import { env } from '../config/env';
-import { resolveDirectStoreUrl, validateCanonicalProductUrl } from '../services/storeRedirectService';
+import {
+  resolveDirectStoreUrl,
+  validateCanonicalProductUrl,
+  resolveAmazonDirectUrl,
+  resolveCromaDirectUrl,
+} from '../services/storeRedirectService';
 import { refreshProductAggregates } from '../services/productService';
-import { parsePrice } from '../utils/priceNormalizer';
+import { parsePrice, isPriceWithinSanityBounds } from '../utils/priceNormalizer';
 import { livePriceCache } from '../utils/cache';
 import { TargetSpecs } from '../services/retailerScraperService';
 import { getLiveSerpStorePrices, matchAllowedStore } from '../services/serpShoppingService';
 import { scrapeLiveStoreListing, scrapeFlipkart, scrapeCroma } from '../services/retailerScraperService';
+import { getLiveOffersForProduct } from '../services/storeOfferService';
 
 const SORTS: Record<string, Prisma.ProductOrderByWithRelationInput[]> = {
   relevance: [{ reviewCount: 'desc' }, { rating: 'desc' }],
@@ -245,7 +251,12 @@ export function extractProductSpecs(product: {
   return { ram, storage };
 }
 
-async function persistLiveRatesToPostgres(productId: string, stores: StorePriceRow[]): Promise<void> {
+async function persistLiveRatesToPostgres(
+  productId: string,
+  stores: StorePriceRow[],
+  productBaselinePrice?: number | null,
+  productCategory?: string | null,
+): Promise<void> {
   try {
     const dbStores = await prisma.store.findMany();
     const storeMap = new Map<string, string>();
@@ -272,14 +283,62 @@ async function persistLiveRatesToPostgres(productId: string, stores: StorePriceR
       });
 
       if (existing) {
+        // Sanity Check: Ensure live rate is within 60%-150% of existing DB price or product baseline
+        const baseline = existing.currentPrice > 0 ? existing.currentPrice : productBaselinePrice;
+        if (!isPriceWithinSanityBounds(item.price, baseline, 3000, productCategory)) {
+          console.warn(
+            `[SanityCheck] Skipped DB price update for product ${productId} on store ${item.store}: live price ₹${item.price} is outside 60%-150% sanity bounds of DB baseline ₹${baseline}`,
+          );
+          // Only update stockStatus and lastCheckedAt, DO NOT touch currentPrice or PriceHistory!
+          await prisma.productStore.update({
+            where: { id: existing.id },
+            data: {
+              stockStatus: item.stockStatus,
+              lastCheckedAt: now,
+            },
+          });
+          continue;
+        }
+
         const priceChanged = Math.abs(existing.currentPrice - item.price) > 1;
+
+        // URL Protection: Never overwrite a verified direct product URL with a search or Google redirect URL
+        const isExistingDirect = Boolean(
+          existing.productUrl &&
+            (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}/i.test(existing.productUrl) ||
+              /\/p\/itm[a-zA-Z0-9]+/i.test(existing.productUrl) ||
+              /croma\.com\/[^/]+\/p\/\d+/i.test(existing.productUrl)),
+        );
+
+        const isIncomingSearchOrGoogle = Boolean(
+          item.url &&
+            (/google\.[a-z.]+\/search/i.test(item.url) ||
+              /amazon\.[a-z.]+\/s(?:\?|\/)/i.test(item.url) ||
+              /flipkart\.com\/search(?:\?|\/)/i.test(item.url) ||
+              /croma\.com\/searchB(?:\?|\/)/i.test(item.url)),
+        );
+
+        const isIncomingDirect = Boolean(
+          item.url &&
+            (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}/i.test(item.url) ||
+              /\/p\/itm[a-zA-Z0-9]+/i.test(item.url) ||
+              /croma\.com\/[^/]+\/p\/\d+/i.test(item.url)),
+        );
+
+        const shouldUpdateUrl = Boolean(
+          item.url &&
+            item.url.trim().length > 0 &&
+            !isIncomingSearchOrGoogle &&
+            (!isExistingDirect || isIncomingDirect),
+        );
+
         await prisma.productStore.update({
           where: { id: existing.id },
           data: {
             currentPrice: item.price,
             ...(item.mrp ? { mrp: item.mrp } : {}),
             stockStatus: item.stockStatus,
-            ...(item.url ? { productUrl: item.url } : {}),
+            ...(shouldUpdateUrl ? { productUrl: item.url } : {}),
             lastCheckedAt: now,
           },
         });
@@ -295,6 +354,16 @@ async function persistLiveRatesToPostgres(productId: string, stores: StorePriceR
         }
       } else if (item.url && item.url.trim().length > 0) {
         // Discovered a new verified store listing for this product
+        if (/google\.[a-z.]+\/search/i.test(item.url)) {
+          continue; // Skip generic google search URLs
+        }
+        if (!isPriceWithinSanityBounds(item.price, productBaselinePrice, 3000, productCategory)) {
+          console.warn(
+            `[SanityCheck] Skipped DB store creation for product ${productId} on new store ${item.store}: live price ₹${item.price} is outside sanity bounds of product baseline ₹${productBaselinePrice}`,
+          );
+          continue;
+        }
+
         const newProductStore = await prisma.productStore.create({
           data: {
             productId,
@@ -331,6 +400,13 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   const product = await findProductOr404(productId);
   const targetSpecs = extractProductSpecs(product);
 
+  const productBaselinePrice =
+    product.bestPrice && product.bestPrice > 0
+      ? product.bestPrice
+      : product.mrp && product.mrp > 0
+      ? product.mrp * 0.85
+      : null;
+
   // 1. Live real-time prices from SerpApi (always fresh when user visits phone page)
   const livePrices = await getLiveSerpStorePrices(product.name, product.brand, product.bestPrice, forceRefresh);
 
@@ -340,9 +416,18 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
     return match !== null;
   });
 
+  const dbStoreMap = new Map<string, StorePriceRow>();
+  for (const s of dbStores) {
+    dbStoreMap.set(s.storeSlug.toLowerCase(), s);
+    dbStoreMap.set(s.store.toLowerCase(), s);
+  }
+
   if (livePrices.length > 0) {
-    // 2. SerpApi live results are the PRIMARY ground truth for real-time prices & stock
-    const liveStoreRows: StorePriceRow[] = livePrices.map((s) => {
+    // 2. SerpApi live results are the PRIMARY ground truth for real-time prices & stock,
+    // filtered through the 60%-150% sanity gatekeeper
+    const liveStoreRows: StorePriceRow[] = [];
+
+    for (const s of livePrices) {
       const stockStatus =
         s.stockStatus === 'OUT_OF_STOCK'
           ? StockStatus.OUT_OF_STOCK
@@ -350,25 +435,61 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
           ? StockStatus.LIMITED
           : StockStatus.IN_STOCK;
 
-      return {
+      const matchedDbStore = dbStoreMap.get(s.storeSlug.toLowerCase()) || dbStoreMap.get(s.store.toLowerCase());
+      const storeBaseline = matchedDbStore?.price && matchedDbStore.price > 0 ? matchedDbStore.price : productBaselinePrice;
+
+      let finalPrice = s.price;
+      if (!isPriceWithinSanityBounds(s.price, storeBaseline, 3000, product.category)) {
+        console.warn(
+          `[SanityCheck] Glitched SerpApi live price for ${product.name} at ${s.store}: ₹${s.price} (baseline: ₹${storeBaseline}). Reverting to DB price.`,
+        );
+        if (matchedDbStore && matchedDbStore.price > 0) {
+          finalPrice = matchedDbStore.price;
+        } else {
+          // If no previous DB store exists and this price is glitched, discard this offer completely
+          continue;
+        }
+      }
+
+      // Preserve verified direct product URLs from DB rather than downgrading to SerpApi search/redirect links!
+      const isDbUrlDirect = Boolean(
+        matchedDbStore?.url &&
+          (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}/i.test(matchedDbStore.url) ||
+            /\/p\/itm[a-zA-Z0-9]+/i.test(matchedDbStore.url) ||
+            /croma\.com\/[^/]+\/p\/\d+/i.test(matchedDbStore.url)),
+      );
+      const isSerpUrlDirect = Boolean(
+        s.url &&
+          (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}/i.test(s.url) ||
+            /\/p\/itm[a-zA-Z0-9]+/i.test(s.url) ||
+            /croma\.com\/[^/]+\/p\/\d+/i.test(s.url)),
+      );
+
+      const finalStoreUrl = isSerpUrlDirect
+        ? s.url
+        : isDbUrlDirect
+        ? matchedDbStore!.url
+        : s.url;
+
+      liveStoreRows.push({
         storeId: s.storeId,
         store: s.store,
         storeSlug: s.storeSlug,
-        logoUrl: s.logoUrl ?? null,
-        price: s.price,
-        mrp: s.mrp ?? null,
+        logoUrl: s.logoUrl ?? matchedDbStore?.logoUrl ?? null,
+        price: finalPrice,
+        mrp: s.mrp ?? matchedDbStore?.mrp ?? null,
         shipping: s.shipping || 'Free',
         shippingCost: 0,
         availability: s.availability || 'In Stock',
         stockStatus,
         diff: s.diff,
-        url: s.url,
+        url: finalStoreUrl,
         lastCheckedAt: s.lastCheckedAt ?? new Date().toISOString(),
-      };
-    });
+      });
+    }
 
     // 3. For stores from DB not present in live SerpApi results, safely retain their verified database status
-    const liveSlugs = new Set(livePrices.map((p) => p.storeSlug.toLowerCase()));
+    const liveSlugs = new Set(liveStoreRows.map((p) => p.storeSlug.toLowerCase()));
     const missingDbStores: StorePriceRow[] = dbStores
       .filter((s) => !liveSlugs.has(s.storeSlug.toLowerCase()) && !liveSlugs.has(s.store.toLowerCase()))
       .map((s) => ({
@@ -392,7 +513,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
       return a.price - b.price;
     });
 
-    const lowestInStock = stores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK)?.price ?? stores[0].price;
+    const lowestInStock = stores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK)?.price ?? stores[0]?.price ?? 0;
     const finalStores = stores.map((s) => ({
       ...s,
       diff: s.stockStatus === StockStatus.OUT_OF_STOCK ? 0 : Math.max(0, s.price - lowestInStock),
@@ -401,7 +522,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
     const bestInStock = finalStores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK) || finalStores[0];
 
     if (forceRefresh) {
-      await persistLiveRatesToPostgres(productId, finalStores);
+      await persistLiveRatesToPostgres(productId, finalStores, productBaselinePrice, product.category);
     }
 
     res.json({
@@ -421,9 +542,18 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
       const scraped = await scrapeLiveStoreListing(s.url, s.store, product.name, product.bestPrice, targetSpecs);
       if (!scraped) return s;
 
+      const storeBaseline = s.price > 0 ? s.price : productBaselinePrice;
+      const isPriceValid = scraped.price && isPriceWithinSanityBounds(scraped.price, storeBaseline, 3000, product.category);
+
+      if (scraped.price && !isPriceValid) {
+        console.warn(
+          `[SanityCheck] Glitched scraped price for ${product.name} on ${s.store}: ₹${scraped.price} (baseline: ₹${storeBaseline}). Retaining DB price.`,
+        );
+      }
+
       return {
         ...s,
-        price: scraped.price && scraped.price > 0 ? scraped.price : s.price,
+        price: isPriceValid && scraped.price ? scraped.price : s.price,
         stockStatus: scraped.stockStatus ?? s.stockStatus,
         availability: scraped.availability ?? s.availability,
         url: scraped.directUrl ?? s.url,
@@ -439,7 +569,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   if (!hasFlipkart) {
     try {
       const fkOffer = await scrapeFlipkart('https://www.flipkart.com/search', product.bestPrice, product.name, targetSpecs);
-      if (fkOffer && fkOffer.price && fkOffer.price > 0) {
+      if (fkOffer && fkOffer.price && isPriceWithinSanityBounds(fkOffer.price, productBaselinePrice, 3000, product.category)) {
         scrapedStores.push({
           storeId: 'flipkart-live',
           store: 'Flipkart',
@@ -476,7 +606,7 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
   const bestInStock = finalStores.find((s) => s.stockStatus !== StockStatus.OUT_OF_STOCK) || finalStores[0];
 
   if (forceRefresh) {
-    await persistLiveRatesToPostgres(productId, finalStores);
+    await persistLiveRatesToPostgres(productId, finalStores, productBaselinePrice, product.category);
   }
 
   res.json({
@@ -485,6 +615,31 @@ export const getProductLiveStores = async (req: Request, res: Response): Promise
     source: 'live_scraped',
     refreshedAt: new Date().toISOString(),
   });
+};
+
+export const getProductLiveOffers = async (req: Request, res: Response): Promise<void> => {
+  const productId = String(req.params.id);
+  const forceRefresh = req.query.refresh === 'true' || req.query.forceRefresh === 'true';
+  const product = await findProductOr404(productId);
+  const targetSpecs = extractProductSpecs(product);
+
+  const dbStores = storePriceRows(product)
+    .filter((s) => matchAllowedStore(s.store, product.brand, product.name) !== null)
+    .map((s) => ({
+      storeId: s.storeId,
+      store: s.store,
+      storeSlug: s.storeSlug,
+      url: s.url,
+    }));
+
+  const offersResult = await getLiveOffersForProduct(
+    { id: product.id, name: product.name, brand: product.brand },
+    dbStores,
+    targetSpecs,
+    { forceRefresh },
+  );
+
+  res.json(offersResult);
 };
 
 export const getProductHistory = async (req: Request, res: Response): Promise<void> => {
@@ -684,10 +839,33 @@ export const redirectToStore = async (req: Request, res: Response): Promise<void
   // If redirecting to Flipkart, ensure the direct link matches the EXACT RAM & storage variant
   if (storeName.toLowerCase().includes('flipkart') && (!directUrl.includes('/p/itm') || directUrl.includes('flipkart.com/search'))) {
     try {
-
       const fkScraped = await scrapeFlipkart('https://www.flipkart.com/search', product.bestPrice, product.name, targetSpecs);
       if (fkScraped?.directUrl && fkScraped.directUrl.includes('/p/itm')) {
         directUrl = fkScraped.directUrl;
+      }
+    } catch {
+      // Keep directUrl
+    }
+  }
+
+  // If redirecting to Amazon, ensure direct link is /dp/ and not /s?k= search
+  if (storeName.toLowerCase().includes('amazon') && (!directUrl.includes('/dp/') || directUrl.includes('/s?') || directUrl.includes('/s/'))) {
+    try {
+      const azDirect = await resolveAmazonDirectUrl(product.name, targetSpecs);
+      if (azDirect) {
+        directUrl = azDirect;
+      }
+    } catch {
+      // Keep directUrl
+    }
+  }
+
+  // If redirecting to Croma, ensure direct link is /p/ and not /searchB search
+  if (storeName.toLowerCase().includes('croma') && (!directUrl.includes('/p/') || directUrl.includes('/searchb') || directUrl.includes('/search?'))) {
+    try {
+      const crDirect = await resolveCromaDirectUrl(product.name, targetSpecs);
+      if (crDirect) {
+        directUrl = crDirect;
       }
     } catch {
       // Keep directUrl

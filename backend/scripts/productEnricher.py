@@ -13,6 +13,25 @@ HEADERS = {
     "Referer": "https://www.google.com/"
 }
 
+def resolve_tracking_link(tracking_url):
+    if not tracking_url or not ("l.smartprix.com" in tracking_url or "linkredirect.in" in tracking_url):
+        return tracking_url
+    try:
+        r = requests.get(tracking_url, headers=HEADERS, allow_redirects=False, timeout=6)
+        loc = r.headers.get("Location")
+        if loc:
+            if "dl=" in loc:
+                from urllib.parse import urlparse, parse_qs, unquote
+                q = parse_qs(urlparse(loc).query)
+                if "dl" in q:
+                    dl = unquote(q["dl"][0])
+                    dl = dl.replace("dl.flipkart.com/dl/", "www.flipkart.com/")
+                    return dl
+            return loc
+    except Exception:
+        pass
+    return tracking_url
+
 def decode_price_history(raw_data):
     if not raw_data or "b" not in raw_data or "d" not in raw_data:
         return []
@@ -84,7 +103,8 @@ def enrich_product(url):
         store_name = st_info.get("name", "Store")
         store_slug = st_info.get("slug", store_name.lower().replace(" ", "-"))
         store_price = float(st.get("price", base_price))
-        prod_url = st.get("trackingLink", url)
+        raw_tracking = st.get("trackingLink", url)
+        prod_url = resolve_tracking_link(raw_tracking)
         stores.append({
             "name": store_name,
             "slug": store_slug,

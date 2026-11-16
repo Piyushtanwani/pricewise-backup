@@ -5,6 +5,7 @@ import {
   evaluateStockStatus,
   normalizeStoreOffer,
   sanitizePriceForDb,
+  isPriceWithinSanityBounds,
 } from '../src/utils/priceNormalizer';
 import { livePriceCache } from '../src/utils/cache';
 
@@ -160,4 +161,47 @@ test('livePriceCache supports real-time caching and immediate invalidation', asy
   await livePriceCache.del(key);
   const afterDel = await livePriceCache.get(key);
   assert.equal(afterDel, null);
+});
+
+test('isPriceWithinSanityBounds: rejects extreme glitched prices (e.g. ₹500, ₹1200) below 60% of baseline', () => {
+  const dbBaseline = 65000; // e.g. iPhone 15 or OnePlus 12
+  // Below 60% (65,000 * 0.60 = 39,000)
+  assert.equal(isPriceWithinSanityBounds(500, dbBaseline), false);
+  assert.equal(isPriceWithinSanityBounds(1200, dbBaseline), false);
+  assert.equal(isPriceWithinSanityBounds(1299, dbBaseline), false);
+  assert.equal(isPriceWithinSanityBounds(25000, dbBaseline), false);
+  assert.equal(isPriceWithinSanityBounds(38999, dbBaseline), false);
+});
+
+test('isPriceWithinSanityBounds: rejects prices below absolute floor (₹3,000)', () => {
+  assert.equal(isPriceWithinSanityBounds(500, null), false);
+  assert.equal(isPriceWithinSanityBounds(1299, null), false);
+  assert.equal(isPriceWithinSanityBounds(2999, null), false);
+  assert.equal(isPriceWithinSanityBounds(0, 50000), false);
+  assert.equal(isPriceWithinSanityBounds(-100, 50000), false);
+});
+
+test('isPriceWithinSanityBounds: accepts genuine price drops within 60% to 150% of baseline', () => {
+  const dbBaseline = 65000;
+  // 39,000 to 97,500 are valid
+  assert.equal(isPriceWithinSanityBounds(39000, dbBaseline), true);
+  assert.equal(isPriceWithinSanityBounds(54999, dbBaseline), true);
+  assert.equal(isPriceWithinSanityBounds(59999, dbBaseline), true);
+  assert.equal(isPriceWithinSanityBounds(64999, dbBaseline), true);
+  assert.equal(isPriceWithinSanityBounds(75000, dbBaseline), true);
+  assert.equal(isPriceWithinSanityBounds(97500, dbBaseline), true);
+});
+
+test('isPriceWithinSanityBounds: rejects extreme spikes above 150% of baseline', () => {
+  const dbBaseline = 65000;
+  // Above 150% (65,000 * 1.50 = 97,500)
+  assert.equal(isPriceWithinSanityBounds(97501, dbBaseline), false);
+  assert.equal(isPriceWithinSanityBounds(150000, dbBaseline), false);
+  assert.equal(isPriceWithinSanityBounds(500000, dbBaseline), false);
+});
+
+test('isPriceWithinSanityBounds: safely handles null, undefined, and NaN inputs', () => {
+  assert.equal(isPriceWithinSanityBounds(null, 50000), false);
+  assert.equal(isPriceWithinSanityBounds(undefined, 50000), false);
+  assert.equal(isPriceWithinSanityBounds(NaN, 50000), false);
 });

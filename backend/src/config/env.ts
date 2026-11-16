@@ -79,7 +79,7 @@ export const env = {
 
   gemini: {
     apiKey: str('GEMINI_API_KEY'),
-    model: str('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
+    model: str('GEMINI_MODEL', 'gemini-3.1-flash-lite'),
     maxToolRounds: num('GEMINI_MAX_TOOL_ROUNDS', 5),
     timeoutMs: num('GEMINI_TIMEOUT_MS', 30000),
   },
