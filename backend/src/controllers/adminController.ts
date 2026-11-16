@@ -10,7 +10,7 @@ import {
   requirePositiveNumber,
   requireString,
 } from '../utils/validate';
-import { refreshProductAggregates } from '../services/productService';
+import { refreshProductAggregates, resolveProductImageUrl } from '../services/productService';
 import { checkActivePriceAlerts } from '../services/priceAlertMonitorService';
 import { getSchedulerState } from '../jobs/priceAlertScheduler';
 import { NotificationJobStatus } from '../generated/prisma';
@@ -205,7 +205,8 @@ export const getAdminProducts = async (req: Request, res: Response): Promise<voi
         name: p.name,
         brand: p.brand,
         category: p.category,
-        imageUrl: p.imageUrl,
+        imageUrl: resolveProductImageUrl(p.imageUrl, p.brand, 'card'),
+        rawImageUrl: p.imageUrl,
         mrp: p.mrp,
         bestPrice: p.bestPrice,
         bestStore: p.bestStore?.name || null,
@@ -249,7 +250,11 @@ export const getAdminProductById = async (req: Request, res: Response): Promise<
     },
   });
   if (!product) throw notFound('Product not found');
-  res.json(product);
+  res.json({
+    ...product,
+    imageUrl: resolveProductImageUrl(product.imageUrl, product.brand, 'card'),
+    rawImageUrl: product.imageUrl,
+  });
 };
 
 export const createAdminProduct = async (req: Request, res: Response): Promise<void> => {

@@ -12,6 +12,28 @@ import Badge from "../components/ui/Badge"
 
 const fmt = (n?: number | null) => (n !== undefined && n !== null ? "₹" + Math.round(n).toLocaleString("en-IN") : "—")
 
+const resolveProductImage = (url?: string | null, brand?: string) => {
+  if (url) {
+    const spMatch = url.match(/(?:images\.smartprix\.com\/|rx-i)([A-Za-z0-9_-]+)(?:\.webp|-w)/)
+    if (spMatch) {
+      return `https://cdn1.smartprix.com/rx-i${spMatch[1]}-w280-h280/phone.webp`
+    }
+    if (url.startsWith("http") && !url.includes("images.smartprix.com")) {
+      return url
+    }
+  }
+
+  const b = (brand || "").toLowerCase()
+  if (b.includes("apple")) return "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80"
+  if (b.includes("samsung")) return "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80"
+  if (b.includes("oneplus")) return "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80"
+  if (b.includes("motorola")) return "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80"
+  if (b.includes("vivo")) return "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=600&auto=format&fit=crop&q=80"
+  if (b.includes("realme")) return "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=600&auto=format&fit=crop&q=80"
+  if (b.includes("oppo")) return "https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?w=600&auto=format&fit=crop&q=80"
+  return "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80"
+}
+
 // -----------------------------------------------------------------------------
 // Access Denied Screen with 5-Second Auto-Redirect
 // -----------------------------------------------------------------------------
@@ -540,6 +562,10 @@ export default function Admin() {
     return <AdminAccessDenied />
   }
 
+  if (!isAuthenticated || !isAdmin) {
+    return <AdminAccessDenied />
+  }
+
   return (
     <div className="min-h-screen bg-[#f4f6fb] pt-16 pb-12">
       <div className="max-w-[1440px] mx-auto px-6 py-6">
@@ -885,8 +911,14 @@ export default function Admin() {
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
                                 <img
-                                  src={p.imageUrl || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=100"}
+                                  src={resolveProductImage(p.imageUrl, p.brand)}
                                   alt={p.name}
+                                  referrerPolicy="no-referrer"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    e.currentTarget.onerror = null
+                                    e.currentTarget.src = resolveProductImage(null, p.brand)
+                                  }}
                                   className="w-10 h-10 object-contain rounded-lg bg-slate-50 border border-slate-200 p-0.5 shrink-0"
                                 />
                                 <div className="min-w-0">
@@ -1324,13 +1356,27 @@ export default function Admin() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Image URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={pImage}
-                    onChange={(e) => setPImage(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={pImage}
+                      onChange={(e) => setPImage(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800"
+                    />
+                    {pImage && (
+                      <img
+                        src={resolveProductImage(pImage, pBrand)}
+                        alt="Preview"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null
+                          e.currentTarget.src = resolveProductImage(null, pBrand)
+                        }}
+                        className="w-8 h-8 rounded-lg object-contain bg-slate-50 border border-slate-200 p-0.5 shrink-0"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
